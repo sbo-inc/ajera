@@ -4,21 +4,23 @@ version = "0.0.1"
 description = "Deltek Ajera Python API Client"
 readme = "README.md"
 authors = [{ name = "SB&O Inc", email = "contact@sboinc.com" }]
-requires-python = ">=3.9"
-dependencies = []
+requires-python = ">=3.12"
+dependencies = [
+    "click >= 8.0.0",
+    "httpx >= 0.23.0",
+    "pydantic >= 2.10.0",
+]
 
 [dependency-groups]
 dev = [
     "mypy",
     "ruff",
     "pytest",
-    "pytest-asyncio",
-    "pytest-mock",
 ]
 
 [project.scripts]
-ajera = "ajera:main"
+ajera = "ajera.cli.cli:cli"
 
 [build-system]
-requires = ["uv_build>=0.8.22,<0.9.0"]
+requires = ["uv_build<0.9.0"]
 build-backend = "uv_build"

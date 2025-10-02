@@ -2,6 +2,14 @@
 code:
 	code .vscode/ajera.code-workspace
 
+.PHONY: clean
+clean:
+	rm -rf dist
+	rm -rf .mypy_cache
+	rm -rf .ruff_cache
+	rm -rf .pytest_cache
+	find . -type d -name '__pycache__' -exec rm -rf {} +
+
 .PHONY: install
 install:
 	uv sync --all-extras --all-packages --group dev
@@ -17,8 +25,8 @@ format:
 	uv run ruff format
 	uv run ruff check --fix
 
-.PHONY: tests
-tests: 
+.PHONY: test
+test:
 	uv run pytest 
 
 .PHONY: coverage
@@ -27,3 +35,7 @@ coverage:
 	uv run coverage xml -o coverage.xml
 	uv run coverage report -m --fail-under=95
 
+.PHONY: build
+build:
+	@rm -rf dist
+	uv build
