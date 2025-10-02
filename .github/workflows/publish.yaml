@@ -1,0 +1,59 @@
+name: Publish
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions: write-all
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: "Build Changelog"
+        id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v5
+        with:
+          failOnError: true
+          mode: "COMMIT"
+          configurationJson: |
+            {
+              "template": "## Changelog\n\n#{{UNCATEGORIZED}}",
+              "commit_template": "- #{{TITLE}} (#{{MERGE_SHA}})",
+              "pr_template": "- #{{TITLE}} by @#{{AUTHOR}} (##{{NUMBER}})"
+            }
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: make install
+
+      - name: Build artifacts
+        run: make build
+
+      - name: Create the GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          body: ${{steps.build_changelog.outputs.changelog}}
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
