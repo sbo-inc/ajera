@@ -1,3 +1,5 @@
+PYTEST_ARGS ?= --capture=no
+
 .PHONY: code
 code:
 	code .vscode/ajera.code-workspace
@@ -12,8 +14,22 @@ clean:
 
 .PHONY: install
 install:
-	uv sync --all-extras --all-packages --group dev
+	uv sync --frozen
 
+.PHONY: outdated
+outdated:
+	uv lock --upgrade --dry-run
+
+.PHONY: lock
+lock:
+	uv lock
+	@make install
+
+.PHONY: upgrade
+upgrade:
+	uv lock --upgrade
+	@make install
+	
 .PHONY: check
 check: 
 	uv run ruff check
@@ -21,13 +37,18 @@ check:
 	uv run mypy . --exclude site
 
 .PHONY: format
-format: 
+format:
 	uv run ruff format
 	uv run ruff check --fix
 
+
 .PHONY: test
 test:
-	uv run pytest 
+	uv run pytest -m "not integration" $(PYTEST_ARGS)
+
+.PHONY: test-integration
+test-integration:
+	uv run pytest -m integration $(PYTEST_ARGS)
 
 .PHONY: coverage
 coverage:

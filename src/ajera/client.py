@@ -3,7 +3,7 @@ import logging
 import os
 from typing import Any, cast
 
-import httpx
+import requests
 from pydantic import BaseModel
 
 from ajera.schemas.employee import (
@@ -21,7 +21,6 @@ logger = logging.getLogger("ajera")
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(logging.Formatter("ajera: %(message)s"))
 logger.addHandler(console_handler)
-logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 class AjeraClient:
@@ -79,17 +78,15 @@ class AjeraClient:
         self.password = password
 
         # Create the client instance
-        self._client = httpx.Client(
-            base_url=self.url,
-            headers={"Content-Type": "application/json", **headers},
-        )
+        self._session = requests.Session()
+        self._session.headers.update({"Content-Type": "application/json", **headers})
 
         # Store the session tokens for caching
         self._session_tokens: dict[int, str] = {}
 
     @property
-    def client(self) -> httpx.Client:
-        return self._client
+    def session(self) -> requests.Session:
+        return self._session
 
     # -------------------------------------------------------------------------
     # METHOD: _post
@@ -105,11 +102,12 @@ class AjeraClient:
         Returns:
             str: The decoded response content.
         """
-        response = self.client.post(
-            url="",
-            content=request.model_dump_json(exclude_none=True, by_alias=True),
+        response = self.session.post(
+            url=self.url,
+            data=request.model_dump_json(exclude_none=True, by_alias=True),
         )
-        data: dict[str, Any] = json.loads(response.content.decode())
+        response.raise_for_status()
+        data: dict[str, Any] = json.loads(response.text)
 
         if "ResponseCode" in data and data["ResponseCode"] != 200:
             code = data.get("ResponseCode", "No code")
@@ -145,11 +143,12 @@ class AjeraClient:
         )
 
         # Use a new client for each session request
-        response = httpx.Client().post(
+        response = requests.post(
             url=self.url,
-            content=request.model_dump_json(exclude_none=True, by_alias=True),
+            data=request.model_dump_json(exclude_none=True, by_alias=True),
         )
-        session = APISession.model_validate_json(response.content.decode())
+        response.raise_for_status()
+        session = APISession.model_validate_json(response.text)
         token = session.content.session_token
 
         if token:

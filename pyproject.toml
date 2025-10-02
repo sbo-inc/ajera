@@ -7,7 +7,7 @@ authors = [{ name = "SB&O Inc", email = "contact@sboinc.com" }]
 requires-python = ">=3.12"
 dependencies = [
     "click >= 8.0.0",
-    "httpx >= 0.23.0",
+    "requests >=2.0, <3",
     "pydantic >= 2.10.0",
 ]
 
@@ -16,6 +16,11 @@ dev = [
     "mypy",
     "ruff",
     "pytest",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests that require a live Ajera API instance",
 ]
 
 [project.scripts]
