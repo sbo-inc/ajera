@@ -1,0 +1,24 @@
+[project]
+name = "ajera"
+version = "0.0.1"
+description = "Deltek Ajera Python API Client"
+readme = "README.md"
+authors = [{ name = "SB&O Inc", email = "contact@sboinc.com" }]
+requires-python = ">=3.9"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "mypy",
+    "ruff",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-mock",
+]
+
+[project.scripts]
+ajera = "ajera:main"
+
+[build-system]
+requires = ["uv_build>=0.8.22,<0.9.0"]
+build-backend = "uv_build"

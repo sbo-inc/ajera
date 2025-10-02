@@ -1,0 +1,55 @@
+# Enforces future-compatible Python code
+# Namely the UP* rules derived `pyupgrade`
+target-version = "py312"
+
+# Does not check ignored files
+respect-gitignore = true
+
+[lint]
+# Enable all `pydocstyle` rules, for google convention
+select = [
+  "I",      # Import order
+  "F",      # Pyflakes
+  "E",      # pydocstyle errors
+  "D",      # pydocstyle
+  "UP",     # pyupgrade
+  "PLC",    # Pylint compatibility
+  "TID252", # Prefer absolute imports over relative imports from parent modules
+  "T20",    # Check for Print statements in python files.
+]
+# Ignore documenation rules that are not relevant for this project
+# https://docs.astral.sh/ruff/rules/#rules
+ignore = [
+  "D100", # Missing docstring in public module
+  "D101", # Missing docstring in public class
+  "D102", # Missing docstring in public method	
+  "D103", # Missing docstring in public function	
+  "D104", # Missing docstring in public package	
+  "D105", # Missing docstring in magic method	
+  "D106", # Missing docstring in public nested class
+  "D107", # Missing docstring in __init__	
+  "D200", # One-line docstring should fit on one line	
+  "D212", # Multi-line docstring summary should start at the first line	
+  "D415", # First line should end with a punctuation
+  "E501", # Line too long
+]
+extend-select = ["D213"]
+
+# Allow applying unsafe fixes for certain rules
+extend-safe-fixes = ["TID252"]
+
+[lint.per-file-ignores]
+# Tests can use relative imports
+# Print statements should be allowed in runnable files (tests, examples, etc.)
+"**/tests/**/*" = ["TID252", "T20"]
+"__main__.py" = ["PLC0415","T20"]
+"__init__.py" = ["PLC0415"]
+
+[lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.isort]
+known-first-party = ["ajera"]
