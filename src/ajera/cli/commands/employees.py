@@ -88,3 +88,70 @@ def get(ctx: ClientContext, employee_ids: tuple[int, ...]) -> None:
     Get one or more employees by ID.
     """
     render(ctx.client.get_employees(list(employee_ids)))
+
+
+@group.command(name="update")
+@click.argument("employee_key", type=int)
+@click.option("--first-name", default=None, help="New first name.")
+@click.option("--middle-name", default=None, help="New middle name.")
+@click.option("--last-name", default=None, help="New last name.")
+@click.option("--title", default=None, help="New job title.")
+@click.option("--email", default=None, help="New email address.")
+@click.option("--website", default=None, help="New website URL.")
+@click.option("--primary-phone", default=None, help="New primary phone number.")
+@click.option("--secondary-phone", default=None, help="New secondary phone number.")
+@click.option("--tertiary-phone", default=None, help="New tertiary phone number.")
+@click.option("--fax", default=None, help="New fax number.")
+@click.pass_obj
+def update(
+    ctx: ClientContext,
+    employee_key: int,
+    first_name: str | None,
+    middle_name: str | None,
+    last_name: str | None,
+    title: str | None,
+    email: str | None,
+    website: str | None,
+    primary_phone: str | None,
+    secondary_phone: str | None,
+    tertiary_phone: str | None,
+    fax: str | None,
+) -> None:
+    """
+    Update simple fields on one employee.
+
+    Only the options you pass are changed; everything else is left as-is.
+    """
+    render(
+        ctx.client.update_employee(
+            employee_key,
+            first_name=first_name,
+            middle_name=middle_name,
+            last_name=last_name,
+            title=title,
+            email=email,
+            website=website,
+            primary_phone_number=primary_phone,
+            secondary_phone_number=secondary_phone,
+            tertiary_phone_number=tertiary_phone,
+            fax_number=fax,
+        )
+    )
+
+
+@group.command(name="types")
+@click.option(
+    "--status",
+    "filter_by_status",
+    type=str,
+    multiple=True,
+    help="Filter by status value, e.g. Active or Inactive (repeatable).",
+)
+@click.pass_obj
+def types(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+    """
+    List employee types, optionally filtered by status.
+    """
+    render(
+        ctx.client.list_employee_types(filter_by_status=list(filter_by_status) or None)
+    )

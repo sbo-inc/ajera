@@ -659,3 +659,211 @@ class GetEmployeesResponse(GenericResponse[list[EmployeeDetails]]):
     """
     Response schema for GetEmployees
     """
+
+
+# =============================================================================
+# CLASS: EmployeeType
+# =============================================================================
+
+
+class EmployeeType(GenericBaseModel):
+    """
+    Employee type schema for ListEmployeeTypes response
+    """
+
+    employee_type_key: int = Field(
+        default=0,
+        alias="EmployeeTypeKey",
+        description="Unique employee type key.",
+    )
+    description: str = Field(
+        default="",
+        alias="Description",
+        description="Employee type description.",
+    )
+    status: str = Field(
+        default="",
+        alias="Status",
+        description="Status (e.g. Active or Inactive).",
+    )
+    billable_percent: float = Field(
+        default=0.0,
+        alias="BillablePercent",
+        description="Default billable percent for the employee type.",
+    )
+    budget_cost_rate: float = Field(
+        default=0.0,
+        alias="BudgetCostRate",
+        description="Budget cost rate for the employee type.",
+    )
+    budget_bill_rate: float = Field(
+        default=0.0,
+        alias="BudgetBillRate",
+        description="Budget bill rate for the employee type.",
+    )
+    notes: str = Field(
+        default="",
+        alias="Notes",
+        description="Notes.",
+    )
+
+
+# =============================================================================
+# CLASS: ListEmployeeTypesArguments
+# =============================================================================
+
+
+class ListEmployeeTypesArguments(GenericBaseModel):
+    """
+    Optional filter arguments for ListEmployeeTypes
+    """
+
+    filter_by_status: list[str] | None = Field(
+        default=None,
+        alias="FilterByStatus",
+        description="Filter employee types by status values (e.g. Active, Inactive).",
+    )
+
+
+# =============================================================================
+# CLASS: ListEmployeeTypes
+# =============================================================================
+
+
+class ListEmployeeTypes(GenericRequest[ListEmployeeTypesArguments]):
+    """
+    List Employee Types request body
+    """
+
+    method: Literal["ListEmployeeTypes"] = Field(
+        default="ListEmployeeTypes",
+        alias="Method",
+        description="API method name to invoke.",
+        frozen=True,
+    )
+
+
+# =============================================================================
+# CLASS: ListEmployeeTypesResponse
+# =============================================================================
+
+
+class ListEmployeeTypesResponse(GenericResponse[list[EmployeeType]]):
+    """
+    Response schema for ListEmployeeTypes
+    """
+
+    @override
+    def model_post_init(self, context: Any) -> None:
+        if self.content:
+            # Sort the employee types by description
+            self.content.sort(key=lambda emp_type: emp_type.description)
+
+
+# =============================================================================
+# CLASS: UpdatedEmployeeResult
+# =============================================================================
+
+
+class UpdatedEmployeeResult(EmployeeDetails):
+    """
+    Employee record returned by UpdateEmployees.
+
+    Extends the standard employee detail with the two fields the API only
+    populates on a write: `OriginalEmployeeKey` (when a record was created)
+    and `Deleted` (when a record was deleted).
+    """
+
+    original_employee_key: int | None = Field(
+        default=None,
+        alias="OriginalEmployeeKey",
+        description="Negative key supplied on create, echoed back with the new key.",
+    )
+    deleted: bool | None = Field(
+        default=None,
+        alias="Deleted",
+        description="Whether the record was deleted.",
+    )
+
+
+# =============================================================================
+# CLASS: UpdateEmployeesArguments
+# =============================================================================
+
+
+class UpdateEmployeesArguments(GenericBaseModel):
+    """
+    Method arguments for UpdateEmployees.
+
+    Both `UpdatedEmployees` and `UnchangedEmployees` are required by the API:
+    the unchanged set is the baseline (e.g. from GetEmployees) and the updated
+    set is the same baseline with the desired edits applied. (Despite the
+    published docs, these are NOT wrapped in a `Content` object.)
+    """
+
+    updated_employees: list[EmployeeDetails] = Field(
+        default=[],
+        alias="UpdatedEmployees",
+        description="Employees with edits applied (negative key requests creation).",
+    )
+    unchanged_employees: list[EmployeeDetails] = Field(
+        default=[],
+        alias="UnchangedEmployees",
+        description="Baseline employee records, left untouched.",
+    )
+    use_single_transaction: bool = Field(
+        default=False,
+        alias="UseSingleTransaction",
+        description="Apply all updates in one transaction; any failure rejects all.",
+    )
+
+
+# =============================================================================
+# CLASS: UpdateEmployees
+# =============================================================================
+
+
+class UpdateEmployees(GenericRequest[UpdateEmployeesArguments]):
+    """
+    Update Employees request body
+    """
+
+    method: Literal["UpdateEmployees"] = Field(
+        default="UpdateEmployees",
+        alias="Method",
+        description="API method name to invoke.",
+        frozen=True,
+    )
+
+
+# =============================================================================
+# CLASS: UpdateEmployeesResponseContent
+# =============================================================================
+
+
+class UpdateEmployeesResponseContent(GenericBaseModel):
+    """
+    Content payload returned by UpdateEmployees.
+    """
+
+    employees: list[UpdatedEmployeeResult] = Field(
+        default=[],
+        alias="Employees",
+        description="The resulting employee records.",
+    )
+    number_of_employees_updated: int = Field(
+        default=0,
+        alias="NumberOfEmployeesUpdated",
+        description="Count of employees updated.",
+    )
+
+
+# =============================================================================
+# CLASS: UpdateEmployeesResponse
+# =============================================================================
+
+
+class UpdateEmployeesResponse(GenericResponse[UpdateEmployeesResponseContent]):
+    """
+    Response schema for UpdateEmployees
+    """

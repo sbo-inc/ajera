@@ -6,14 +6,34 @@ from typing import Any, cast
 import requests
 from pydantic import BaseModel
 
+from ajera.schemas.deduction import (
+    Deduction,
+    ListDeductions,
+    ListDeductionsArguments,
+    ListDeductionsResponse,
+)
 from ajera.schemas.employee import (
     Employee,
     EmployeeDetails,
+    EmployeeType,
     GetEmployees,
     GetEmployeesArguments,
     ListEmployees,
     ListEmployeesArguments,
     ListEmployeesResponse,
+    ListEmployeeTypes,
+    ListEmployeeTypesArguments,
+    ListEmployeeTypesResponse,
+    UpdatedEmployeeResult,
+    UpdateEmployees,
+    UpdateEmployeesArguments,
+    UpdateEmployeesResponse,
+)
+from ajera.schemas.fringe import (
+    Fringe,
+    ListFringes,
+    ListFringesArguments,
+    ListFringesResponse,
 )
 from ajera.schemas.session import APISession, CreateAPISession
 
@@ -96,19 +116,26 @@ class AjeraClient:
     # METHOD: _post
     # -------------------------------------------------------------------------
 
-    def _post(self, request: BaseModel) -> dict[str, Any]:
+    def _post(
+        self,
+        request: BaseModel,
+        exclude: set[str] | dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Make a POST request to the Ajera API.
 
         Args:
             request: The request body to send.
+            exclude: Fields to omit from the serialized request body.
 
         Returns:
-            str: The decoded response content.
+            dict[str, Any]: The decoded JSON response body.
         """
         response = self.session.post(
             url=self.url,
-            data=request.model_dump_json(exclude_none=True, by_alias=True),
+            data=request.model_dump_json(
+                exclude_none=True, by_alias=True, exclude=exclude
+            ),
         )
         response.raise_for_status()
         data: dict[str, Any] = json.loads(response.text)
@@ -180,7 +207,7 @@ class AjeraClient:
         Supported API Versions: 1
 
         Returns:
-            ListEmployeesResponse: The response containing the list of employees.
+            list[Employee]: The list of employees.
         """
         request = ListEmployees()
         request.method_arguments = ListEmployeesArguments(
@@ -206,12 +233,12 @@ class AjeraClient:
 
     def get_employees(self, employee_ids: list[int]) -> list[EmployeeDetails]:
         """
-        Get employee(s) by ID
+        Get employee(s) details by ID
 
         Supported API Versions: 1
 
         Returns:
-            List[Employee]: A list of employees with the specified IDs.
+            list[EmployeeDetails]: A list of employees with the specified IDs.
         """
         request = GetEmployees()
         request.session_token = self.get_session_token(api_version=1)
@@ -224,3 +251,195 @@ class AjeraClient:
         data["Content"]: list = cast(dict, data["Content"]).pop("Employees", [])
 
         return [EmployeeDetails.model_validate(e) for e in data["Content"]]
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_employee_types
+    # -------------------------------------------------------------------------
+
+    def list_employee_types(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[EmployeeType]:
+        """
+        List employee types
+
+        Supported API Versions: 1
+
+        Returns:
+            list[EmployeeType]: The list of employee types.
+        """
+        request = ListEmployeeTypes()
+        request.method_arguments = ListEmployeeTypesArguments(
+            filter_by_status=filter_by_status,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("EmployeeTypes", [])
+
+        return ListEmployeeTypesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_deductions
+    # -------------------------------------------------------------------------
+
+    def list_deductions(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[Deduction]:
+        """
+        List deductions
+
+        Supported API Versions: 1
+
+        Returns:
+            list[Deduction]: The list of deductions.
+        """
+        request = ListDeductions()
+        request.method_arguments = ListDeductionsArguments(
+            filter_by_status=filter_by_status,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("Deductions", [])
+
+        return ListDeductionsResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_fringes
+    # -------------------------------------------------------------------------
+
+    def list_fringes(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[Fringe]:
+        """
+        List fringes
+
+        Supported API Versions: 1
+
+        Returns:
+            list[Fringe]: The list of fringes.
+        """
+        request = ListFringes()
+        request.method_arguments = ListFringesArguments(
+            filter_by_status=filter_by_status,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("Fringes", [])
+
+        return ListFringesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: update_employee
+    # -------------------------------------------------------------------------
+
+    def update_employee(
+        self,
+        employee_key: int,
+        *,
+        first_name: str | None = None,
+        middle_name: str | None = None,
+        last_name: str | None = None,
+        title: str | None = None,
+        email: str | None = None,
+        website: str | None = None,
+        primary_phone_number: str | None = None,
+        secondary_phone_number: str | None = None,
+        tertiary_phone_number: str | None = None,
+        fax_number: str | None = None,
+    ) -> UpdatedEmployeeResult:
+        """
+        Update simple, single-line fields on one employee.
+
+        This is a convenience facade over the batch UpdateEmployees API. It
+        fetches the current record via GetEmployees to use as the baseline,
+        applies only the provided (non-None) fields to a copy, and submits the
+        baseline and modified records as the API's unchanged/updated pair. A
+        field left as None is unchanged.
+
+        Structural data (pay rates, contacts, credit cards) is intentionally
+        not editable here; manage those in Ajera directly.
+
+        If the requested edits leave the record unchanged (e.g. no fields
+        given, or values identical to the current ones), the current record is
+        returned without calling the API, which would otherwise reject the
+        request with "No valid changes to this object exist."
+
+        Supported API Versions: 1
+
+        Returns:
+            UpdatedEmployeeResult: The resulting employee record.
+        """
+        # Fetch the current record to use as the unchanged baseline.
+        employees = self.get_employees([employee_key])
+        if not employees:
+            raise ValueError(f"No employee found with key {employee_key}")
+        baseline = employees[0]
+
+        # Apply the requested edits to a copy, one property at a time.
+        modified = baseline.model_copy(deep=True)
+        if first_name is not None:
+            modified.first_name = first_name
+        if middle_name is not None:
+            modified.middle_name = middle_name
+        if last_name is not None:
+            modified.last_name = last_name
+        if title is not None:
+            modified.title = title
+        if email is not None:
+            modified.email = email
+        if website is not None:
+            modified.website = website
+        if primary_phone_number is not None:
+            modified.primary_phone_number = primary_phone_number
+        if secondary_phone_number is not None:
+            modified.secondary_phone_number = secondary_phone_number
+        if tertiary_phone_number is not None:
+            modified.tertiary_phone_number = tertiary_phone_number
+        if fax_number is not None:
+            modified.fax_number = fax_number
+
+        # Nothing actually changed: return the current record rather than
+        # letting the API reject a no-op update.
+        if modified == baseline:
+            return UpdatedEmployeeResult.model_validate(
+                baseline.model_dump(by_alias=True)
+            )
+
+        request = UpdateEmployees(
+            method_arguments=UpdateEmployeesArguments(
+                updated_employees=[modified],
+                unchanged_employees=[baseline],
+            )
+        )
+        request.session_token = self.get_session_token(api_version=1)
+
+        # Drop the read-only computed PayRate.annual_salary from the payload.
+        pay_rate_exclude = {"pay_rates": {"__all__": {"annual_salary"}}}
+        data = self._post(
+            request,
+            exclude={
+                "method_arguments": {
+                    "updated_employees": {"__all__": pay_rate_exclude},
+                    "unchanged_employees": {"__all__": pay_rate_exclude},
+                }
+            },
+        )
+
+        results = UpdateEmployeesResponse.model_validate(data).content.employees
+        if not results:
+            raise Exception("UpdateEmployees returned no employee records")
+        return results[0]
