@@ -10,6 +10,7 @@ from ajera.cli.commands import (
     deductions,
     employees,
     fringes,
+    projects,
     session,
     vendors,
 )
@@ -46,7 +47,16 @@ def cli(ctx: click.Context, log: bool) -> None:
 
 # Register all domain-specific command groups.
 # Runtime gating is handled by AJERA_CLI_DISABLE.
-for module in (session, employees, clients, contacts, vendors, deductions, fringes):
+for module in (
+    session,
+    employees,
+    clients,
+    contacts,
+    vendors,
+    projects,
+    deductions,
+    fringes,
+):
     cli.add_command(module.group)
 
 

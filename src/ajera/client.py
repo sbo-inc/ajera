@@ -69,6 +69,35 @@ from ajera.schemas.fringe import (
     ListFringesArguments,
     ListFringesResponse,
 )
+from ajera.schemas.project import (
+    GetProjects,
+    GetProjectsArguments,
+    GetProjectsWithResources,
+    GetProjectsWithResourcesResponse,
+    GetProjectTemplates,
+    GetProjectTemplatesArguments,
+    GetProjectTotals,
+    GetProjectTotalsArguments,
+    ListProjects,
+    ListProjectsArguments,
+    ListProjectsResponse,
+    ListProjectTemplates,
+    ListProjectTemplatesArguments,
+    ListProjectTemplatesResponse,
+    ListProjectTypes,
+    ListProjectTypesArguments,
+    ListProjectTypesResponse,
+    Project,
+    ProjectDetails,
+    ProjectTemplate,
+    ProjectTemplateDetails,
+    ProjectTotalsDetails,
+    ProjectType,
+    UpdatedProjectResult,
+    UpdateProjects,
+    UpdateProjectsArguments,
+    UpdateProjectsResponse,
+)
 from ajera.schemas.session import APISession, CreateAPISession
 from ajera.schemas.vendor import (
     GetVendors,
@@ -1052,4 +1081,312 @@ class AjeraClient:
         results = UpdateVendorsResponse.model_validate(data).content.vendors
         if not results:
             raise Exception("UpdateVendors returned no vendor records")
+        return results[0]
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_projects
+    # -------------------------------------------------------------------------
+
+    def list_projects(
+        self,
+        *,
+        filter_by_company: list[int] | None = None,
+        filter_by_status: list[str] | None = None,
+        filter_by_name_like: str | None = None,
+        filter_by_description_like: str | None = None,
+        filter_by_description_equals: str | None = None,
+        filter_by_id_like: str | None = None,
+        filter_by_project_type: list[int] | None = None,
+        filter_by_sync_to_crm: list[bool] | None = None,
+        filter_by_earliest_modified_date: str | None = None,
+        filter_by_latest_modified_date: str | None = None,
+    ) -> list[Project]:
+        """
+        List projects
+
+        Supported API Versions: 1
+
+        Returns:
+            list[Project]: The list of projects.
+        """
+        request = ListProjects()
+        request.method_arguments = ListProjectsArguments(
+            filter_by_company=filter_by_company,
+            filter_by_status=filter_by_status,
+            filter_by_name_like=filter_by_name_like,
+            filter_by_description_like=filter_by_description_like,
+            filter_by_description_equals=filter_by_description_equals,
+            filter_by_id_like=filter_by_id_like,
+            filter_by_project_type=filter_by_project_type,
+            filter_by_sync_to_crm=filter_by_sync_to_crm,
+            filter_by_earliest_modified_date=filter_by_earliest_modified_date,
+            filter_by_latest_modified_date=filter_by_latest_modified_date,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("Projects", [])
+
+        return ListProjectsResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: get_projects
+    # -------------------------------------------------------------------------
+
+    def get_projects(self, project_ids: list[int]) -> list[ProjectDetails]:
+        """
+        Get project(s) details by ID
+
+        Supported API Versions: 1
+
+        Returns:
+            list[ProjectDetails]: A list of projects with the specified IDs.
+        """
+        request = GetProjects()
+        request.session_token = self.get_session_token(api_version=1)
+        request.method_arguments = GetProjectsArguments(requested_projects=project_ids)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        content: list[Any] = cast(dict, data["Content"]).pop("Projects", [])
+
+        return [ProjectDetails.model_validate(p) for p in content]
+
+    # -------------------------------------------------------------------------
+    # METHOD: get_projects_with_resources
+    # -------------------------------------------------------------------------
+
+    def get_projects_with_resources(
+        self, project_ids: list[int]
+    ) -> list[ProjectDetails]:
+        """
+        Get project(s) details by ID, including budgeted resources on phases
+
+        Supported API Versions: 1
+
+        Returns:
+            list[ProjectDetails]: A list of projects with phase resources.
+        """
+        request = GetProjectsWithResources()
+        request.session_token = self.get_session_token(api_version=1)
+        request.method_arguments = GetProjectsArguments(requested_projects=project_ids)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        content: list[Any] = cast(dict, data["Content"]).pop("Projects", [])
+
+        return GetProjectsWithResourcesResponse.model_validate(
+            {"Content": content}
+        ).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: get_project_totals
+    # -------------------------------------------------------------------------
+
+    def get_project_totals(self, project_id: int) -> ProjectTotalsDetails:
+        """
+        Get a single project's details enriched with financial totals
+
+        Unlike the other Get* methods, GetProjectTotals accepts a single
+        project key, not a list.
+
+        Supported API Versions: 1
+
+        Returns:
+            ProjectTotalsDetails: The project with project-level totals.
+        """
+        request = GetProjectTotals()
+        request.session_token = self.get_session_token(api_version=1)
+        request.method_arguments = GetProjectTotalsArguments(
+            requested_project_totals=project_id
+        )
+        data = self._post(request)
+
+        # Content wraps a single project object under "ProjectTotals".
+        content: dict[str, Any] = cast(dict, data["Content"]).pop("ProjectTotals", {})
+
+        return ProjectTotalsDetails.model_validate(content)
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_project_types
+    # -------------------------------------------------------------------------
+
+    def list_project_types(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[ProjectType]:
+        """
+        List project types
+
+        Supported API Versions: 1
+
+        Returns:
+            list[ProjectType]: The list of project types.
+        """
+        request = ListProjectTypes()
+        request.method_arguments = ListProjectTypesArguments(
+            filter_by_status=filter_by_status,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("ProjectTypes", [])
+
+        return ListProjectTypesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_project_templates
+    # -------------------------------------------------------------------------
+
+    def list_project_templates(
+        self,
+        *,
+        filter_by_company: list[int] | None = None,
+        filter_by_status: list[str] | None = None,
+        filter_by_name_like: str | None = None,
+        filter_by_description_like: str | None = None,
+        filter_by_description_equals: str | None = None,
+        filter_by_id_like: str | None = None,
+        filter_by_project_type: list[int] | None = None,
+        filter_by_sync_to_crm: list[bool] | None = None,
+        filter_by_earliest_modified_date: str | None = None,
+        filter_by_latest_modified_date: str | None = None,
+    ) -> list[ProjectTemplate]:
+        """
+        List project templates
+
+        Supported API Versions: 1
+
+        Returns:
+            list[ProjectTemplate]: The list of project templates.
+        """
+        request = ListProjectTemplates()
+        request.method_arguments = ListProjectTemplatesArguments(
+            filter_by_company=filter_by_company,
+            filter_by_status=filter_by_status,
+            filter_by_name_like=filter_by_name_like,
+            filter_by_description_like=filter_by_description_like,
+            filter_by_description_equals=filter_by_description_equals,
+            filter_by_id_like=filter_by_id_like,
+            filter_by_project_type=filter_by_project_type,
+            filter_by_sync_to_crm=filter_by_sync_to_crm,
+            filter_by_earliest_modified_date=filter_by_earliest_modified_date,
+            filter_by_latest_modified_date=filter_by_latest_modified_date,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("ProjectTemplates", [])
+
+        return ListProjectTemplatesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: get_project_templates
+    # -------------------------------------------------------------------------
+
+    def get_project_templates(
+        self, template_ids: list[int]
+    ) -> list[ProjectTemplateDetails]:
+        """
+        Get project template(s) details by ID
+
+        Supported API Versions: 1
+
+        Returns:
+            list[ProjectTemplateDetails]: A list of templates with the given IDs.
+        """
+        request = GetProjectTemplates()
+        request.session_token = self.get_session_token(api_version=1)
+        request.method_arguments = GetProjectTemplatesArguments(
+            requested_projects=template_ids
+        )
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        content: list[Any] = cast(dict, data["Content"]).pop("ProjectTemplates", [])
+
+        return [ProjectTemplateDetails.model_validate(t) for t in content]
+
+    # -------------------------------------------------------------------------
+    # METHOD: update_project
+    # -------------------------------------------------------------------------
+
+    def update_project(
+        self,
+        project_key: int,
+        *,
+        description: str | None = None,
+        project_id: str | None = None,
+        location: str | None = None,
+        billing_description: str | None = None,
+        notes: str | None = None,
+    ) -> UpdatedProjectResult:
+        """
+        Update simple, single-line fields on one project.
+
+        This is a convenience facade over the batch UpdateProjects API. It
+        fetches the current record via GetProjects to use as the baseline,
+        applies only the provided (non-None) fields to a copy, and submits the
+        baseline and modified records as the API's unchanged/updated pair. A
+        field left as None is unchanged.
+
+        Structural data (phases, invoice groups, resources, contract amounts,
+        contacts) is intentionally not editable here; manage those in Ajera
+        directly.
+
+        If the requested edits leave the record unchanged (e.g. no fields
+        given, or values identical to the current ones), the current record is
+        returned without calling the API, which would otherwise reject the
+        request with "No valid changes to this object exist."
+
+        Supported API Versions: 1
+
+        Returns:
+            UpdatedProjectResult: The resulting project record.
+        """
+        # Fetch the current record to use as the unchanged baseline.
+        projects = self.get_projects([project_key])
+        if not projects:
+            raise ValueError(f"No project found with key {project_key}")
+        baseline = projects[0]
+
+        # Apply the requested edits to a copy, one property at a time.
+        modified = baseline.model_copy(deep=True)
+        if description is not None:
+            modified.description = description
+        if project_id is not None:
+            modified.id = project_id
+        if location is not None:
+            modified.location = location
+        if billing_description is not None:
+            modified.billing_description = billing_description
+        if notes is not None:
+            modified.notes = notes
+
+        # Nothing actually changed: return the current record rather than
+        # letting the API reject a no-op update.
+        if modified == baseline:
+            return UpdatedProjectResult.model_validate(
+                baseline.model_dump(by_alias=True)
+            )
+
+        request = UpdateProjects(
+            method_arguments=UpdateProjectsArguments(
+                updated_projects=[modified],
+                unchanged_projects=[baseline],
+            )
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        results = UpdateProjectsResponse.model_validate(data).content.projects
+        if not results:
+            raise Exception("UpdateProjects returned no project records")
         return results[0]
