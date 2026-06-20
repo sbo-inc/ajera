@@ -994,10 +994,6 @@ class ProjectChange(GenericBaseModel):
 class UpdateProjectsArgumentsV2(GenericBaseModel):
     """
     Arguments for v2 UpdateProjects.
-
-    The shape is asymmetric (and undocumented): `UpdatedProjects` is an ARRAY
-    of changed objects (each carrying its key), while `UnchangedProjects` is an
-    OBJECT — the complete GetProjects bundle passed back verbatim.
     """
 
     updated_projects: list[ProjectChange] = Field(

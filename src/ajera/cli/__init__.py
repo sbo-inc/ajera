@@ -8,6 +8,7 @@ from ajera.cli.commands import (
     clients,
     contacts,
     employees,
+    ledger,
     projects,
     session,
     vendors,
@@ -52,6 +53,7 @@ for module in (
     contacts,
     vendors,
     projects,
+    ledger,
 ):
     cli.add_command(module.group)
 

@@ -69,6 +69,15 @@ from ajera.schemas.fringe import (
     ListFringesArguments,
     ListFringesResponse,
 )
+from ajera.schemas.ledger import (
+    GetLedgerAccounts,
+    GetLedgerAccountsArguments,
+    LedgerAccount,
+    LedgerAccountDetails,
+    ListLedgerAccounts,
+    ListLedgerAccountsArguments,
+    ListLedgerAccountsResponse,
+)
 from ajera.schemas.project import (
     GetProjectTemplates,
     GetProjectTemplatesArguments,
@@ -1428,3 +1437,81 @@ class AjeraClient:
         data = self._post(request)
 
         return CreateProjectsResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_ledger_accounts
+    # -------------------------------------------------------------------------
+
+    def list_ledger_accounts(
+        self,
+        *,
+        filter_by_account_group: list[int] | None = None,
+        filter_by_status: list[str] | None = None,
+        filter_by_type: list[str] | None = None,
+    ) -> list[LedgerAccount]:
+        """
+        List general ledger accounts
+
+        Supported API Versions: 1, 2
+
+        Returns:
+            list[LedgerAccount]: The list of ledger accounts.
+        """
+        request = ListLedgerAccounts()
+        request.method_arguments = ListLedgerAccountsArguments(
+            filter_by_account_group=filter_by_account_group,
+            filter_by_status=filter_by_status,
+            filter_by_type=filter_by_type,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("GLAccounts", [])
+
+        return ListLedgerAccountsResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: get_ledger_accounts
+    # -------------------------------------------------------------------------
+
+    def get_ledger_accounts(
+        self,
+        account_ids: list[int] | None = None,
+        *,
+        exclude_close_year_entries: bool | None = None,
+        as_of_date: str | None = None,
+        filter_by_account_group: list[int] | None = None,
+        filter_by_status: list[str] | None = None,
+        filter_by_type: list[str] | None = None,
+    ) -> list[LedgerAccountDetails]:
+        """
+        Get general ledger account details, with calculated amounts
+
+        Returns each account enriched with calculated balances and budgets.
+        Pass `account_ids` to select specific accounts, or omit to return all.
+        `as_of_date` calculates balances as of that date, and
+        `exclude_close_year_entries` omits close-year entries from the amounts.
+
+        Supported API Versions: 1
+
+        Returns:
+            list[LedgerAccountDetails]: The requested accounts with amounts.
+        """
+        request = GetLedgerAccounts()
+        request.session_token = self.get_session_token(api_version=1)
+        request.method_arguments = GetLedgerAccountsArguments(
+            requested_accounts=account_ids,
+            exclude_close_year_entries=exclude_close_year_entries,
+            as_of_date=as_of_date,
+            filter_by_account_group=filter_by_account_group,
+            filter_by_status=filter_by_status,
+            filter_by_type=filter_by_type,
+        )
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        content: list[Any] = cast(dict, data["Content"]).pop("GLAccounts", [])
+
+        return [LedgerAccountDetails.model_validate(a) for a in content]
