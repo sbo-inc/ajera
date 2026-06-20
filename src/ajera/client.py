@@ -6,6 +6,23 @@ from typing import Any, cast
 import requests
 from pydantic import BaseModel
 
+from ajera.schemas.client import (
+    Client,
+    ClientDetails,
+    ClientType,
+    GetClients,
+    GetClientsArguments,
+    ListClients,
+    ListClientsArguments,
+    ListClientsResponse,
+    ListClientTypes,
+    ListClientTypesArguments,
+    ListClientTypesResponse,
+    UpdateClients,
+    UpdateClientsArguments,
+    UpdateClientsResponse,
+    UpdatedClientResult,
+)
 from ajera.schemas.deduction import (
     Deduction,
     ListDeductions,
@@ -442,4 +459,187 @@ class AjeraClient:
         results = UpdateEmployeesResponse.model_validate(data).content.employees
         if not results:
             raise Exception("UpdateEmployees returned no employee records")
+        return results[0]
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_clients
+    # -------------------------------------------------------------------------
+
+    def list_clients(
+        self,
+        *,
+        filter_by_company: list[int] | None = None,
+        filter_by_status: list[str] | None = None,
+        filter_by_name_like: str | None = None,
+        filter_by_name_equals: str | None = None,
+        filter_by_client_type: list[int] | None = None,
+        filter_by_earliest_modified_date: str | None = None,
+        filter_by_latest_modified_date: str | None = None,
+    ) -> list[Client]:
+        """
+        List clients
+
+        Supported API Versions: 1
+
+        Returns:
+            list[Client]: The list of clients.
+        """
+        request = ListClients()
+        request.method_arguments = ListClientsArguments(
+            filter_by_company=filter_by_company,
+            filter_by_status=filter_by_status,
+            filter_by_name_like=filter_by_name_like,
+            filter_by_name_equals=filter_by_name_equals,
+            filter_by_client_type=filter_by_client_type,
+            filter_by_earliest_modified_date=filter_by_earliest_modified_date,
+            filter_by_latest_modified_date=filter_by_latest_modified_date,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("Clients", [])
+
+        return ListClientsResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: get_clients
+    # -------------------------------------------------------------------------
+
+    def get_clients(self, client_ids: list[int]) -> list[ClientDetails]:
+        """
+        Get client(s) details by ID
+
+        Supported API Versions: 1
+
+        Returns:
+            list[ClientDetails]: A list of clients with the specified IDs.
+        """
+        request = GetClients()
+        request.session_token = self.get_session_token(api_version=1)
+        request.method_arguments = GetClientsArguments(requested_clients=client_ids)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        content: list[Any] = cast(dict, data["Content"]).pop("Clients", [])
+
+        return [ClientDetails.model_validate(c) for c in content]
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_client_types
+    # -------------------------------------------------------------------------
+
+    def list_client_types(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[ClientType]:
+        """
+        List client types
+
+        Supported API Versions: 1
+
+        Returns:
+            list[ClientType]: The list of client types.
+        """
+        request = ListClientTypes()
+        request.method_arguments = ListClientTypesArguments(
+            filter_by_status=filter_by_status,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("ClientTypes", [])
+
+        return ListClientTypesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: update_client
+    # -------------------------------------------------------------------------
+
+    def update_client(
+        self,
+        client_key: int,
+        *,
+        description: str | None = None,
+        account_id: str | None = None,
+        email: str | None = None,
+        website: str | None = None,
+        primary_phone_number: str | None = None,
+        secondary_phone_number: str | None = None,
+        tertiary_phone_number: str | None = None,
+        fax_number: str | None = None,
+        notes: str | None = None,
+    ) -> UpdatedClientResult:
+        """
+        Update simple, single-line fields on one client.
+
+        This is a convenience facade over the batch UpdateClients API. It
+        fetches the current record via GetClients to use as the baseline,
+        applies only the provided (non-None) fields to a copy, and submits the
+        baseline and modified records as the API's unchanged/updated pair. A
+        field left as None is unchanged.
+
+        Structural data (contacts, addresses, finance-charge settings) is
+        intentionally not editable here; manage those in Ajera directly.
+
+        If the requested edits leave the record unchanged (e.g. no fields
+        given, or values identical to the current ones), the current record is
+        returned without calling the API, which would otherwise reject the
+        request with "No valid changes to this object exist."
+
+        Supported API Versions: 1
+
+        Returns:
+            UpdatedClientResult: The resulting client record.
+        """
+        # Fetch the current record to use as the unchanged baseline.
+        clients = self.get_clients([client_key])
+        if not clients:
+            raise ValueError(f"No client found with key {client_key}")
+        baseline = clients[0]
+
+        # Apply the requested edits to a copy, one property at a time.
+        modified = baseline.model_copy(deep=True)
+        if description is not None:
+            modified.description = description
+        if account_id is not None:
+            modified.account_id = account_id
+        if email is not None:
+            modified.email = email
+        if website is not None:
+            modified.website = website
+        if primary_phone_number is not None:
+            modified.primary_phone_number = primary_phone_number
+        if secondary_phone_number is not None:
+            modified.secondary_phone_number = secondary_phone_number
+        if tertiary_phone_number is not None:
+            modified.tertiary_phone_number = tertiary_phone_number
+        if fax_number is not None:
+            modified.fax_number = fax_number
+        if notes is not None:
+            modified.notes = notes
+
+        # Nothing actually changed: return the current record rather than
+        # letting the API reject a no-op update.
+        if modified == baseline:
+            return UpdatedClientResult.model_validate(
+                baseline.model_dump(by_alias=True)
+            )
+
+        request = UpdateClients(
+            method_arguments=UpdateClientsArguments(
+                updated_clients=[modified],
+                unchanged_clients=[baseline],
+            )
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        results = UpdateClientsResponse.model_validate(data).content.clients
+        if not results:
+            raise Exception("UpdateClients returned no client records")
         return results[0]

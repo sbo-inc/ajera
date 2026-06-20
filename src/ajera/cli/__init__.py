@@ -4,7 +4,7 @@ import sys
 import click
 import requests
 
-from ajera.cli.commands import deductions, employees, fringes, session
+from ajera.cli.commands import clients, deductions, employees, fringes, session
 from ajera.cli.context import ClientContext
 from ajera.cli.group import CommonClickGroup
 
@@ -38,7 +38,7 @@ def cli(ctx: click.Context, log: bool) -> None:
 
 # Register all domain-specific command groups.
 # Runtime gating is handled by AJERA_CLI_DISABLE.
-for module in (session, employees, deductions, fringes):
+for module in (session, employees, clients, deductions, fringes):
     cli.add_command(module.group)
 
 
