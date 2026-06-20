@@ -187,3 +187,53 @@ def fringes(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
     List fringes, optionally filtered by status.
     """
     render(ctx.client.list_fringes(filter_by_status=list(filter_by_status) or None))
+
+
+@group.command(name="pays")
+@click.option(
+    "--status",
+    "filter_by_status",
+    type=str,
+    multiple=True,
+    help="Filter by status value, e.g. Active or Inactive (repeatable).",
+)
+@click.pass_obj
+def pays(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+    """
+    List pay types, optionally filtered by status.
+    """
+    render(ctx.client.list_pays(filter_by_status=list(filter_by_status) or None))
+
+
+@group.command(name="payroll-taxes")
+@click.option(
+    "--status",
+    "filter_by_status",
+    type=str,
+    multiple=True,
+    help="Filter by status value, e.g. Active or Inactive (repeatable).",
+)
+@click.pass_obj
+def payroll_taxes(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+    """
+    List payroll taxes, optionally filtered by status.
+    """
+    render(
+        ctx.client.list_payroll_taxes(filter_by_status=list(filter_by_status) or None)
+    )
+
+
+@group.command(name="wage-tables")
+@click.option(
+    "--status",
+    "filter_by_status",
+    type=str,
+    multiple=True,
+    help="Filter by status value, e.g. Active or Inactive (repeatable).",
+)
+@click.pass_obj
+def wage_tables(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+    """
+    List wage tables, optionally filtered by status.
+    """
+    render(ctx.client.list_wage_tables(filter_by_status=list(filter_by_status) or None))

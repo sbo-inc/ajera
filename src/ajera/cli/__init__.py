@@ -5,11 +5,17 @@ import click
 import requests
 
 from ajera.cli.commands import (
+    activities,
+    bank_accounts,
     clients,
+    companies,
     contacts,
+    departments,
     employees,
+    invoice_formats,
     ledger,
     projects,
+    rate_tables,
     session,
     vendors,
 )
@@ -54,6 +60,12 @@ for module in (
     vendors,
     projects,
     ledger,
+    activities,
+    companies,
+    departments,
+    rate_tables,
+    bank_accounts,
+    invoice_formats,
 ):
     cli.add_command(module.group)
 

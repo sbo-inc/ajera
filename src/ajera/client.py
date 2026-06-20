@@ -114,6 +114,44 @@ from ajera.schemas.project_v2 import (
     UpdateProjectsResponseV2,
     UpdateProjectsV2,
 )
+from ajera.schemas.reference import (
+    AccountGroup,
+    Activity,
+    BankAccount,
+    ChargeablePhase,
+    Company,
+    Department,
+    InvoiceFormat,
+    ListAccountGroups,
+    ListAccountGroupsResponse,
+    ListActivities,
+    ListActivitiesArguments,
+    ListActivitiesResponse,
+    ListBankAccounts,
+    ListBankAccountsResponse,
+    ListChargeablePhases,
+    ListChargeablePhasesArguments,
+    ListChargeablePhasesResponse,
+    ListCompanies,
+    ListCompaniesResponse,
+    ListDepartments,
+    ListDepartmentsResponse,
+    ListInvoiceFormats,
+    ListInvoiceFormatsResponse,
+    ListPayrollTaxes,
+    ListPayrollTaxesResponse,
+    ListPays,
+    ListPaysResponse,
+    ListRateTables,
+    ListRateTablesResponse,
+    ListWageTables,
+    ListWageTablesResponse,
+    Pay,
+    PayrollTax,
+    RateTable,
+    StatusFilterArguments,
+    WageTable,
+)
 from ajera.schemas.session import APISession, CreateAPISession
 from ajera.schemas.vendor import (
     GetVendors,
@@ -1667,3 +1705,298 @@ class AjeraClient:
         content: list[Any] = cast(dict, data["Content"]).pop("GLAccounts", [])
 
         return [LedgerAccountDetails.model_validate(a) for a in content]
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_account_groups
+    # -------------------------------------------------------------------------
+
+    def list_account_groups(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[AccountGroup]:
+        """
+        List general ledger account groups
+
+        Supported API Versions: 1
+
+        Returns:
+            list[AccountGroup]: The list of account groups.
+        """
+        request = ListAccountGroups()
+        request.method_arguments = StatusFilterArguments(
+            filter_by_status=filter_by_status
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        data["Content"] = cast(dict, data["Content"]).pop("AccountGroups", [])
+        return ListAccountGroupsResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_activities
+    # -------------------------------------------------------------------------
+
+    def list_activities(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+        filter_by_description_like: str | None = None,
+    ) -> list[Activity]:
+        """
+        List activities
+
+        Supported API Versions: 1
+
+        Returns:
+            list[Activity]: The list of activities.
+        """
+        request = ListActivities()
+        request.method_arguments = ListActivitiesArguments(
+            filter_by_status=filter_by_status,
+            filter_by_description_like=filter_by_description_like,
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        data["Content"] = cast(dict, data["Content"]).pop("Activities", [])
+        return ListActivitiesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_bank_accounts
+    # -------------------------------------------------------------------------
+
+    def list_bank_accounts(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[BankAccount]:
+        """
+        List bank accounts
+
+        Supported API Versions: 1
+
+        Returns:
+            list[BankAccount]: The list of bank accounts.
+        """
+        request = ListBankAccounts()
+        request.method_arguments = StatusFilterArguments(
+            filter_by_status=filter_by_status
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        data["Content"] = cast(dict, data["Content"]).pop("BankAccounts", [])
+        return ListBankAccountsResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_companies
+    # -------------------------------------------------------------------------
+
+    def list_companies(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[Company]:
+        """
+        List companies
+
+        Supported API Versions: 1
+
+        Returns:
+            list[Company]: The list of companies.
+        """
+        request = ListCompanies()
+        request.method_arguments = StatusFilterArguments(
+            filter_by_status=filter_by_status
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        data["Content"] = cast(dict, data["Content"]).pop("Companies", [])
+        return ListCompaniesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_departments
+    # -------------------------------------------------------------------------
+
+    def list_departments(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[Department]:
+        """
+        List departments
+
+        Supported API Versions: 1
+
+        Returns:
+            list[Department]: The list of departments.
+        """
+        request = ListDepartments()
+        request.method_arguments = StatusFilterArguments(
+            filter_by_status=filter_by_status
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        data["Content"] = cast(dict, data["Content"]).pop("Departments", [])
+        return ListDepartmentsResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_invoice_formats
+    # -------------------------------------------------------------------------
+
+    def list_invoice_formats(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[InvoiceFormat]:
+        """
+        List invoice formats
+
+        Supported API Versions: 1
+
+        Returns:
+            list[InvoiceFormat]: The list of invoice formats.
+        """
+        request = ListInvoiceFormats()
+        request.method_arguments = StatusFilterArguments(
+            filter_by_status=filter_by_status
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        data["Content"] = cast(dict, data["Content"]).pop("InvoiceFormats", [])
+        return ListInvoiceFormatsResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_payroll_taxes
+    # -------------------------------------------------------------------------
+
+    def list_payroll_taxes(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[PayrollTax]:
+        """
+        List payroll taxes
+
+        Supported API Versions: 1
+
+        Returns:
+            list[PayrollTax]: The list of payroll taxes.
+        """
+        request = ListPayrollTaxes()
+        request.method_arguments = StatusFilterArguments(
+            filter_by_status=filter_by_status
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        data["Content"] = cast(dict, data["Content"]).pop("PayrollTaxes", [])
+        return ListPayrollTaxesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_pays
+    # -------------------------------------------------------------------------
+
+    def list_pays(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[Pay]:
+        """
+        List pay types
+
+        Supported API Versions: 1
+
+        Returns:
+            list[Pay]: The list of pay types.
+        """
+        request = ListPays()
+        request.method_arguments = StatusFilterArguments(
+            filter_by_status=filter_by_status
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        data["Content"] = cast(dict, data["Content"]).pop("Pays", [])
+        return ListPaysResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_rate_tables
+    # -------------------------------------------------------------------------
+
+    def list_rate_tables(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[RateTable]:
+        """
+        List rate tables
+
+        Supported API Versions: 1
+
+        Returns:
+            list[RateTable]: The list of rate tables.
+        """
+        request = ListRateTables()
+        request.method_arguments = StatusFilterArguments(
+            filter_by_status=filter_by_status
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        data["Content"] = cast(dict, data["Content"]).pop("RateTables", [])
+        return ListRateTablesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_wage_tables
+    # -------------------------------------------------------------------------
+
+    def list_wage_tables(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[WageTable]:
+        """
+        List wage tables
+
+        Supported API Versions: 1
+
+        Returns:
+            list[WageTable]: The list of wage tables.
+        """
+        request = ListWageTables()
+        request.method_arguments = StatusFilterArguments(
+            filter_by_status=filter_by_status
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        data["Content"] = cast(dict, data["Content"]).pop("WageTables", [])
+        return ListWageTablesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_chargeable_phases
+    # -------------------------------------------------------------------------
+
+    def list_chargeable_phases(self, project_key: int) -> list[ChargeablePhase]:
+        """
+        List the chargeable phases of a single project
+
+        Supported API Versions: 2
+
+        Returns:
+            list[ChargeablePhase]: The project's chargeable phases.
+        """
+        request = ListChargeablePhases()
+        request.method_arguments = ListChargeablePhasesArguments(
+            project_key=project_key
+        )
+        request.session_token = self.get_session_token(api_version=2)
+        data = self._post(request)
+
+        data["Content"] = cast(dict, data["Content"]).pop("ChargeablePhases", [])
+        return ListChargeablePhasesResponse.model_validate(data).content

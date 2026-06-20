@@ -260,6 +260,16 @@ def update(
     )
 
 
+@group.command(name="chargeable-phases")
+@click.argument("project_key", type=int)
+@click.pass_obj
+def chargeable_phases(ctx: ClientContext, project_key: int) -> None:
+    """
+    List the chargeable phases of a project.
+    """
+    render(ctx.client.list_chargeable_phases(project_key))
+
+
 @group.command(name="create")
 @click.argument("description", type=str)
 @click.option(

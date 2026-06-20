@@ -91,3 +91,21 @@ def get(
             exclude_close_year_entries=exclude_close_year_entries or None,
         )
     )
+
+
+@group.command(name="account-groups")
+@click.option(
+    "--status",
+    "filter_by_status",
+    type=str,
+    multiple=True,
+    help="Filter by status value, e.g. Active or Inactive (repeatable).",
+)
+@click.pass_obj
+def account_groups(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+    """
+    List general ledger account groups, optionally filtered by status.
+    """
+    render(
+        ctx.client.list_account_groups(filter_by_status=list(filter_by_status) or None)
+    )
