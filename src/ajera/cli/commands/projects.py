@@ -121,18 +121,11 @@ def list_(
 def get(ctx: ClientContext, project_ids: tuple[int, ...]) -> None:
     """
     Get one or more projects by ID.
+
+    Returns the v2 flat bundle: projects, invoice groups, phases, and
+    resources (resources are included inline).
     """
     render(ctx.client.get_projects(list(project_ids)))
-
-
-@group.command(name="resources")
-@click.argument("project_ids", nargs=-1, required=True, type=int)
-@click.pass_obj
-def resources(ctx: ClientContext, project_ids: tuple[int, ...]) -> None:
-    """
-    Get one or more projects by ID, including budgeted phase resources.
-    """
-    render(ctx.client.get_projects_with_resources(list(project_ids)))
 
 
 @group.command(name="totals")
@@ -253,5 +246,63 @@ def update(
             location=location,
             billing_description=billing_description,
             notes=notes,
+        )
+    )
+
+
+@group.command(name="create")
+@click.argument("description", type=str)
+@click.option(
+    "--billing-type", required=True, help="Billing type, e.g. TimeAndExpense."
+)
+@click.option("--rate-table-key", required=True, type=int, help="Rate table key.")
+@click.option(
+    "--client-key",
+    required=True,
+    type=int,
+    help="Client key for the project's invoice group.",
+)
+@click.option(
+    "--invoice-format-key",
+    required=True,
+    type=int,
+    help="Invoice format key for the project's invoice group.",
+)
+@click.option("--company-key", type=int, default=1, help="Company key (default 1).")
+@click.option(
+    "--invoice-group-description",
+    default=None,
+    help="Description for the created invoice group (defaults to the project name).",
+)
+@click.option(
+    "--phase-description",
+    default=None,
+    help="Description for the created phase (defaults to the project description).",
+)
+@click.pass_obj
+def create(
+    ctx: ClientContext,
+    description: str,
+    billing_type: str,
+    rate_table_key: int,
+    client_key: int,
+    invoice_format_key: int,
+    company_key: int,
+    invoice_group_description: str | None,
+    phase_description: str | None,
+) -> None:
+    """
+    Create a new project (with one invoice group and one phase).
+    """
+    render(
+        ctx.client.create_project(
+            description,
+            billing_type=billing_type,
+            rate_table_key=rate_table_key,
+            client_key=client_key,
+            invoice_format_key=invoice_format_key,
+            company_key=company_key,
+            invoice_group_description=invoice_group_description,
+            phase_description=phase_description,
         )
     )

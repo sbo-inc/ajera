@@ -70,10 +70,6 @@ from ajera.schemas.fringe import (
     ListFringesResponse,
 )
 from ajera.schemas.project import (
-    GetProjects,
-    GetProjectsArguments,
-    GetProjectsWithResources,
-    GetProjectsWithResourcesResponse,
     GetProjectTemplates,
     GetProjectTemplatesArguments,
     GetProjectTotals,
@@ -88,15 +84,26 @@ from ajera.schemas.project import (
     ListProjectTypesArguments,
     ListProjectTypesResponse,
     Project,
-    ProjectDetails,
     ProjectTemplate,
     ProjectTemplateDetails,
     ProjectTotalsDetails,
     ProjectType,
-    UpdatedProjectResult,
-    UpdateProjects,
-    UpdateProjectsArguments,
-    UpdateProjectsResponse,
+)
+from ajera.schemas.project_v2 import (
+    CreateProjects,
+    CreateProjectsArguments,
+    CreateProjectsResponse,
+    GetProjectsArgumentsV2,
+    GetProjectsResponseV2,
+    GetProjectsV2,
+    InvoiceGroupCreate,
+    PhaseCreate,
+    ProjectBundle,
+    ProjectChange,
+    ProjectCreate,
+    UpdateProjectsArgumentsV2,
+    UpdateProjectsResponseV2,
+    UpdateProjectsV2,
 )
 from ajera.schemas.session import APISession, CreateAPISession
 from ajera.schemas.vendor import (
@@ -1104,7 +1111,9 @@ class AjeraClient:
         """
         List projects
 
-        Supported API Versions: 1
+        ListProjects is identical across API versions; this uses v2.
+
+        Supported API Versions: 1, 2
 
         Returns:
             list[Project]: The list of projects.
@@ -1123,7 +1132,7 @@ class AjeraClient:
             filter_by_latest_modified_date=filter_by_latest_modified_date,
         )
 
-        request.session_token = self.get_session_token(api_version=1)
+        request.session_token = self.get_session_token(api_version=2)
         data = self._post(request)
 
         # Simplify the response structure for easier consumption
@@ -1135,51 +1144,27 @@ class AjeraClient:
     # METHOD: get_projects
     # -------------------------------------------------------------------------
 
-    def get_projects(self, project_ids: list[int]) -> list[ProjectDetails]:
+    def get_projects(self, project_ids: list[int]) -> ProjectBundle:
         """
-        Get project(s) details by ID
+        Get project(s) by ID, with phases, invoice groups, and resources
 
-        Supported API Versions: 1
+        Uses v2, which returns a flat bundle of parallel arrays (projects,
+        invoice groups, phases, resources) linked by foreign keys. Resources
+        are included inline, so there is no separate "with resources" call.
+
+        Supported API Versions: 2
 
         Returns:
-            list[ProjectDetails]: A list of projects with the specified IDs.
+            ProjectBundle: The projects and their related records.
         """
-        request = GetProjects()
-        request.session_token = self.get_session_token(api_version=1)
-        request.method_arguments = GetProjectsArguments(requested_projects=project_ids)
+        request = GetProjectsV2()
+        request.session_token = self.get_session_token(api_version=2)
+        request.method_arguments = GetProjectsArgumentsV2(
+            requested_projects=project_ids
+        )
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
-        content: list[Any] = cast(dict, data["Content"]).pop("Projects", [])
-
-        return [ProjectDetails.model_validate(p) for p in content]
-
-    # -------------------------------------------------------------------------
-    # METHOD: get_projects_with_resources
-    # -------------------------------------------------------------------------
-
-    def get_projects_with_resources(
-        self, project_ids: list[int]
-    ) -> list[ProjectDetails]:
-        """
-        Get project(s) details by ID, including budgeted resources on phases
-
-        Supported API Versions: 1
-
-        Returns:
-            list[ProjectDetails]: A list of projects with phase resources.
-        """
-        request = GetProjectsWithResources()
-        request.session_token = self.get_session_token(api_version=1)
-        request.method_arguments = GetProjectsArguments(requested_projects=project_ids)
-        data = self._post(request)
-
-        # Simplify the response structure for easier consumption
-        content: list[Any] = cast(dict, data["Content"]).pop("Projects", [])
-
-        return GetProjectsWithResourcesResponse.model_validate(
-            {"Content": content}
-        ).content
+        return GetProjectsResponseV2.model_validate(data).content
 
     # -------------------------------------------------------------------------
     # METHOD: get_project_totals
@@ -1327,66 +1312,119 @@ class AjeraClient:
         location: str | None = None,
         billing_description: str | None = None,
         notes: str | None = None,
-    ) -> UpdatedProjectResult:
+    ) -> ProjectBundle:
         """
         Update simple, single-line fields on one project.
 
-        This is a convenience facade over the batch UpdateProjects API. It
-        fetches the current record via GetProjects to use as the baseline,
-        applies only the provided (non-None) fields to a copy, and submits the
-        baseline and modified records as the API's unchanged/updated pair. A
-        field left as None is unchanged.
+        This is a convenience facade over the v2 UpdateProjects API. It fetches
+        the current project bundle via GetProjects to send back as the
+        unchanged baseline, and submits only the provided (non-None) fields as
+        the changed delta. A field left as None is unchanged.
 
-        Structural data (phases, invoice groups, resources, contract amounts,
-        contacts) is intentionally not editable here; manage those in Ajera
-        directly.
+        Structural data (phases, invoice groups, resources, contract amounts)
+        is intentionally not editable here; manage those in Ajera directly.
 
-        If the requested edits leave the record unchanged (e.g. no fields
-        given, or values identical to the current ones), the current record is
-        returned without calling the API, which would otherwise reject the
-        request with "No valid changes to this object exist."
+        If no fields are provided, the current bundle is returned without
+        calling the update API.
 
-        Supported API Versions: 1
+        Supported API Versions: 2
 
         Returns:
-            UpdatedProjectResult: The resulting project record.
+            ProjectBundle: The updated project bundle.
         """
-        # Fetch the current record to use as the unchanged baseline.
-        projects = self.get_projects([project_key])
-        if not projects:
+        # Fetch the current bundle to send back verbatim as the baseline.
+        get_request = GetProjectsV2()
+        get_request.session_token = self.get_session_token(api_version=2)
+        get_request.method_arguments = GetProjectsArgumentsV2(
+            requested_projects=[project_key]
+        )
+        baseline = self._post(get_request)
+        bundle: dict[str, Any] = cast(dict, baseline["Content"])
+        if not bundle.get("Projects"):
             raise ValueError(f"No project found with key {project_key}")
-        baseline = projects[0]
 
-        # Apply the requested edits to a copy, one property at a time.
-        modified = baseline.model_copy(deep=True)
-        if description is not None:
-            modified.description = description
-        if project_id is not None:
-            modified.id = project_id
-        if location is not None:
-            modified.location = location
-        if billing_description is not None:
-            modified.billing_description = billing_description
-        if notes is not None:
-            modified.notes = notes
-
-        # Nothing actually changed: return the current record rather than
-        # letting the API reject a no-op update.
-        if modified == baseline:
-            return UpdatedProjectResult.model_validate(
-                baseline.model_dump(by_alias=True)
+        # Nothing to change: return the current bundle without calling update.
+        if all(
+            v is None
+            for v in (
+                description,
+                project_id,
+                location,
+                billing_description,
+                notes,
             )
+        ):
+            return GetProjectsResponseV2.model_validate(baseline).content
 
-        request = UpdateProjects(
-            method_arguments=UpdateProjectsArguments(
-                updated_projects=[modified],
-                unchanged_projects=[baseline],
+        change = ProjectChange(
+            project_key=project_key,
+            description=description,
+            id=project_id,
+            location=location,
+            billing_description=billing_description,
+            notes=notes,
+        )
+
+        request = UpdateProjectsV2(
+            method_arguments=UpdateProjectsArgumentsV2(
+                updated_projects=[change],
+                unchanged_projects=bundle,
             )
         )
-        request.session_token = self.get_session_token(api_version=1)
+        request.session_token = self.get_session_token(api_version=2)
         data = self._post(request)
 
-        results = UpdateProjectsResponse.model_validate(data).content.projects
-        if not results:
-            raise Exception("UpdateProjects returned no project records")
-        return results[0]
+        return UpdateProjectsResponseV2.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: create_project
+    # -------------------------------------------------------------------------
+
+    def create_project(
+        self,
+        description: str,
+        *,
+        billing_type: str,
+        rate_table_key: int,
+        client_key: int,
+        invoice_format_key: int,
+        company_key: int | None = 1,
+        invoice_group_description: str | None = None,
+        phase_description: str | None = None,
+    ) -> ProjectBundle:
+        """
+        Create a new project (with one invoice group and one phase).
+
+        Uses the v2 CreateProjects API with CreateType "Project". A project
+        cannot be created on its own, so a single invoice group (billed to
+        `client_key` with `invoice_format_key`) and a single phase are created
+        alongside it. The invoice group and phase descriptions default to the
+        project description (both are required and cannot be empty).
+
+        Supported API Versions: 2
+
+        Returns:
+            ProjectBundle: The created project bundle.
+        """
+        request = CreateProjects(
+            method_arguments=CreateProjectsArguments(
+                project=ProjectCreate(
+                    description=description,
+                    billing_type=billing_type,
+                    rate_table_key=rate_table_key,
+                    company_key=company_key,
+                ),
+                invoice_groups=[
+                    InvoiceGroupCreate(
+                        description=invoice_group_description or description,
+                        client_key=client_key,
+                        invoice_format_key=invoice_format_key,
+                    )
+                ],
+                phases=[PhaseCreate(description=phase_description or description)],
+            )
+        )
+        request.session_token = self.get_session_token(api_version=2)
+        data = self._post(request)
+
+        return CreateProjectsResponse.model_validate(data).content
