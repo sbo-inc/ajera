@@ -132,6 +132,21 @@ from ajera.schemas.vendor import (
     VendorDetails,
     VendorType,
 )
+from ajera.schemas.vendor_invoice import (
+    CreateVendorInvoices,
+    CreateVendorInvoicesArguments,
+    CreateVendorInvoicesResponse,
+    GetVendorInvoices,
+    GetVendorInvoicesArguments,
+    GetVendorInvoicesResponse,
+    ListVendorInvoices,
+    ListVendorInvoicesArguments,
+    ListVendorInvoicesResponse,
+    VendorInvoice,
+    VendorInvoiceBundle,
+    VendorInvoiceCreate,
+    VendorInvoiceLineItemCreate,
+)
 
 logger = logging.getLogger("ajera")
 console_handler = logging.StreamHandler()
@@ -1098,6 +1113,143 @@ class AjeraClient:
         if not results:
             raise Exception("UpdateVendors returned no vendor records")
         return results[0]
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_vendor_invoices
+    # -------------------------------------------------------------------------
+
+    def list_vendor_invoices(
+        self,
+        *,
+        filter_by_vendor: list[int] | None = None,
+        filter_by_company: int | None = None,
+        filter_by_vendor_type: int | None = None,
+        filter_by_paid: bool | None = None,
+        filter_by_unpaid: bool | None = None,
+        filter_by_voided: bool | None = None,
+        filter_by_earliest_invoice_date: str | None = None,
+        filter_by_latest_invoice_date: str | None = None,
+        filter_by_earliest_accounting_date: str | None = None,
+        filter_by_latest_accounting_date: str | None = None,
+        filter_by_earliest_invoice_date_to_pay: str | None = None,
+        filter_by_latest_date_to_pay: str | None = None,
+        filter_by_greater_than_amount: float | None = None,
+        filter_by_less_than_amount: float | None = None,
+        filter_by_equal_to_amount: float | None = None,
+    ) -> list[VendorInvoice]:
+        """
+        List vendor invoices
+
+        Supported API Versions: 2
+
+        Returns:
+            list[VendorInvoice]: The matching vendor invoice headers.
+        """
+        request = ListVendorInvoices()
+        request.method_arguments = ListVendorInvoicesArguments(
+            filter_by_vendor=filter_by_vendor,
+            filter_by_company=filter_by_company,
+            filter_by_vendor_type=filter_by_vendor_type,
+            filter_by_paid=filter_by_paid,
+            filter_by_unpaid=filter_by_unpaid,
+            filter_by_voided=filter_by_voided,
+            filter_by_earliest_invoice_date=filter_by_earliest_invoice_date,
+            filter_by_latest_invoice_date=filter_by_latest_invoice_date,
+            filter_by_earliest_accounting_date=filter_by_earliest_accounting_date,
+            filter_by_latest_accounting_date=filter_by_latest_accounting_date,
+            filter_by_earliest_invoice_date_to_pay=(
+                filter_by_earliest_invoice_date_to_pay
+            ),
+            filter_by_latest_date_to_pay=filter_by_latest_date_to_pay,
+            filter_by_greater_than_amount=filter_by_greater_than_amount,
+            filter_by_less_than_amount=filter_by_less_than_amount,
+            filter_by_equal_to_amount=filter_by_equal_to_amount,
+        )
+
+        request.session_token = self.get_session_token(api_version=2)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption. The list call
+        # also returns an (empty) VendorInvoicesDetails array, which we drop.
+        data["Content"] = cast(dict, data["Content"]).pop("VendorInvoices", [])
+
+        return ListVendorInvoicesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: get_vendor_invoices
+    # -------------------------------------------------------------------------
+
+    def get_vendor_invoices(self, invoice_ids: list[int]) -> VendorInvoiceBundle:
+        """
+        Get vendor invoice(s) by key, with their line items
+
+        Returns a bundle of invoice headers and line items; line items are
+        linked to their header by VendorInvoiceKey.
+
+        Supported API Versions: 2
+
+        Returns:
+            VendorInvoiceBundle: The invoice headers and line items.
+        """
+        request = GetVendorInvoices()
+        request.session_token = self.get_session_token(api_version=2)
+        request.method_arguments = GetVendorInvoicesArguments(
+            requested_vendor_invoices=invoice_ids
+        )
+        data = self._post(request)
+
+        return GetVendorInvoicesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: create_vendor_invoice
+    # -------------------------------------------------------------------------
+
+    def create_vendor_invoice(
+        self,
+        *,
+        vendor_key: int,
+        company_key: int,
+        amount: float,
+        line_items: list[VendorInvoiceLineItemCreate],
+        number: str | None = None,
+        description: str | None = None,
+        date: str | None = None,
+        accounting_date: str | None = None,
+        notes: str | None = None,
+    ) -> VendorInvoiceBundle:
+        """
+        Create a single vendor invoice with its line items.
+
+        Note: the API exposes no method to delete or void a vendor invoice, so
+        a created invoice is a permanent accounting record. `amount` should
+        equal the sum of the line item cost amounts.
+
+        Supported API Versions: 2
+
+        Returns:
+            VendorInvoiceBundle: The created invoice header and line items.
+        """
+        request = CreateVendorInvoices(
+            method_arguments=CreateVendorInvoicesArguments(
+                vendor_invoices=[
+                    VendorInvoiceCreate(
+                        vendor_key=vendor_key,
+                        company_key=company_key,
+                        amount=amount,
+                        line_items=line_items,
+                        number=number,
+                        description=description,
+                        date=date,
+                        accounting_date=accounting_date,
+                        notes=notes,
+                    )
+                ],
+            )
+        )
+        request.session_token = self.get_session_token(api_version=2)
+        data = self._post(request)
+
+        return CreateVendorInvoicesResponse.model_validate(data).content
 
     # -------------------------------------------------------------------------
     # METHOD: list_projects
