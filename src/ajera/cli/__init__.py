@@ -7,9 +7,7 @@ import requests
 from ajera.cli.commands import (
     clients,
     contacts,
-    deductions,
     employees,
-    fringes,
     projects,
     session,
     vendors,
@@ -54,8 +52,6 @@ for module in (
     contacts,
     vendors,
     projects,
-    deductions,
-    fringes,
 ):
     cli.add_command(module.group)
 

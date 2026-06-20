@@ -133,7 +133,10 @@ def get(ctx: ClientContext, project_ids: tuple[int, ...]) -> None:
 @click.pass_obj
 def totals(ctx: ClientContext, project_id: int) -> None:
     """
-    Get a single project's details enriched with financial totals.
+    Get a project's financial totals.
+
+    Returns the project's details enriched with project-level financial
+    totals.
     """
     render(ctx.client.get_project_totals(project_id))
 
@@ -156,7 +159,14 @@ def types(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
     )
 
 
-@group.command(name="templates")
+@group.group(name="templates")
+def templates() -> None:
+    """
+    List and inspect project templates.
+    """
+
+
+@templates.command(name="list")
 @click.option(
     "--company",
     "filter_by_company",
@@ -186,7 +196,7 @@ def types(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
     help="Filter by project type ID (repeatable).",
 )
 @click.pass_obj
-def templates(
+def templates_list(
     ctx: ClientContext,
     filter_by_company: tuple[int, ...],
     filter_by_status: tuple[str, ...],
@@ -206,10 +216,10 @@ def templates(
     )
 
 
-@group.command(name="get-templates")
+@templates.command(name="get")
 @click.argument("template_ids", nargs=-1, required=True, type=int)
 @click.pass_obj
-def get_templates(ctx: ClientContext, template_ids: tuple[int, ...]) -> None:
+def templates_get(ctx: ClientContext, template_ids: tuple[int, ...]) -> None:
     """
     Get one or more project templates by ID.
     """
@@ -292,7 +302,9 @@ def create(
     phase_description: str | None,
 ) -> None:
     """
-    Create a new project (with one invoice group and one phase).
+    Create a new project.
+
+    A project is created together with one invoice group and one phase.
     """
     render(
         ctx.client.create_project(

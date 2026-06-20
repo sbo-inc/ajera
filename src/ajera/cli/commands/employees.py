@@ -155,3 +155,35 @@ def types(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
     render(
         ctx.client.list_employee_types(filter_by_status=list(filter_by_status) or None)
     )
+
+
+@group.command(name="deductions")
+@click.option(
+    "--status",
+    "filter_by_status",
+    type=str,
+    multiple=True,
+    help="Filter by status value, e.g. Active or Inactive (repeatable).",
+)
+@click.pass_obj
+def deductions(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+    """
+    List deductions, optionally filtered by status.
+    """
+    render(ctx.client.list_deductions(filter_by_status=list(filter_by_status) or None))
+
+
+@group.command(name="fringes")
+@click.option(
+    "--status",
+    "filter_by_status",
+    type=str,
+    multiple=True,
+    help="Filter by status value, e.g. Active or Inactive (repeatable).",
+)
+@click.pass_obj
+def fringes(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+    """
+    List fringes, optionally filtered by status.
+    """
+    render(ctx.client.list_fringes(filter_by_status=list(filter_by_status) or None))
