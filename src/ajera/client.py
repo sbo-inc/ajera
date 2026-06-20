@@ -70,6 +70,23 @@ from ajera.schemas.fringe import (
     ListFringesResponse,
 )
 from ajera.schemas.session import APISession, CreateAPISession
+from ajera.schemas.vendor import (
+    GetVendors,
+    GetVendorsArguments,
+    ListVendors,
+    ListVendorsArguments,
+    ListVendorsResponse,
+    ListVendorTypes,
+    ListVendorTypesArguments,
+    ListVendorTypesResponse,
+    UpdatedVendorResult,
+    UpdateVendors,
+    UpdateVendorsArguments,
+    UpdateVendorsResponse,
+    Vendor,
+    VendorDetails,
+    VendorType,
+)
 
 logger = logging.getLogger("ajera")
 console_handler = logging.StreamHandler()
@@ -849,4 +866,190 @@ class AjeraClient:
         results = UpdateContactsResponse.model_validate(data).content.contacts
         if not results:
             raise Exception("UpdateContacts returned no contact records")
+        return results[0]
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_vendors
+    # -------------------------------------------------------------------------
+
+    def list_vendors(
+        self,
+        *,
+        filter_by_company: list[int] | None = None,
+        filter_by_status: list[str] | None = None,
+        filter_by_name_like: str | None = None,
+        filter_by_vendor_type: list[int] | None = None,
+        filter_by_earliest_modified_date: str | None = None,
+        filter_by_latest_modified_date: str | None = None,
+    ) -> list[Vendor]:
+        """
+        List vendors
+
+        Supported API Versions: 1
+
+        Returns:
+            list[Vendor]: The list of vendors.
+        """
+        request = ListVendors()
+        request.method_arguments = ListVendorsArguments(
+            filter_by_company=filter_by_company,
+            filter_by_status=filter_by_status,
+            filter_by_name_like=filter_by_name_like,
+            filter_by_vendor_type=filter_by_vendor_type,
+            filter_by_earliest_modified_date=filter_by_earliest_modified_date,
+            filter_by_latest_modified_date=filter_by_latest_modified_date,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("Vendors", [])
+
+        return ListVendorsResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: get_vendors
+    # -------------------------------------------------------------------------
+
+    def get_vendors(self, vendor_ids: list[int]) -> list[VendorDetails]:
+        """
+        Get vendor(s) details by ID
+
+        Supported API Versions: 1
+
+        Returns:
+            list[VendorDetails]: A list of vendors with the specified IDs.
+        """
+        request = GetVendors()
+        request.session_token = self.get_session_token(api_version=1)
+        request.method_arguments = GetVendorsArguments(requested_vendors=vendor_ids)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        content: list[Any] = cast(dict, data["Content"]).pop("Vendors", [])
+
+        return [VendorDetails.model_validate(v) for v in content]
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_vendor_types
+    # -------------------------------------------------------------------------
+
+    def list_vendor_types(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+        filter_by_is_credit_card: list[bool] | None = None,
+        filter_by_is_consultant: list[bool] | None = None,
+    ) -> list[VendorType]:
+        """
+        List vendor types
+
+        Supported API Versions: 1
+
+        Returns:
+            list[VendorType]: The list of vendor types.
+        """
+        request = ListVendorTypes()
+        request.method_arguments = ListVendorTypesArguments(
+            filter_by_status=filter_by_status,
+            filter_by_is_credit_card=filter_by_is_credit_card,
+            filter_by_is_consultant=filter_by_is_consultant,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("VendorTypes", [])
+
+        return ListVendorTypesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: update_vendor
+    # -------------------------------------------------------------------------
+
+    def update_vendor(
+        self,
+        vendor_key: int,
+        *,
+        name: str | None = None,
+        vendor_account_id: str | None = None,
+        email: str | None = None,
+        website: str | None = None,
+        primary_phone_number: str | None = None,
+        secondary_phone_number: str | None = None,
+        tertiary_phone_number: str | None = None,
+        fax_number: str | None = None,
+        notes: str | None = None,
+    ) -> UpdatedVendorResult:
+        """
+        Update simple, single-line fields on one vendor.
+
+        This is a convenience facade over the batch UpdateVendors API. It
+        fetches the current record via GetVendors to use as the baseline,
+        applies only the provided (non-None) fields to a copy, and submits the
+        baseline and modified records as the API's unchanged/updated pair. A
+        field left as None is unchanged.
+
+        Structural data (contacts, addresses, 1099/W-9 settings, payment
+        scheduling) is intentionally not editable here; manage those in Ajera
+        directly.
+
+        If the requested edits leave the record unchanged (e.g. no fields
+        given, or values identical to the current ones), the current record is
+        returned without calling the API, which would otherwise reject the
+        request with "No valid changes to this object exist."
+
+        Supported API Versions: 1
+
+        Returns:
+            UpdatedVendorResult: The resulting vendor record.
+        """
+        # Fetch the current record to use as the unchanged baseline.
+        vendors = self.get_vendors([vendor_key])
+        if not vendors:
+            raise ValueError(f"No vendor found with key {vendor_key}")
+        baseline = vendors[0]
+
+        # Apply the requested edits to a copy, one property at a time.
+        modified = baseline.model_copy(deep=True)
+        if name is not None:
+            modified.name = name
+        if vendor_account_id is not None:
+            modified.vendor_account_id = vendor_account_id
+        if email is not None:
+            modified.email = email
+        if website is not None:
+            modified.website = website
+        if primary_phone_number is not None:
+            modified.primary_phone_number = primary_phone_number
+        if secondary_phone_number is not None:
+            modified.secondary_phone_number = secondary_phone_number
+        if tertiary_phone_number is not None:
+            modified.tertiary_phone_number = tertiary_phone_number
+        if fax_number is not None:
+            modified.fax_number = fax_number
+        if notes is not None:
+            modified.notes = notes
+
+        # Nothing actually changed: return the current record rather than
+        # letting the API reject a no-op update.
+        if modified == baseline:
+            return UpdatedVendorResult.model_validate(
+                baseline.model_dump(by_alias=True)
+            )
+
+        request = UpdateVendors(
+            method_arguments=UpdateVendorsArguments(
+                updated_vendors=[modified],
+                unchanged_vendors=[baseline],
+            )
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        results = UpdateVendorsResponse.model_validate(data).content.vendors
+        if not results:
+            raise Exception("UpdateVendors returned no vendor records")
         return results[0]
