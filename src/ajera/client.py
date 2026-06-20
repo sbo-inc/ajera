@@ -23,6 +23,23 @@ from ajera.schemas.client import (
     UpdateClientsResponse,
     UpdatedClientResult,
 )
+from ajera.schemas.contact import (
+    Contact,
+    ContactDetails,
+    ContactType,
+    GetContacts,
+    GetContactsArguments,
+    ListContacts,
+    ListContactsArguments,
+    ListContactsResponse,
+    ListContactTypes,
+    ListContactTypesArguments,
+    ListContactTypesResponse,
+    UpdateContacts,
+    UpdateContactsArguments,
+    UpdateContactsResponse,
+    UpdatedContactResult,
+)
 from ajera.schemas.deduction import (
     Deduction,
     ListDeductions,
@@ -642,4 +659,194 @@ class AjeraClient:
         results = UpdateClientsResponse.model_validate(data).content.clients
         if not results:
             raise Exception("UpdateClients returned no client records")
+        return results[0]
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_contacts
+    # -------------------------------------------------------------------------
+
+    def list_contacts(
+        self,
+        *,
+        filter_by_company: list[int] | None = None,
+        filter_by_status: list[str] | None = None,
+        filter_by_text: str | None = None,
+        filter_by_contact_type: list[int] | None = None,
+        filter_by_earliest_modified_date: str | None = None,
+        filter_by_latest_modified_date: str | None = None,
+    ) -> list[Contact]:
+        """
+        List contacts
+
+        Supported API Versions: 1
+
+        Returns:
+            list[Contact]: The list of contacts.
+        """
+        request = ListContacts()
+        request.method_arguments = ListContactsArguments(
+            filter_by_company=filter_by_company,
+            filter_by_status=filter_by_status,
+            filter_by_text=filter_by_text,
+            filter_by_contact_type=filter_by_contact_type,
+            filter_by_earliest_modified_date=filter_by_earliest_modified_date,
+            filter_by_latest_modified_date=filter_by_latest_modified_date,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("Contacts", [])
+
+        return ListContactsResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: get_contacts
+    # -------------------------------------------------------------------------
+
+    def get_contacts(self, contact_ids: list[int]) -> list[ContactDetails]:
+        """
+        Get contact(s) details by ID
+
+        Supported API Versions: 1
+
+        Returns:
+            list[ContactDetails]: A list of contacts with the specified IDs.
+        """
+        request = GetContacts()
+        request.session_token = self.get_session_token(api_version=1)
+        request.method_arguments = GetContactsArguments(requested_contacts=contact_ids)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        content: list[Any] = cast(dict, data["Content"]).pop("Contacts", [])
+
+        return [ContactDetails.model_validate(c) for c in content]
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_contact_types
+    # -------------------------------------------------------------------------
+
+    def list_contact_types(
+        self,
+        *,
+        filter_by_status: list[str] | None = None,
+    ) -> list[ContactType]:
+        """
+        List contact types
+
+        Supported API Versions: 1
+
+        Returns:
+            list[ContactType]: The list of contact types.
+        """
+        request = ListContactTypes()
+        request.method_arguments = ListContactTypesArguments(
+            filter_by_status=filter_by_status,
+        )
+
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        # Simplify the response structure for easier consumption
+        data["Content"] = cast(dict, data["Content"]).pop("ContactTypes", [])
+
+        return ListContactTypesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: update_contact
+    # -------------------------------------------------------------------------
+
+    def update_contact(
+        self,
+        contact_key: int,
+        *,
+        first_name: str | None = None,
+        middle_name: str | None = None,
+        last_name: str | None = None,
+        title: str | None = None,
+        company: str | None = None,
+        email: str | None = None,
+        website: str | None = None,
+        primary_phone_number: str | None = None,
+        secondary_phone_number: str | None = None,
+        tertiary_phone_number: str | None = None,
+        fax_number: str | None = None,
+        notes: str | None = None,
+    ) -> UpdatedContactResult:
+        """
+        Update simple, single-line fields on one contact.
+
+        This is a convenience facade over the batch UpdateContacts API. It
+        fetches the current record via GetContacts to use as the baseline,
+        applies only the provided (non-None) fields to a copy, and submits the
+        baseline and modified records as the API's unchanged/updated pair. A
+        field left as None is unchanged.
+
+        Structural data (addresses, contact type) is intentionally not editable
+        here; manage those in Ajera directly.
+
+        If the requested edits leave the record unchanged (e.g. no fields
+        given, or values identical to the current ones), the current record is
+        returned without calling the API, which would otherwise reject the
+        request with "No valid changes to this object exist."
+
+        Supported API Versions: 1
+
+        Returns:
+            UpdatedContactResult: The resulting contact record.
+        """
+        # Fetch the current record to use as the unchanged baseline.
+        contacts = self.get_contacts([contact_key])
+        if not contacts:
+            raise ValueError(f"No contact found with key {contact_key}")
+        baseline = contacts[0]
+
+        # Apply the requested edits to a copy, one property at a time.
+        modified = baseline.model_copy(deep=True)
+        if first_name is not None:
+            modified.first_name = first_name
+        if middle_name is not None:
+            modified.middle_name = middle_name
+        if last_name is not None:
+            modified.last_name = last_name
+        if title is not None:
+            modified.title = title
+        if company is not None:
+            modified.company = company
+        if email is not None:
+            modified.email = email
+        if website is not None:
+            modified.website = website
+        if primary_phone_number is not None:
+            modified.primary_phone_number = primary_phone_number
+        if secondary_phone_number is not None:
+            modified.secondary_phone_number = secondary_phone_number
+        if tertiary_phone_number is not None:
+            modified.tertiary_phone_number = tertiary_phone_number
+        if fax_number is not None:
+            modified.fax_number = fax_number
+        if notes is not None:
+            modified.notes = notes
+
+        # Nothing actually changed: return the current record rather than
+        # letting the API reject a no-op update.
+        if modified == baseline:
+            return UpdatedContactResult.model_validate(
+                baseline.model_dump(by_alias=True)
+            )
+
+        request = UpdateContacts(
+            method_arguments=UpdateContactsArguments(
+                updated_contacts=[modified],
+                unchanged_contacts=[baseline],
+            )
+        )
+        request.session_token = self.get_session_token(api_version=1)
+        data = self._post(request)
+
+        results = UpdateContactsResponse.model_validate(data).content.contacts
+        if not results:
+            raise Exception("UpdateContacts returned no contact records")
         return results[0]
