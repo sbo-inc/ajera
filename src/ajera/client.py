@@ -22,6 +22,10 @@ console_handler = logging.StreamHandler()
 console_handler.setFormatter(logging.Formatter("ajera: %(message)s"))
 logger.addHandler(console_handler)
 
+# =============================================================================
+# CLASS: AjeraClient
+# =============================================================================
+
 
 class AjeraClient:
     """
