@@ -203,9 +203,9 @@ class AjeraClient:
     https://help.deltek.com/Product/Ajera/api/index.html
     """
 
-    url: str
-    username: str
-    password: str
+    url: str | None
+    username: str | None
+    password: str | None
 
     def __init__(
         self,
@@ -230,25 +230,10 @@ class AjeraClient:
         else:
             logger.setLevel(logging.CRITICAL)
 
-        if not url:
-            url = os.environ.get("AJERA_API_URL", None)
-        if not url:
-            raise ValueError("No URL provided")
-
-        if not username:
-            username = os.environ.get("AJERA_API_USERNAME", None)
-        if not username:
-            raise ValueError("No username provided")
-
-        if not password:
-            password = os.environ.get("AJERA_API_PASSWORD", None)
-        if not password:
-            raise ValueError("No password provided")
-
-        # Assign to instance variables
-        self.url = url
-        self.username = username
-        self.password = password
+        # Connection configuration
+        self.url = url or os.environ.get("AJERA_API_URL")
+        self.username = username or os.environ.get("AJERA_API_USERNAME")
+        self.password = password or os.environ.get("AJERA_API_PASSWORD")
 
         # Create the client instance
         self._session = requests.Session()
@@ -260,6 +245,21 @@ class AjeraClient:
     @property
     def session(self) -> requests.Session:
         return self._session
+
+    # -------------------------------------------------------------------------
+    # METHOD: _require_url
+    # -------------------------------------------------------------------------
+
+    def _require_url(self) -> str:
+        """
+        Return the configured API URL, raising if it was never set.
+
+        Returns:
+            str: The base URL of the API.
+        """
+        if not self.url:
+            raise ValueError("No URL provided")
+        return self.url
 
     # -------------------------------------------------------------------------
     # METHOD: _post
@@ -281,7 +281,7 @@ class AjeraClient:
             dict[str, Any]: The decoded JSON response body.
         """
         response = self.session.post(
-            url=self.url,
+            url=self._require_url(),
             data=request.model_dump_json(
                 exclude_none=True, by_alias=True, exclude=exclude
             ),
@@ -316,15 +316,23 @@ class AjeraClient:
         if api_version in self._session_tokens:
             return self._session_tokens[api_version]
 
+        username = self.username
+        password = self.password
+        if not username or not password:
+            raise ValueError("No username or password provided")
+
         request = CreateAPISession(
-            username=self.username,
-            password=self.password,
+            username=username,
+            password=password,
             api_version=api_version,
         )
 
-        # Use a new client for each session request
-        response = requests.post(
-            url=self.url,
+        # Use the session so custom headers (e.g. an Authorization header set
+        # at construction) are sent on the login request too; the session token
+        # is carried in the body, not headers, so there is no reason to bypass
+        # the session here.
+        response = self.session.post(
+            url=self._require_url(),
             data=request.model_dump_json(exclude_none=True, by_alias=True),
         )
         response.raise_for_status()
