@@ -2,6 +2,7 @@ import click
 
 from ajera.cli.context import ClientContext
 from ajera.cli.group import CommonClickGroup
+from ajera.cli.options import status_option
 from ajera.cli.output import render
 
 
@@ -142,21 +143,16 @@ def totals(ctx: ClientContext, project_id: int) -> None:
 
 
 @group.command(name="types")
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value, e.g. Active or Inactive (repeatable).",
-)
+@status_option
 @click.pass_obj
-def types(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+def types(
+    ctx: ClientContext,
+    filter_by_status: tuple[str, ...],
+) -> None:
     """
-    List project types, optionally filtered by status.
+    List project types (active only by default).
     """
-    render(
-        ctx.client.list_project_types(filter_by_status=list(filter_by_status) or None)
-    )
+    render(ctx.client.list_project_types(filter_by_status=list(filter_by_status)))
 
 
 @group.group(name="templates")

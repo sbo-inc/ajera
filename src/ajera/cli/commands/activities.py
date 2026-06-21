@@ -1,17 +1,12 @@
 import click
 
 from ajera.cli.context import ClientContext
+from ajera.cli.options import status_option
 from ajera.cli.output import render
 
 
 @click.command(name="activities")
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value, e.g. Active or Inactive (repeatable).",
-)
+@status_option
 @click.option(
     "--description-like",
     "filter_by_description_like",
@@ -26,11 +21,11 @@ def group(
     filter_by_description_like: str | None,
 ) -> None:
     """
-    List activities, optionally filtered.
+    List activities (active only by default).
     """
     render(
         ctx.client.list_activities(
-            filter_by_status=list(filter_by_status) or None,
+            filter_by_status=list(filter_by_status),
             filter_by_description_like=filter_by_description_like,
         )
     )

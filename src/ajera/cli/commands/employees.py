@@ -2,6 +2,7 @@ import click
 
 from ajera.cli.context import ClientContext
 from ajera.cli.group import CommonClickGroup
+from ajera.cli.options import status_option
 from ajera.cli.output import render
 
 
@@ -20,13 +21,7 @@ def group() -> None:
     multiple=True,
     help="Filter by company ID (repeatable).",
 )
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value (repeatable).",
-)
+@status_option
 @click.option(
     "--name-like",
     "filter_by_name_like",
@@ -66,12 +61,12 @@ def list_(
     filter_by_latest_modified_date: str | None,
 ) -> None:
     """
-    List employees, optionally filtered.
+    List employees (active only by default).
     """
     render(
         ctx.client.list_employees(
             filter_by_company=list(filter_by_company) or None,
-            filter_by_status=list(filter_by_status) or None,
+            filter_by_status=list(filter_by_status),
             filter_by_name_like=filter_by_name_like,
             filter_by_employee_type=list(filter_by_employee_type) or None,
             filter_by_earliest_modified_date=filter_by_earliest_modified_date,
@@ -140,100 +135,78 @@ def update(
 
 
 @group.command(name="types")
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value, e.g. Active or Inactive (repeatable).",
-)
+@status_option
 @click.pass_obj
-def types(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+def types(
+    ctx: ClientContext,
+    filter_by_status: tuple[str, ...],
+) -> None:
     """
     List employee types, optionally filtered by status.
     """
-    render(
-        ctx.client.list_employee_types(filter_by_status=list(filter_by_status) or None)
-    )
+    render(ctx.client.list_employee_types(filter_by_status=list(filter_by_status)))
 
 
 @group.command(name="deductions")
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value, e.g. Active or Inactive (repeatable).",
-)
+@status_option
 @click.pass_obj
-def deductions(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+def deductions(
+    ctx: ClientContext,
+    filter_by_status: tuple[str, ...],
+) -> None:
     """
     List deductions, optionally filtered by status.
     """
-    render(ctx.client.list_deductions(filter_by_status=list(filter_by_status) or None))
+    render(ctx.client.list_deductions(filter_by_status=list(filter_by_status)))
 
 
 @group.command(name="fringes")
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value, e.g. Active or Inactive (repeatable).",
-)
+@status_option
 @click.pass_obj
-def fringes(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+def fringes(
+    ctx: ClientContext,
+    filter_by_status: tuple[str, ...],
+) -> None:
     """
     List fringes, optionally filtered by status.
     """
-    render(ctx.client.list_fringes(filter_by_status=list(filter_by_status) or None))
+    render(ctx.client.list_fringes(filter_by_status=list(filter_by_status)))
 
 
 @group.command(name="pays")
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value, e.g. Active or Inactive (repeatable).",
-)
+@status_option
 @click.pass_obj
-def pays(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+def pays(
+    ctx: ClientContext,
+    filter_by_status: tuple[str, ...],
+) -> None:
     """
     List pay types, optionally filtered by status.
     """
-    render(ctx.client.list_pays(filter_by_status=list(filter_by_status) or None))
+    render(ctx.client.list_pays(filter_by_status=list(filter_by_status)))
 
 
 @group.command(name="payroll-taxes")
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value, e.g. Active or Inactive (repeatable).",
-)
+@status_option
 @click.pass_obj
-def payroll_taxes(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+def payroll_taxes(
+    ctx: ClientContext,
+    filter_by_status: tuple[str, ...],
+) -> None:
     """
     List payroll taxes, optionally filtered by status.
     """
-    render(
-        ctx.client.list_payroll_taxes(filter_by_status=list(filter_by_status) or None)
-    )
+    render(ctx.client.list_payroll_taxes(filter_by_status=list(filter_by_status)))
 
 
 @group.command(name="wage-tables")
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value, e.g. Active or Inactive (repeatable).",
-)
+@status_option
 @click.pass_obj
-def wage_tables(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+def wage_tables(
+    ctx: ClientContext,
+    filter_by_status: tuple[str, ...],
+) -> None:
     """
     List wage tables, optionally filtered by status.
     """
-    render(ctx.client.list_wage_tables(filter_by_status=list(filter_by_status) or None))
+    render(ctx.client.list_wage_tables(filter_by_status=list(filter_by_status)))

@@ -2,6 +2,7 @@ import click
 
 from ajera.cli.context import ClientContext
 from ajera.cli.group import CommonClickGroup
+from ajera.cli.options import status_option
 from ajera.cli.output import render
 
 
@@ -20,13 +21,7 @@ def group() -> None:
     multiple=True,
     help="Filter by account group key (repeatable).",
 )
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value, e.g. Active or Inactive (repeatable).",
-)
+@status_option
 @click.option(
     "--type",
     "filter_by_type",
@@ -45,12 +40,12 @@ def list_(
     filter_by_type: tuple[str, ...],
 ) -> None:
     """
-    List general ledger accounts, optionally filtered.
+    List general ledger accounts (active only by default).
     """
     render(
         ctx.client.list_ledger_accounts(
             filter_by_account_group=list(filter_by_account_group) or None,
-            filter_by_status=list(filter_by_status) or None,
+            filter_by_status=list(filter_by_status),
             filter_by_type=list(filter_by_type) or None,
         )
     )
@@ -94,18 +89,13 @@ def get(
 
 
 @group.command(name="account-groups")
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value, e.g. Active or Inactive (repeatable).",
-)
+@status_option
 @click.pass_obj
-def account_groups(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+def account_groups(
+    ctx: ClientContext,
+    filter_by_status: tuple[str, ...],
+) -> None:
     """
-    List general ledger account groups, optionally filtered by status.
+    List general ledger account groups (active only by default).
     """
-    render(
-        ctx.client.list_account_groups(filter_by_status=list(filter_by_status) or None)
-    )
+    render(ctx.client.list_account_groups(filter_by_status=list(filter_by_status)))

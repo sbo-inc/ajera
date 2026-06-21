@@ -2,6 +2,7 @@ import click
 
 from ajera.cli.context import ClientContext
 from ajera.cli.group import CommonClickGroup
+from ajera.cli.options import status_option
 from ajera.cli.output import render
 from ajera.schemas.vendor_invoice import VendorInvoiceLineItemCreate
 
@@ -21,13 +22,7 @@ def group() -> None:
     multiple=True,
     help="Filter by company ID (repeatable).",
 )
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value (repeatable).",
-)
+@status_option
 @click.option(
     "--name-like",
     "filter_by_name_like",
@@ -67,12 +62,12 @@ def list_(
     filter_by_latest_modified_date: str | None,
 ) -> None:
     """
-    List vendors, optionally filtered.
+    List vendors (active only by default).
     """
     render(
         ctx.client.list_vendors(
             filter_by_company=list(filter_by_company) or None,
-            filter_by_status=list(filter_by_status) or None,
+            filter_by_status=list(filter_by_status),
             filter_by_name_like=filter_by_name_like,
             filter_by_vendor_type=list(filter_by_vendor_type) or None,
             filter_by_earliest_modified_date=filter_by_earliest_modified_date,
@@ -138,13 +133,7 @@ def update(
 
 
 @group.command(name="types")
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value, e.g. Active or Inactive (repeatable).",
-)
+@status_option
 @click.option(
     "--credit-card",
     "filter_by_is_credit_card",
@@ -167,11 +156,11 @@ def types(
     filter_by_is_consultant: tuple[bool, ...],
 ) -> None:
     """
-    List vendor types, optionally filtered.
+    List vendor types (active only by default).
     """
     render(
         ctx.client.list_vendor_types(
-            filter_by_status=list(filter_by_status) or None,
+            filter_by_status=list(filter_by_status),
             filter_by_is_credit_card=list(filter_by_is_credit_card) or None,
             filter_by_is_consultant=list(filter_by_is_consultant) or None,
         )

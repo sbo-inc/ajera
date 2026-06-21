@@ -2,6 +2,7 @@ import click
 
 from ajera.cli.context import ClientContext
 from ajera.cli.group import CommonClickGroup
+from ajera.cli.options import status_option
 from ajera.cli.output import render
 
 
@@ -20,13 +21,7 @@ def group() -> None:
     multiple=True,
     help="Filter by company ID (repeatable).",
 )
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value (repeatable).",
-)
+@status_option
 @click.option(
     "--text",
     "filter_by_text",
@@ -66,12 +61,12 @@ def list_(
     filter_by_latest_modified_date: str | None,
 ) -> None:
     """
-    List contacts, optionally filtered.
+    List contacts (active only by default).
     """
     render(
         ctx.client.list_contacts(
             filter_by_company=list(filter_by_company) or None,
-            filter_by_status=list(filter_by_status) or None,
+            filter_by_status=list(filter_by_status),
             filter_by_text=filter_by_text,
             filter_by_contact_type=list(filter_by_contact_type) or None,
             filter_by_earliest_modified_date=filter_by_earliest_modified_date,
@@ -146,18 +141,13 @@ def update(
 
 
 @group.command(name="types")
-@click.option(
-    "--status",
-    "filter_by_status",
-    type=str,
-    multiple=True,
-    help="Filter by status value, e.g. Active or Inactive (repeatable).",
-)
+@status_option
 @click.pass_obj
-def types(ctx: ClientContext, filter_by_status: tuple[str, ...]) -> None:
+def types(
+    ctx: ClientContext,
+    filter_by_status: tuple[str, ...],
+) -> None:
     """
-    List contact types, optionally filtered by status.
+    List contact types (active only by default).
     """
-    render(
-        ctx.client.list_contact_types(filter_by_status=list(filter_by_status) or None)
-    )
+    render(ctx.client.list_contact_types(filter_by_status=list(filter_by_status)))
