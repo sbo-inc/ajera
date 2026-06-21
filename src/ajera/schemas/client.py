@@ -421,17 +421,6 @@ class GetClients(GenericRequest[GetClientsArguments]):
 
 
 # =============================================================================
-# CLASS: GetClientsResponse
-# =============================================================================
-
-
-class GetClientsResponse(GenericResponse[list[ClientDetails]]):
-    """
-    Response schema for GetClients
-    """
-
-
-# =============================================================================
 # CLASS: ClientType
 # =============================================================================
 

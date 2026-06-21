@@ -38,8 +38,8 @@ class GenericRequest[T: BaseModel](GenericBaseModel):
         alias="SessionToken",
         description="Session token for authenticated requests.",
     )
-    method_arguments: T = Field(
-        default_factory=T.__init__,
+    method_arguments: T | None = Field(
+        default=None,
         alias="MethodArguments",
         description="Dictionary of method-specific arguments.",
     )

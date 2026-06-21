@@ -639,7 +639,7 @@ class GetEmployeesArguments(GenericBaseModel):
 
 class GetEmployees(GenericRequest[GetEmployeesArguments]):
     """
-    List Employees request body
+    Get Employees request body
     """
 
     method: Literal["GetEmployees"] = Field(
@@ -648,17 +648,6 @@ class GetEmployees(GenericRequest[GetEmployeesArguments]):
         description="API method name to invoke.",
         frozen=True,
     )
-
-
-# =============================================================================
-# CLASS: GetEmployeesResponse
-# =============================================================================
-
-
-class GetEmployeesResponse(GenericResponse[list[EmployeeDetails]]):
-    """
-    Response schema for GetEmployees
-    """
 
 
 # =============================================================================

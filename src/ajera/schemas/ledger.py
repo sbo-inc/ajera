@@ -320,14 +320,3 @@ class GetLedgerAccounts(GenericRequest[GetLedgerAccountsArguments]):
         description="API method name to invoke.",
         frozen=True,
     )
-
-
-# =============================================================================
-# CLASS: GetLedgerAccountsResponse
-# =============================================================================
-
-
-class GetLedgerAccountsResponse(GenericResponse[list[LedgerAccountDetails]]):
-    """
-    Response schema for GetLedgerAccounts
-    """

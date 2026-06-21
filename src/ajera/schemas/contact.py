@@ -375,17 +375,6 @@ class GetContacts(GenericRequest[GetContactsArguments]):
 
 
 # =============================================================================
-# CLASS: GetContactsResponse
-# =============================================================================
-
-
-class GetContactsResponse(GenericResponse[list[ContactDetails]]):
-    """
-    Response schema for GetContacts
-    """
-
-
-# =============================================================================
 # CLASS: ContactType
 # =============================================================================
 

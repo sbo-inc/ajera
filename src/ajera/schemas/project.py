@@ -1221,17 +1221,6 @@ class GetProjectTemplates(GenericRequest[GetProjectTemplatesArguments]):
 
 
 # =============================================================================
-# CLASS: GetProjectTemplatesResponse
-# =============================================================================
-
-
-class GetProjectTemplatesResponse(GenericResponse[list[ProjectTemplateDetails]]):
-    """
-    Response schema for GetProjectTemplates
-    """
-
-
-# =============================================================================
 # CLASS: GetProjectTotalsArguments
 # =============================================================================
 

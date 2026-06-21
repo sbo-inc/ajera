@@ -488,17 +488,6 @@ class GetVendors(GenericRequest[GetVendorsArguments]):
 
 
 # =============================================================================
-# CLASS: GetVendorsResponse
-# =============================================================================
-
-
-class GetVendorsResponse(GenericResponse[list[VendorDetails]]):
-    """
-    Response schema for GetVendors
-    """
-
-
-# =============================================================================
 # CLASS: VendorType
 # =============================================================================
 

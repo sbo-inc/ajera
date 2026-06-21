@@ -397,9 +397,9 @@ class AjeraClient:
         data = self._post(request)
 
         # Simplify the response structure for easier consumption
-        data["Content"]: list = cast(dict, data["Content"]).pop("Employees", [])
+        content: list[Any] = cast(dict, data["Content"]).pop("Employees", [])
 
-        return [EmployeeDetails.model_validate(e) for e in data["Content"]]
+        return [EmployeeDetails.model_validate(e) for e in content]
 
     # -------------------------------------------------------------------------
     # METHOD: list_employee_types
