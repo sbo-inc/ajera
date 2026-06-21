@@ -1,6 +1,6 @@
 [project]
 name = "ajera"
-version = "0.1.1"
+version = "0.1.2"
 description = "Deltek Ajera Python API Client"
 readme = "README.md"
 authors = [{ name = "SB&O Inc", email = "contact@sboinc.com" }]
