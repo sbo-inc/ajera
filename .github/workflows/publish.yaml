@@ -9,8 +9,8 @@ on:
       - "v*"
 
 permissions:
-  contents: write   # changelog + GitHub release
-  id-token: write   # OIDC for PyPI trusted publishing
+  contents: write # changelog + GitHub release
+  id-token: write # OIDC for PyPI trusted publishing
 
 jobs:
   release:
@@ -51,11 +51,6 @@ jobs:
       - name: Build artifacts
         run: make build
 
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        # Reads dist/ and authenticates via OIDC trusted publishing.
-        # No username/password/token required.
-
       - name: Create the GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -64,3 +59,8 @@ jobs:
           files: |
             dist/*.whl
             dist/*.tar.gz
+
+      # - name: Publish to PyPI
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+        # Reads dist/ and authenticates via OIDC trusted publishing.
+        # No username/password/token required.
