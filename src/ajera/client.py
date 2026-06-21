@@ -98,6 +98,7 @@ from ajera.schemas.project import (
     ProjectTotalsDetails,
     ProjectType,
 )
+from ajera.schemas.project_summary import ProjectSummary
 from ajera.schemas.project_v2 import (
     CreateProjects,
     CreateProjectsArguments,
@@ -1400,6 +1401,44 @@ class AjeraClient:
         content: dict[str, Any] = cast(dict, data["Content"]).pop("ProjectTotals", {})
 
         return ProjectTotalsDetails.model_validate(content)
+
+    # -------------------------------------------------------------------------
+    # METHOD: get_project_summary
+    # -------------------------------------------------------------------------
+
+    def get_project_summary(
+        self,
+        project_key: int,
+        *,
+        subphases: bool = True,
+    ) -> ProjectSummary:
+        """
+        Get a consolidated, chart-ready overview of a single project
+
+        Synthesizes two calls into one de-crufted view: the v2 GetProjects
+        bundle (identity, people, schedule, contract, budget, phases, and
+        resources) and GetProjectTotals (financials). Names are consolidated
+        and noise fields are dropped; derived health ratios are computed. This
+        is a derived view, not a 1:1 mirror of any single API method.
+
+        Phases are returned as a tree. When `subphases` is False the tree is
+        collapsed to the top-level phases (each phase's `children` is emptied,
+        while `subphase_count` is retained).
+
+        Supported API Versions: 1, 2 (one call each)
+
+        Returns:
+            ProjectSummary: The consolidated project overview.
+        """
+        bundle = self.get_projects([project_key])
+        totals = self.get_project_totals(project_key).totals
+
+        summary = ProjectSummary.build(bundle, totals)
+        if not subphases:
+            for phase in summary.phases:
+                phase.children = []
+
+        return summary
 
     # -------------------------------------------------------------------------
     # METHOD: list_project_types
