@@ -352,7 +352,7 @@ class AjeraClient:
         self,
         *,
         filter_by_company: list[int] | None = None,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
         filter_by_name_like: str | None = None,
         filter_by_employee_type: list[int] | None = None,
         filter_by_earliest_modified_date: str | None = None,
@@ -416,7 +416,7 @@ class AjeraClient:
     def list_employee_types(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[EmployeeType]:
         """
         List employee types
@@ -446,7 +446,7 @@ class AjeraClient:
     def list_deductions(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[Deduction]:
         """
         List deductions
@@ -476,7 +476,7 @@ class AjeraClient:
     def list_fringes(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[Fringe]:
         """
         List fringes
@@ -609,7 +609,7 @@ class AjeraClient:
         self,
         *,
         filter_by_company: list[int] | None = None,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
         filter_by_name_like: str | None = None,
         filter_by_name_equals: str | None = None,
         filter_by_client_type: list[int] | None = None,
@@ -673,7 +673,7 @@ class AjeraClient:
     def list_client_types(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[ClientType]:
         """
         List client types
@@ -792,7 +792,7 @@ class AjeraClient:
         self,
         *,
         filter_by_company: list[int] | None = None,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
         filter_by_text: str | None = None,
         filter_by_contact_type: list[int] | None = None,
         filter_by_earliest_modified_date: str | None = None,
@@ -854,7 +854,7 @@ class AjeraClient:
     def list_contact_types(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[ContactType]:
         """
         List contact types
@@ -982,7 +982,7 @@ class AjeraClient:
         self,
         *,
         filter_by_company: list[int] | None = None,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
         filter_by_name_like: str | None = None,
         filter_by_vendor_type: list[int] | None = None,
         filter_by_earliest_modified_date: str | None = None,
@@ -1044,7 +1044,7 @@ class AjeraClient:
     def list_vendor_types(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
         filter_by_is_credit_card: list[bool] | None = None,
         filter_by_is_consultant: list[bool] | None = None,
     ) -> list[VendorType]:
@@ -1408,7 +1408,7 @@ class AjeraClient:
     def list_project_types(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[ProjectType]:
         """
         List project types
@@ -1644,7 +1644,7 @@ class AjeraClient:
         self,
         *,
         filter_by_account_group: list[int] | None = None,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
         filter_by_type: list[str] | None = None,
     ) -> list[LedgerAccount]:
         """
@@ -1721,7 +1721,7 @@ class AjeraClient:
     def list_account_groups(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[AccountGroup]:
         """
         List general ledger account groups
@@ -1748,7 +1748,7 @@ class AjeraClient:
     def list_activities(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
         filter_by_description_like: str | None = None,
     ) -> list[Activity]:
         """
@@ -1777,7 +1777,7 @@ class AjeraClient:
     def list_bank_accounts(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[BankAccount]:
         """
         List bank accounts
@@ -1804,7 +1804,7 @@ class AjeraClient:
     def list_companies(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[Company]:
         """
         List companies
@@ -1831,7 +1831,7 @@ class AjeraClient:
     def list_departments(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[Department]:
         """
         List departments
@@ -1858,7 +1858,7 @@ class AjeraClient:
     def list_invoice_formats(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[InvoiceFormat]:
         """
         List invoice formats
@@ -1885,7 +1885,7 @@ class AjeraClient:
     def list_payroll_taxes(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[PayrollTax]:
         """
         List payroll taxes
@@ -1912,7 +1912,7 @@ class AjeraClient:
     def list_pays(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[Pay]:
         """
         List pay types
@@ -1939,7 +1939,7 @@ class AjeraClient:
     def list_rate_tables(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[RateTable]:
         """
         List rate tables
@@ -1966,7 +1966,7 @@ class AjeraClient:
     def list_wage_tables(
         self,
         *,
-        filter_by_status: list[str] | None = None,
+        filter_by_status: list[str] | None = ["Active"],
     ) -> list[WageTable]:
         """
         List wage tables
