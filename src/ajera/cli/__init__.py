@@ -16,7 +16,6 @@ from ajera.cli.commands import (
     ledger,
     projects,
     rate_tables,
-    session,
     vendors,
 )
 from ajera.cli.context import ClientContext
@@ -53,7 +52,6 @@ def cli(ctx: click.Context, log: bool) -> None:
 # Register all domain-specific command groups.
 # Runtime gating is handled by AJERA_CLI_DISABLE.
 for module in (
-    session,
     employees,
     clients,
     contacts,
