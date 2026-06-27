@@ -3,7 +3,21 @@ name = "ajera"
 version = "0.1.4"
 description = "Deltek Ajera Python API Client"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "SB&O Inc", email = "contact@sboinc.com" }]
+keywords = ["deltek", "ajera", "api", "client", "cli", "accounting", "erp"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Accounting",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 requires-python = ">=3.12"
 dependencies = [
     "click >= 8.0.0",
