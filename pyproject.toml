@@ -11,6 +11,12 @@ dependencies = [
     "pydantic >= 2.10.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/sbo-inc/ajera"
+Repository = "https://github.com/sbo-inc/ajera"
+Download = "https://github.com/sbo-inc/ajera/releases"
+Issues = "https://github.com/sbo-inc/ajera/issues"
+
 [dependency-groups]
 dev = [
     "mypy",
