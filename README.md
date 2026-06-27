@@ -63,8 +63,8 @@ $ ajera employees list
 [
   {
     "employee_key": 42,
-    "first_name": "Ada",
-    "last_name": "Lovelace",
+    "first_name": "John",
+    "last_name": "Smith",
     ...
   },
   ...
