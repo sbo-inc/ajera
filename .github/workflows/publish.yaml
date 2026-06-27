@@ -27,6 +27,16 @@ jobs:
         with:
           python-version: 3.12
 
+      - name: Verify tag matches package version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} (${TAG}) does not match pyproject version (${PKG})"
+            exit 1
+          fi
+          echo "Tag matches package version: ${PKG}"
+
       - name: "Build Changelog"
         id: build_changelog
         uses: mikepenz/release-changelog-builder-action@v6
