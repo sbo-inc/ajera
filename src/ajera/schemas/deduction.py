@@ -88,5 +88,4 @@ class ListDeductionsResponse(GenericResponse[list[Deduction]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the deductions by description
             self.content.sort(key=lambda deduction: deduction.description)

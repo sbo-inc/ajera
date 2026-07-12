@@ -663,7 +663,7 @@ class ProjectSummary(GenericBaseModel):
 
         project: ProjectV2 = bundle.projects[0]
 
-        # Map invoice group key -> name, and pick the primary client.
+        # The first invoice group's client is treated as the project's client.
         group_names = {
             group.invoice_group_key: group.description
             for group in bundle.invoice_groups
@@ -677,19 +677,17 @@ class ProjectSummary(GenericBaseModel):
             else None
         )
 
-        # Group resources under their owning phase.
         resources_by_phase: dict[int | None, list[ResourceLine]] = {}
         for resource in bundle.resources:
             resources_by_phase.setdefault(resource.parent_key, []).append(
                 ResourceLine.from_resource(resource)
             )
 
-        # Index phases by parent so they can be assembled into a tree. A phase
-        # whose parent is not itself a phase (i.e. the project) is a root.
         children_by_parent: dict[int | None, list[PhaseV2]] = {}
         for phase in bundle.phases:
             children_by_parent.setdefault(phase.parent_key, []).append(phase)
 
+        # A phase whose parent is not itself a phase (i.e. the project) is a root.
         phase_keys = {phase.phase_key for phase in bundle.phases}
         phases = [
             cls._build_phase(phase, group_names, resources_by_phase, children_by_parent)

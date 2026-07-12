@@ -1182,7 +1182,6 @@ class ListProjectsResponse(GenericResponse[list[Project]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the projects by description
             self.content.sort(key=lambda project: project.description)
 
 
@@ -1337,7 +1336,6 @@ class ListProjectTypesResponse(GenericResponse[list[ProjectType]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the project types by description
             self.content.sort(key=lambda project_type: project_type.description)
 
 
@@ -1412,5 +1410,4 @@ class ListProjectTemplatesResponse(GenericResponse[list[ProjectTemplate]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the project templates by description
             self.content.sort(key=lambda template: template.description)

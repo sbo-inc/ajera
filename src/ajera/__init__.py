@@ -42,6 +42,7 @@ from ajera.schemas.reference import (
     RateTable,
     WageTable,
 )
+from ajera.schemas.session import APISessionContent, SessionTimesheets
 from ajera.schemas.vendor import (
     UpdatedVendorResult,
     Vendor,
@@ -55,6 +56,7 @@ from ajera.schemas.vendor_invoice import (
 )
 
 __all__ = [
+    "APISessionContent",
     "AccountGroup",
     "Activity",
     "AjeraClient",
@@ -86,6 +88,7 @@ __all__ = [
     "ProjectTotalsDetails",
     "ProjectType",
     "RateTable",
+    "SessionTimesheets",
     "UpdatedClientResult",
     "UpdatedContactResult",
     "UpdatedEmployeeResult",

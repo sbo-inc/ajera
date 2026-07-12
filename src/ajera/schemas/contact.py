@@ -334,7 +334,6 @@ class ListContactsResponse(GenericResponse[list[Contact]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the contacts by last name, then first name
             self.content.sort(
                 key=lambda contact: (contact.last_name, contact.first_name)
             )
@@ -454,7 +453,6 @@ class ListContactTypesResponse(GenericResponse[list[ContactType]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the contact types by description
             self.content.sort(key=lambda contact_type: contact_type.description)
 
 

@@ -382,7 +382,6 @@ class ListClientsResponse(GenericResponse[list[Client]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the clients by description
             self.content.sort(key=lambda client: client.description)
 
 
@@ -500,7 +499,6 @@ class ListClientTypesResponse(GenericResponse[list[ClientType]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the client types by description
             self.content.sort(key=lambda client_type: client_type.description)
 
 

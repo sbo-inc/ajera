@@ -612,7 +612,6 @@ class ListEmployeesResponse(GenericResponse[list[Employee]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the employees by last name, then first name
             self.content.sort(key=lambda emp: (emp.last_name, emp.first_name))
 
 
@@ -745,7 +744,6 @@ class ListEmployeeTypesResponse(GenericResponse[list[EmployeeType]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the employee types by description
             self.content.sort(key=lambda emp_type: emp_type.description)
 
 

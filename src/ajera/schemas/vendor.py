@@ -449,7 +449,6 @@ class ListVendorsResponse(GenericResponse[list[Vendor]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the vendors by name
             self.content.sort(key=lambda vendor: vendor.name)
 
 
@@ -577,7 +576,6 @@ class ListVendorTypesResponse(GenericResponse[list[VendorType]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the vendor types by description
             self.content.sort(key=lambda vendor_type: vendor_type.description)
 
 

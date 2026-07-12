@@ -88,5 +88,4 @@ class ListFringesResponse(GenericResponse[list[Fringe]]):
     @override
     def model_post_init(self, context: Any) -> None:
         if self.content:
-            # Sort the fringes by description
             self.content.sort(key=lambda fringe: fringe.description)

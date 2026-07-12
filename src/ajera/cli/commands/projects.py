@@ -124,7 +124,7 @@ def get(ctx: ClientContext, project_ids: tuple[int, ...]) -> None:
     Get one or more projects by ID.
 
     Returns the v2 flat bundle: projects, invoice groups, phases, and
-    resources (resources are included inline).
+    resources.
     """
     render(ctx.client.get_projects(list(project_ids)))
 
@@ -134,10 +134,7 @@ def get(ctx: ClientContext, project_ids: tuple[int, ...]) -> None:
 @click.pass_obj
 def totals(ctx: ClientContext, project_id: int) -> None:
     """
-    Get a project's financial totals.
-
-    Returns the project's details enriched with project-level financial
-    totals.
+    Get a project's details enriched with financial totals.
     """
     render(ctx.client.get_project_totals(project_id))
 
@@ -155,13 +152,10 @@ def summary(ctx: ClientContext, project_key: int, subphases: bool) -> None:
     """
     Get a consolidated, chart-ready overview of one project.
 
-    Merges the project bundle and financial totals into a single de-crufted
-    view: identity, people, schedule, contract, budget, derived health
-    metrics, and a phase breakdown with resources. Suitable for powering
-    overview tables, health charts, and gantt charts in one call.
-
-    Phases are returned as a tree. Use --no-subphases to collapse it to the
-    top-level phases only (each phase's `children` is emptied).
+    Merges the project bundle and financial totals into one view: identity,
+    people, schedule, contract, budget, health metrics, and a phase tree
+    with resources. Use --no-subphases to collapse the tree to top-level
+    phases.
     """
     render(ctx.client.get_project_summary(project_key, subphases=subphases))
 

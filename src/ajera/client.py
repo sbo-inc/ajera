@@ -153,7 +153,7 @@ from ajera.schemas.reference import (
     StatusFilterArguments,
     WageTable,
 )
-from ajera.schemas.session import APISession, CreateAPISession
+from ajera.schemas.session import APISession, APISessionContent, CreateAPISession
 from ajera.schemas.vendor import (
     GetVendors,
     GetVendorsArguments,
@@ -231,16 +231,13 @@ class AjeraClient:
         else:
             logger.setLevel(logging.CRITICAL)
 
-        # Connection configuration
         self.url = url or os.environ.get("AJERA_API_URL")
         self.username = username or os.environ.get("AJERA_API_USERNAME")
         self.password = password or os.environ.get("AJERA_API_PASSWORD")
 
-        # Create the client instance
         self._session = requests.Session()
         self._session.headers.update({"Content-Type": "application/json", **headers})
 
-        # Store the session tokens for caching
         self._session_tokens: dict[int, str] = {}
 
     @property
@@ -272,11 +269,10 @@ class AjeraClient:
         exclude: set[str] | dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
-        Make a POST request to the Ajera API.
+        POST a request and return the decoded JSON envelope.
 
-        Args:
-            request: The request body to send.
-            exclude: Fields to omit from the serialized request body.
+        Raises on a non-200 ResponseCode. `exclude` omits fields from the
+        serialized request body.
 
         Returns:
             dict[str, Any]: The decoded JSON response body.
@@ -301,15 +297,47 @@ class AjeraClient:
         return data
 
     # -------------------------------------------------------------------------
+    # METHOD: get_session_info
+    # -------------------------------------------------------------------------
+
+    def get_session_info(self, api_version: int = 1) -> APISessionContent:
+        """
+        Get information about the calling user and the API session.
+
+        Returns the CreateAPISession content: company, Ajera version,
+        capability flags, and the calling employee's identity (empty for a
+        service integration). The resulting token is cached for reuse.
+
+        Supported API Versions: 1, 2
+
+        Returns:
+            APISessionContent: The session and calling-user information.
+        """
+        username = self.username
+        password = self.password
+        if not username or not password:
+            raise ValueError("No username or password provided")
+
+        request = CreateAPISession(
+            username=username,
+            password=password,
+            api_version=api_version,
+        )
+        data = self._post(request)
+        content = APISession.model_validate(data).content
+
+        if content.session_token:
+            self._session_tokens[api_version] = content.session_token
+
+        return content
+
+    # -------------------------------------------------------------------------
     # METHOD: get_session_token
     # -------------------------------------------------------------------------
 
     def get_session_token(self, api_version: int) -> str:
         """
-        Get a session token for a specified API version.
-
-        Args:
-            api_version: The API version to get a session token for.
+        Get a session token for an API version, minting one if not cached.
 
         Returns:
             str: The session token.
@@ -328,10 +356,8 @@ class AjeraClient:
             api_version=api_version,
         )
 
-        # Use the session so custom headers (e.g. an Authorization header set
-        # at construction) are sent on the login request too; the session token
-        # is carried in the body, not headers, so there is no reason to bypass
-        # the session here.
+        # Post via the session so headers set at construction (e.g. an
+        # Authorization header) apply to the login request too.
         response = self.session.post(
             url=self._require_url(),
             data=request.model_dump_json(exclude_none=True, by_alias=True),
@@ -380,7 +406,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("Employees", [])
 
         return ListEmployeesResponse.model_validate(data).content
@@ -405,7 +430,6 @@ class AjeraClient:
         )
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         content: list[Any] = cast(dict, data["Content"]).pop("Employees", [])
 
         return [EmployeeDetails.model_validate(e) for e in content]
@@ -435,7 +459,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("EmployeeTypes", [])
 
         return ListEmployeeTypesResponse.model_validate(data).content
@@ -465,7 +488,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("Deductions", [])
 
         return ListDeductionsResponse.model_validate(data).content
@@ -495,7 +517,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("Fringes", [])
 
         return ListFringesResponse.model_validate(data).content
@@ -522,32 +543,23 @@ class AjeraClient:
         """
         Update simple, single-line fields on one employee.
 
-        This is a convenience facade over the batch UpdateEmployees API. It
-        fetches the current record via GetEmployees to use as the baseline,
-        applies only the provided (non-None) fields to a copy, and submits the
-        baseline and modified records as the API's unchanged/updated pair. A
-        field left as None is unchanged.
-
-        Structural data (pay rates, contacts, credit cards) is intentionally
-        not editable here; manage those in Ajera directly.
-
-        If the requested edits leave the record unchanged (e.g. no fields
-        given, or values identical to the current ones), the current record is
-        returned without calling the API, which would otherwise reject the
-        request with "No valid changes to this object exist."
+        Facade over the batch UpdateEmployees API: fetches the current record
+        as the baseline, applies the non-None fields to a copy, and submits
+        the two as the unchanged/updated pair. Edits that change nothing
+        return the current record without the update call, which the API
+        would reject. Structural data (pay rates, contacts, credit cards) is
+        not editable here; manage it in Ajera directly.
 
         Supported API Versions: 1
 
         Returns:
             UpdatedEmployeeResult: The resulting employee record.
         """
-        # Fetch the current record to use as the unchanged baseline.
         employees = self.get_employees([employee_key])
         if not employees:
             raise ValueError(f"No employee found with key {employee_key}")
         baseline = employees[0]
 
-        # Apply the requested edits to a copy, one property at a time.
         modified = baseline.model_copy(deep=True)
         if first_name is not None:
             modified.first_name = first_name
@@ -570,8 +582,7 @@ class AjeraClient:
         if fax_number is not None:
             modified.fax_number = fax_number
 
-        # Nothing actually changed: return the current record rather than
-        # letting the API reject a no-op update.
+        # The API rejects no-op updates; return the current record instead.
         if modified == baseline:
             return UpdatedEmployeeResult.model_validate(
                 baseline.model_dump(by_alias=True)
@@ -639,7 +650,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("Clients", [])
 
         return ListClientsResponse.model_validate(data).content
@@ -662,7 +672,6 @@ class AjeraClient:
         request.method_arguments = GetClientsArguments(requested_clients=client_ids)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         content: list[Any] = cast(dict, data["Content"]).pop("Clients", [])
 
         return [ClientDetails.model_validate(c) for c in content]
@@ -692,7 +701,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("ClientTypes", [])
 
         return ListClientTypesResponse.model_validate(data).content
@@ -718,32 +726,23 @@ class AjeraClient:
         """
         Update simple, single-line fields on one client.
 
-        This is a convenience facade over the batch UpdateClients API. It
-        fetches the current record via GetClients to use as the baseline,
-        applies only the provided (non-None) fields to a copy, and submits the
-        baseline and modified records as the API's unchanged/updated pair. A
-        field left as None is unchanged.
-
-        Structural data (contacts, addresses, finance-charge settings) is
-        intentionally not editable here; manage those in Ajera directly.
-
-        If the requested edits leave the record unchanged (e.g. no fields
-        given, or values identical to the current ones), the current record is
-        returned without calling the API, which would otherwise reject the
-        request with "No valid changes to this object exist."
+        Facade over the batch UpdateClients API: fetches the current record
+        as the baseline, applies the non-None fields to a copy, and submits
+        the two as the unchanged/updated pair. Edits that change nothing
+        return the current record without the update call, which the API
+        would reject. Structural data (contacts, addresses, finance-charge
+        settings) is not editable here; manage it in Ajera directly.
 
         Supported API Versions: 1
 
         Returns:
             UpdatedClientResult: The resulting client record.
         """
-        # Fetch the current record to use as the unchanged baseline.
         clients = self.get_clients([client_key])
         if not clients:
             raise ValueError(f"No client found with key {client_key}")
         baseline = clients[0]
 
-        # Apply the requested edits to a copy, one property at a time.
         modified = baseline.model_copy(deep=True)
         if description is not None:
             modified.description = description
@@ -764,8 +763,7 @@ class AjeraClient:
         if notes is not None:
             modified.notes = notes
 
-        # Nothing actually changed: return the current record rather than
-        # letting the API reject a no-op update.
+        # The API rejects no-op updates; return the current record instead.
         if modified == baseline:
             return UpdatedClientResult.model_validate(
                 baseline.model_dump(by_alias=True)
@@ -820,7 +818,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("Contacts", [])
 
         return ListContactsResponse.model_validate(data).content
@@ -843,7 +840,6 @@ class AjeraClient:
         request.method_arguments = GetContactsArguments(requested_contacts=contact_ids)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         content: list[Any] = cast(dict, data["Content"]).pop("Contacts", [])
 
         return [ContactDetails.model_validate(c) for c in content]
@@ -873,7 +869,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("ContactTypes", [])
 
         return ListContactTypesResponse.model_validate(data).content
@@ -902,32 +897,23 @@ class AjeraClient:
         """
         Update simple, single-line fields on one contact.
 
-        This is a convenience facade over the batch UpdateContacts API. It
-        fetches the current record via GetContacts to use as the baseline,
-        applies only the provided (non-None) fields to a copy, and submits the
-        baseline and modified records as the API's unchanged/updated pair. A
-        field left as None is unchanged.
-
-        Structural data (addresses, contact type) is intentionally not editable
-        here; manage those in Ajera directly.
-
-        If the requested edits leave the record unchanged (e.g. no fields
-        given, or values identical to the current ones), the current record is
-        returned without calling the API, which would otherwise reject the
-        request with "No valid changes to this object exist."
+        Facade over the batch UpdateContacts API: fetches the current record
+        as the baseline, applies the non-None fields to a copy, and submits
+        the two as the unchanged/updated pair. Edits that change nothing
+        return the current record without the update call, which the API
+        would reject. Structural data (addresses, contact type) is not
+        editable here; manage it in Ajera directly.
 
         Supported API Versions: 1
 
         Returns:
             UpdatedContactResult: The resulting contact record.
         """
-        # Fetch the current record to use as the unchanged baseline.
         contacts = self.get_contacts([contact_key])
         if not contacts:
             raise ValueError(f"No contact found with key {contact_key}")
         baseline = contacts[0]
 
-        # Apply the requested edits to a copy, one property at a time.
         modified = baseline.model_copy(deep=True)
         if first_name is not None:
             modified.first_name = first_name
@@ -954,8 +940,7 @@ class AjeraClient:
         if notes is not None:
             modified.notes = notes
 
-        # Nothing actually changed: return the current record rather than
-        # letting the API reject a no-op update.
+        # The API rejects no-op updates; return the current record instead.
         if modified == baseline:
             return UpdatedContactResult.model_validate(
                 baseline.model_dump(by_alias=True)
@@ -1010,7 +995,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("Vendors", [])
 
         return ListVendorsResponse.model_validate(data).content
@@ -1033,7 +1017,6 @@ class AjeraClient:
         request.method_arguments = GetVendorsArguments(requested_vendors=vendor_ids)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         content: list[Any] = cast(dict, data["Content"]).pop("Vendors", [])
 
         return [VendorDetails.model_validate(v) for v in content]
@@ -1067,7 +1050,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("VendorTypes", [])
 
         return ListVendorTypesResponse.model_validate(data).content
@@ -1093,33 +1075,24 @@ class AjeraClient:
         """
         Update simple, single-line fields on one vendor.
 
-        This is a convenience facade over the batch UpdateVendors API. It
-        fetches the current record via GetVendors to use as the baseline,
-        applies only the provided (non-None) fields to a copy, and submits the
-        baseline and modified records as the API's unchanged/updated pair. A
-        field left as None is unchanged.
-
-        Structural data (contacts, addresses, 1099/W-9 settings, payment
-        scheduling) is intentionally not editable here; manage those in Ajera
-        directly.
-
-        If the requested edits leave the record unchanged (e.g. no fields
-        given, or values identical to the current ones), the current record is
-        returned without calling the API, which would otherwise reject the
-        request with "No valid changes to this object exist."
+        Facade over the batch UpdateVendors API: fetches the current record
+        as the baseline, applies the non-None fields to a copy, and submits
+        the two as the unchanged/updated pair. Edits that change nothing
+        return the current record without the update call, which the API
+        would reject. Structural data (contacts, addresses, 1099/W-9
+        settings, payment scheduling) is not editable here; manage it in
+        Ajera directly.
 
         Supported API Versions: 1
 
         Returns:
             UpdatedVendorResult: The resulting vendor record.
         """
-        # Fetch the current record to use as the unchanged baseline.
         vendors = self.get_vendors([vendor_key])
         if not vendors:
             raise ValueError(f"No vendor found with key {vendor_key}")
         baseline = vendors[0]
 
-        # Apply the requested edits to a copy, one property at a time.
         modified = baseline.model_copy(deep=True)
         if name is not None:
             modified.name = name
@@ -1140,8 +1113,7 @@ class AjeraClient:
         if notes is not None:
             modified.notes = notes
 
-        # Nothing actually changed: return the current record rather than
-        # letting the API reject a no-op update.
+        # The API rejects no-op updates; return the current record instead.
         if modified == baseline:
             return UpdatedVendorResult.model_validate(
                 baseline.model_dump(by_alias=True)
@@ -1216,8 +1188,8 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=2)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption. The list call
-        # also returns an (empty) VendorInvoicesDetails array, which we drop.
+        # The list call also returns an (empty) VendorInvoicesDetails array;
+        # drop it.
         data["Content"] = cast(dict, data["Content"]).pop("VendorInvoices", [])
 
         return ListVendorInvoicesResponse.model_validate(data).content
@@ -1343,7 +1315,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=2)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("Projects", [])
 
         return ListProjectsResponse.model_validate(data).content
@@ -1356,9 +1327,8 @@ class AjeraClient:
         """
         Get project(s) by ID, with phases, invoice groups, and resources
 
-        Uses v2, which returns a flat bundle of parallel arrays (projects,
-        invoice groups, phases, resources) linked by foreign keys. Resources
-        are included inline, so there is no separate "with resources" call.
+        The v2 bundle is flat parallel arrays (projects, invoice groups,
+        phases, resources) linked by foreign keys.
 
         Supported API Versions: 2
 
@@ -1397,7 +1367,6 @@ class AjeraClient:
         )
         data = self._post(request)
 
-        # Content wraps a single project object under "ProjectTotals".
         content: dict[str, Any] = cast(dict, data["Content"]).pop("ProjectTotals", {})
 
         return ProjectTotalsDetails.model_validate(content)
@@ -1415,15 +1384,13 @@ class AjeraClient:
         """
         Get a consolidated, chart-ready overview of a single project
 
-        Synthesizes two calls into one de-crufted view: the v2 GetProjects
-        bundle (identity, people, schedule, contract, budget, phases, and
-        resources) and GetProjectTotals (financials). Names are consolidated
-        and noise fields are dropped; derived health ratios are computed. This
-        is a derived view, not a 1:1 mirror of any single API method.
+        Synthesizes the v2 GetProjects bundle and GetProjectTotals into one
+        derived view — identity, people, schedule, contract, budget, phases,
+        resources, financials, and computed health ratios — not a 1:1 mirror
+        of any single API method.
 
-        Phases are returned as a tree. When `subphases` is False the tree is
-        collapsed to the top-level phases (each phase's `children` is emptied,
-        while `subphase_count` is retained).
+        Phases form a tree; with `subphases` False each phase's `children` is
+        emptied (`subphase_count` is retained).
 
         Supported API Versions: 1, 2 (one call each)
 
@@ -1465,7 +1432,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("ProjectTypes", [])
 
         return ListProjectTypesResponse.model_validate(data).content
@@ -1513,7 +1479,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("ProjectTemplates", [])
 
         return ListProjectTemplatesResponse.model_validate(data).content
@@ -1540,7 +1505,6 @@ class AjeraClient:
         )
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         content: list[Any] = cast(dict, data["Content"]).pop("ProjectTemplates", [])
 
         return [ProjectTemplateDetails.model_validate(t) for t in content]
@@ -1562,23 +1526,17 @@ class AjeraClient:
         """
         Update simple, single-line fields on one project.
 
-        This is a convenience facade over the v2 UpdateProjects API. It fetches
-        the current project bundle via GetProjects to send back as the
-        unchanged baseline, and submits only the provided (non-None) fields as
-        the changed delta. A field left as None is unchanged.
-
-        Structural data (phases, invoice groups, resources, contract amounts)
-        is intentionally not editable here; manage those in Ajera directly.
-
-        If no fields are provided, the current bundle is returned without
-        calling the update API.
+        Facade over the v2 UpdateProjects API: fetches the current bundle as
+        the unchanged baseline and submits the non-None fields as the delta.
+        If no fields are given, the current bundle is returned without the
+        update call. Structural data (phases, invoice groups, resources,
+        contract amounts) is not editable here; manage it in Ajera directly.
 
         Supported API Versions: 2
 
         Returns:
             ProjectBundle: The updated project bundle.
         """
-        # Fetch the current bundle to send back verbatim as the baseline.
         get_request = GetProjectsV2()
         get_request.session_token = self.get_session_token(api_version=2)
         get_request.method_arguments = GetProjectsArgumentsV2(
@@ -1589,7 +1547,6 @@ class AjeraClient:
         if not bundle.get("Projects"):
             raise ValueError(f"No project found with key {project_key}")
 
-        # Nothing to change: return the current bundle without calling update.
         if all(
             v is None
             for v in (
@@ -1641,11 +1598,10 @@ class AjeraClient:
         """
         Create a new project (with one invoice group and one phase).
 
-        Uses the v2 CreateProjects API with CreateType "Project". A project
-        cannot be created on its own, so a single invoice group (billed to
-        `client_key` with `invoice_format_key`) and a single phase are created
-        alongside it. The invoice group and phase descriptions default to the
-        project description (both are required and cannot be empty).
+        A project cannot be created on its own, so one invoice group (billed
+        to `client_key` with `invoice_format_key`) and one phase are created
+        with it; their descriptions are required and default to the project
+        description.
 
         Supported API Versions: 2
 
@@ -1704,7 +1660,6 @@ class AjeraClient:
         request.session_token = self.get_session_token(api_version=1)
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         data["Content"] = cast(dict, data["Content"]).pop("GLAccounts", [])
 
         return ListLedgerAccountsResponse.model_validate(data).content
@@ -1726,7 +1681,6 @@ class AjeraClient:
         """
         Get general ledger account details, with calculated amounts
 
-        Returns each account enriched with calculated balances and budgets.
         Pass `account_ids` to select specific accounts, or omit to return all.
         `as_of_date` calculates balances as of that date, and
         `exclude_close_year_entries` omits close-year entries from the amounts.
@@ -1748,7 +1702,6 @@ class AjeraClient:
         )
         data = self._post(request)
 
-        # Simplify the response structure for easier consumption
         content: list[Any] = cast(dict, data["Content"]).pop("GLAccounts", [])
 
         return [LedgerAccountDetails.model_validate(a) for a in content]
