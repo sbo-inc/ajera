@@ -41,6 +41,24 @@ export AJERA_API_PASSWORD="your-password"
 
 For setting up an API user and generating credentials, see the [Deltek Ajera Learning Hub API docs](https://learning.deltek.com/bundle/ajera/page/Content/api_setting_up_api_user.htm).
 
+### Timeouts and retries
+
+Every request carries a timeout (default `(5, 30)` seconds for connect and read)
+so a stalled connection can't hang the caller forever. Pass `timeout=` to
+override it — a single float, a `(connect, read)` tuple, or `None` to disable —
+and `retries=` to retry connection-establishment failures:
+
+```python
+# Wait longer, and retry a dropped/stale connection up to 3 times.
+client = AjeraClient(timeout=60, retries=3)
+```
+
+An `int` for `retries` retries only the connection stage (before any bytes reach
+the server), which is safe for the non-idempotent writes this client performs —
+a create whose response is merely lost is never resubmitted. For finer control,
+pass a preconfigured `urllib3` `Retry` instead. The CLI reads `AJERA_API_TIMEOUT`
+(seconds) and `AJERA_API_RETRIES` (count) for the same behavior.
+
 ## Quick start
 
 ### Python
