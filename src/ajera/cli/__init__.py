@@ -31,6 +31,8 @@ Connection settings are read from environment variables:
 - AJERA_API_URL to define the API endpoint.
 - AJERA_API_USERNAME / AJERA_API_PASSWORD for authentication.
 - AJERA_API_HEADERS as a JSON object of extra request headers.
+- AJERA_API_TIMEOUT as a per-request timeout in seconds.
+- AJERA_API_RETRIES as a connection-retry count.
 """
 
 

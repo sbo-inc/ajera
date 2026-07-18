@@ -5,6 +5,8 @@ from typing import Any, cast
 
 import requests
 from pydantic import BaseModel
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from ajera.schemas.client import (
     Client,
@@ -192,6 +194,41 @@ console_handler = logging.StreamHandler()
 console_handler.setFormatter(logging.Formatter("ajera: %(message)s"))
 logger.addHandler(console_handler)
 
+# Default (connect, read) timeout in seconds applied to every request. `requests`
+# applies no timeout by default, so without this a stalled connection or an
+# unresponsive server would block the caller forever.
+DEFAULT_TIMEOUT: tuple[float, float] = (5.0, 30.0)
+
+
+def _build_retry(retries: int | Retry) -> Retry:
+    """
+    Build a conservative Retry, or pass a caller-supplied one through.
+
+    An ``int`` retries only connection-establishment failures (the ``connect``
+    stage, before any bytes reach the server). Read-stage and status-based
+    retries are disabled because this client issues non-idempotent POSTs:
+    retrying a request whose response was merely lost in transit could
+    double-submit a create (for example, a vendor invoice — a permanent
+    accounting record with no delete/void). Callers who understand the risk can
+    pass a fully configured ``urllib3`` ``Retry`` to opt into more.
+
+    Returns:
+        Retry: The retry policy to mount on the session.
+    """
+    if isinstance(retries, Retry):
+        return retries
+    return Retry(
+        total=retries,
+        connect=retries,
+        read=0,
+        redirect=0,
+        status=0,
+        backoff_factor=0.5,
+        allowed_methods=frozenset(),
+        raise_on_status=False,
+    )
+
+
 # =============================================================================
 # CLASS: AjeraClient
 # =============================================================================
@@ -207,6 +244,7 @@ class AjeraClient:
     url: str | None
     username: str | None
     password: str | None
+    timeout: float | tuple[float, float] | None
 
     def __init__(
         self,
@@ -215,6 +253,8 @@ class AjeraClient:
         password: str | None = None,
         headers: dict[str, str] = {},
         log: bool = False,
+        timeout: float | tuple[float, float] | None = DEFAULT_TIMEOUT,
+        retries: int | Retry | None = None,
     ) -> None:
         """
         Create a new client for the Deltek Ajera API.
@@ -225,6 +265,13 @@ class AjeraClient:
             password: The password to authenticate with (Environment: `AJERA_API_PASSWORD`)
             headers: Additional headers to include in requests
             log: Enables request logging at INFO level
+            timeout: Per-request timeout in seconds applied to every call — a
+                single float, a `(connect, read)` tuple, or `None` to disable.
+                Defaults to `DEFAULT_TIMEOUT`.
+            retries: Connection-retry policy. An `int` retries only
+                connection-establishment failures that many times (safe for the
+                non-idempotent POSTs this client issues); a `urllib3` `Retry`
+                is used as given. `None` (default) disables retries.
         """
         if log:
             logger.setLevel(logging.INFO)
@@ -234,9 +281,15 @@ class AjeraClient:
         self.url = url or os.environ.get("AJERA_API_URL")
         self.username = username or os.environ.get("AJERA_API_USERNAME")
         self.password = password or os.environ.get("AJERA_API_PASSWORD")
+        self.timeout = timeout
 
         self._session = requests.Session()
         self._session.headers.update({"Content-Type": "application/json", **headers})
+
+        if retries is not None:
+            adapter = HTTPAdapter(max_retries=_build_retry(retries))
+            self._session.mount("http://", adapter)
+            self._session.mount("https://", adapter)
 
         self._session_tokens: dict[int, str] = {}
 
@@ -282,6 +335,7 @@ class AjeraClient:
             data=request.model_dump_json(
                 exclude_none=True, by_alias=True, exclude=exclude
             ),
+            timeout=self.timeout,
         )
         response.raise_for_status()
         data: dict[str, Any] = json.loads(response.text)
@@ -361,6 +415,7 @@ class AjeraClient:
         response = self.session.post(
             url=self._require_url(),
             data=request.model_dump_json(exclude_none=True, by_alias=True),
+            timeout=self.timeout,
         )
         response.raise_for_status()
         session = APISession.model_validate_json(response.text)
