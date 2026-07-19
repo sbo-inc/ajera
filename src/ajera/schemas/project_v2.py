@@ -909,7 +909,7 @@ class GetProjectsArgumentsV2(GenericBaseModel):
 
     requested_projects: list[int] = Field(
         alias="RequestedProjects",
-        description="List of project IDs to retrieve.",
+        description="List of project keys to retrieve.",
     )
 
 

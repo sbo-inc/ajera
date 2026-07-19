@@ -274,7 +274,7 @@ class ListContactsArguments(GenericBaseModel):
     filter_by_company: list[int] | None = Field(
         default=None,
         alias="FilterByCompany",
-        description="Filter contacts by company IDs.",
+        description="Filter contacts by company keys.",
     )
     filter_by_status: list[str] | None = Field(
         default=None,
@@ -289,7 +289,7 @@ class ListContactsArguments(GenericBaseModel):
     filter_by_contact_type: list[int] | None = Field(
         default=None,
         alias="FilterByContactType",
-        description="Filter contacts by contact type IDs.",
+        description="Filter contacts by contact type keys.",
     )
     filter_by_earliest_modified_date: str | None = Field(
         default=None,
@@ -351,7 +351,7 @@ class GetContactsArguments(GenericBaseModel):
 
     requested_contacts: list[int] = Field(
         alias="RequestedContacts",
-        description="List of contact IDs to retrieve.",
+        description="List of contact keys to retrieve.",
     )
 
 

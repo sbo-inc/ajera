@@ -1102,7 +1102,7 @@ class ListProjectsArguments(GenericBaseModel):
     filter_by_company: list[int] | None = Field(
         default=None,
         alias="FilterByCompany",
-        description="Filter projects by company IDs.",
+        description="Filter projects by company keys.",
     )
     filter_by_status: list[str] | None = Field(
         default=None,
@@ -1132,7 +1132,7 @@ class ListProjectsArguments(GenericBaseModel):
     filter_by_project_type: list[int] | None = Field(
         default=None,
         alias="FilterByProjectType",
-        description="Filter projects by project type IDs.",
+        description="Filter projects by project type keys.",
     )
     filter_by_sync_to_crm: list[bool] | None = Field(
         default=None,
@@ -1197,7 +1197,7 @@ class GetProjectTemplatesArguments(GenericBaseModel):
 
     requested_projects: list[int] = Field(
         alias="RequestedProjects",
-        description="List of project template IDs to retrieve.",
+        description="List of project template keys to retrieve.",
     )
 
 

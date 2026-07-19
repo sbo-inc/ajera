@@ -317,7 +317,7 @@ class ListClientsArguments(GenericBaseModel):
     filter_by_company: list[int] | None = Field(
         default=None,
         alias="FilterByCompany",
-        description="Filter clients by company IDs.",
+        description="Filter clients by company keys.",
     )
     filter_by_status: list[str] | None = Field(
         default=None,
@@ -337,7 +337,7 @@ class ListClientsArguments(GenericBaseModel):
     filter_by_client_type: list[int] | None = Field(
         default=None,
         alias="FilterByClientType",
-        description="Filter clients by client type IDs.",
+        description="Filter clients by client type keys.",
     )
     filter_by_earliest_modified_date: str | None = Field(
         default=None,
@@ -397,7 +397,7 @@ class GetClientsArguments(GenericBaseModel):
 
     requested_clients: list[int] = Field(
         alias="RequestedClients",
-        description="List of client IDs to retrieve.",
+        description="List of client keys to retrieve.",
     )
 
 

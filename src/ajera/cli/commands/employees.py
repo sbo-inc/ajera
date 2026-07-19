@@ -19,7 +19,7 @@ def group() -> None:
     "filter_by_company",
     type=int,
     multiple=True,
-    help="Filter by company ID (repeatable).",
+    help="Filter by company key (repeatable).",
 )
 @status_option
 @click.option(
@@ -34,7 +34,7 @@ def group() -> None:
     "filter_by_employee_type",
     type=int,
     multiple=True,
-    help="Filter by employee type ID (repeatable).",
+    help="Filter by employee type key (repeatable).",
 )
 @click.option(
     "--modified-after",
@@ -76,13 +76,13 @@ def list_(
 
 
 @group.command(name="get")
-@click.argument("employee_ids", nargs=-1, required=True, type=int)
+@click.argument("employee_keys", nargs=-1, required=True, type=int)
 @click.pass_obj
-def get(ctx: ClientContext, employee_ids: tuple[int, ...]) -> None:
+def get(ctx: ClientContext, employee_keys: tuple[int, ...]) -> None:
     """
-    Get one or more employees by ID.
+    Get one or more employees by key.
     """
-    render(ctx.client.get_employees(list(employee_ids)))
+    render(ctx.client.get_employees(list(employee_keys)))
 
 
 @group.command(name="update")

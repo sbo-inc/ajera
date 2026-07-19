@@ -19,7 +19,7 @@ def group() -> None:
     "filter_by_company",
     type=int,
     multiple=True,
-    help="Filter by company ID (repeatable).",
+    help="Filter by company key (repeatable).",
 )
 @click.option(
     "--status",
@@ -61,7 +61,7 @@ def group() -> None:
     "filter_by_project_type",
     type=int,
     multiple=True,
-    help="Filter by project type ID (repeatable).",
+    help="Filter by project type key (repeatable).",
 )
 @click.option(
     "--sync-to-crm/--no-sync-to-crm",
@@ -117,26 +117,26 @@ def list_(
 
 
 @group.command(name="get")
-@click.argument("project_ids", nargs=-1, required=True, type=int)
+@click.argument("project_keys", nargs=-1, required=True, type=int)
 @click.pass_obj
-def get(ctx: ClientContext, project_ids: tuple[int, ...]) -> None:
+def get(ctx: ClientContext, project_keys: tuple[int, ...]) -> None:
     """
-    Get one or more projects by ID.
+    Get one or more projects by key.
 
     Returns the v2 flat bundle: projects, invoice groups, phases, and
     resources.
     """
-    render(ctx.client.get_projects(list(project_ids)))
+    render(ctx.client.get_projects(list(project_keys)))
 
 
 @group.command(name="totals")
-@click.argument("project_id", type=int)
+@click.argument("project_key", type=int)
 @click.pass_obj
-def totals(ctx: ClientContext, project_id: int) -> None:
+def totals(ctx: ClientContext, project_key: int) -> None:
     """
     Get a project's details enriched with financial totals.
     """
-    render(ctx.client.get_project_totals(project_id))
+    render(ctx.client.get_project_totals(project_key))
 
 
 @group.command(name="summary")
@@ -186,7 +186,7 @@ def templates() -> None:
     "filter_by_company",
     type=int,
     multiple=True,
-    help="Filter by company ID (repeatable).",
+    help="Filter by company key (repeatable).",
 )
 @click.option(
     "--status",
@@ -207,7 +207,7 @@ def templates() -> None:
     "filter_by_project_type",
     type=int,
     multiple=True,
-    help="Filter by project type ID (repeatable).",
+    help="Filter by project type key (repeatable).",
 )
 @click.pass_obj
 def templates_list(
@@ -231,13 +231,13 @@ def templates_list(
 
 
 @templates.command(name="get")
-@click.argument("template_ids", nargs=-1, required=True, type=int)
+@click.argument("template_keys", nargs=-1, required=True, type=int)
 @click.pass_obj
-def templates_get(ctx: ClientContext, template_ids: tuple[int, ...]) -> None:
+def templates_get(ctx: ClientContext, template_keys: tuple[int, ...]) -> None:
     """
-    Get one or more project templates by ID.
+    Get one or more project templates by key.
     """
-    render(ctx.client.get_project_templates(list(template_ids)))
+    render(ctx.client.get_project_templates(list(template_keys)))
 
 
 @group.command(name="update")

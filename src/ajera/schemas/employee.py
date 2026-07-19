@@ -552,7 +552,7 @@ class ListEmployeesArguments(GenericBaseModel):
     filter_by_company: list[int] | None = Field(
         default=None,
         alias="FilterByCompany",
-        description="Filter employees by company IDs.",
+        description="Filter employees by company keys.",
     )
     filter_by_status: list[str] | None = Field(
         default=None,
@@ -567,7 +567,7 @@ class ListEmployeesArguments(GenericBaseModel):
     filter_by_employee_type: list[int] | None = Field(
         default=None,
         alias="FilterByEmployeeType",
-        description="Filter employees by employee type IDs.",
+        description="Filter employees by employee type keys.",
     )
     filter_by_earliest_modified_date: str | None = Field(
         default=None,
@@ -627,7 +627,7 @@ class GetEmployeesArguments(GenericBaseModel):
 
     requested_employees: list[int] = Field(
         alias="RequestedEmployees",
-        description="List of employee IDs to retrieve.",
+        description="List of employee keys to retrieve.",
     )
 
 
