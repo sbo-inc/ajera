@@ -52,7 +52,7 @@ def list_(
 
 
 @group.command(name="get")
-@click.argument("account_ids", nargs=-1, type=int)
+@click.argument("account_keys", nargs=-1, type=int)
 @click.option(
     "--as-of-date",
     "as_of_date",
@@ -70,7 +70,7 @@ def list_(
 @click.pass_obj
 def get(
     ctx: ClientContext,
-    account_ids: tuple[int, ...],
+    account_keys: tuple[int, ...],
     as_of_date: str | None,
     exclude_close_year_entries: bool,
 ) -> None:
@@ -81,7 +81,7 @@ def get(
     """
     render(
         ctx.client.get_ledger_accounts(
-            list(account_ids) or None,
+            list(account_keys) or None,
             as_of_date=as_of_date,
             exclude_close_year_entries=exclude_close_year_entries or None,
         )

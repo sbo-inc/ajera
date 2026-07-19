@@ -389,7 +389,7 @@ class ListVendorsArguments(GenericBaseModel):
     filter_by_company: list[int] | None = Field(
         default=None,
         alias="FilterByCompany",
-        description="Filter vendors by company IDs.",
+        description="Filter vendors by company keys.",
     )
     filter_by_status: list[str] | None = Field(
         default=None,
@@ -404,7 +404,7 @@ class ListVendorsArguments(GenericBaseModel):
     filter_by_vendor_type: list[int] | None = Field(
         default=None,
         alias="FilterByVendorType",
-        description="Filter vendors by vendor type IDs.",
+        description="Filter vendors by vendor type keys.",
     )
     filter_by_earliest_modified_date: str | None = Field(
         default=None,
@@ -464,7 +464,7 @@ class GetVendorsArguments(GenericBaseModel):
 
     requested_vendors: list[int] = Field(
         alias="RequestedVendors",
-        description="List of vendor IDs to retrieve.",
+        description="List of vendor keys to retrieve.",
     )
 
 

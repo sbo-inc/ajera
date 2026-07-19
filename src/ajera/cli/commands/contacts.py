@@ -19,7 +19,7 @@ def group() -> None:
     "filter_by_company",
     type=int,
     multiple=True,
-    help="Filter by company ID (repeatable).",
+    help="Filter by company key (repeatable).",
 )
 @status_option
 @click.option(
@@ -34,7 +34,7 @@ def group() -> None:
     "filter_by_contact_type",
     type=int,
     multiple=True,
-    help="Filter by contact type ID (repeatable).",
+    help="Filter by contact type key (repeatable).",
 )
 @click.option(
     "--modified-after",
@@ -76,13 +76,13 @@ def list_(
 
 
 @group.command(name="get")
-@click.argument("contact_ids", nargs=-1, required=True, type=int)
+@click.argument("contact_keys", nargs=-1, required=True, type=int)
 @click.pass_obj
-def get(ctx: ClientContext, contact_ids: tuple[int, ...]) -> None:
+def get(ctx: ClientContext, contact_keys: tuple[int, ...]) -> None:
     """
-    Get one or more contacts by ID.
+    Get one or more contacts by key.
     """
-    render(ctx.client.get_contacts(list(contact_ids)))
+    render(ctx.client.get_contacts(list(contact_keys)))
 
 
 @group.command(name="update")

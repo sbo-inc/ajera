@@ -469,19 +469,19 @@ class AjeraClient:
     # METHOD: get_employees
     # -------------------------------------------------------------------------
 
-    def get_employees(self, employee_ids: list[int]) -> list[EmployeeDetails]:
+    def get_employees(self, employee_keys: list[int]) -> list[EmployeeDetails]:
         """
-        Get employee(s) details by ID
+        Get employee(s) details by key
 
         Supported API Versions: 1
 
         Returns:
-            list[EmployeeDetails]: A list of employees with the specified IDs.
+            list[EmployeeDetails]: A list of employees with the specified keys.
         """
         request = GetEmployees()
         request.session_token = self.get_session_token(api_version=1)
         request.method_arguments = GetEmployeesArguments(
-            requested_employees=employee_ids
+            requested_employees=employee_keys
         )
         data = self._post(request)
 
@@ -713,18 +713,18 @@ class AjeraClient:
     # METHOD: get_clients
     # -------------------------------------------------------------------------
 
-    def get_clients(self, client_ids: list[int]) -> list[ClientDetails]:
+    def get_clients(self, client_keys: list[int]) -> list[ClientDetails]:
         """
-        Get client(s) details by ID
+        Get client(s) details by key
 
         Supported API Versions: 1
 
         Returns:
-            list[ClientDetails]: A list of clients with the specified IDs.
+            list[ClientDetails]: A list of clients with the specified keys.
         """
         request = GetClients()
         request.session_token = self.get_session_token(api_version=1)
-        request.method_arguments = GetClientsArguments(requested_clients=client_ids)
+        request.method_arguments = GetClientsArguments(requested_clients=client_keys)
         data = self._post(request)
 
         content: list[Any] = cast(dict, data["Content"]).pop("Clients", [])
@@ -881,18 +881,18 @@ class AjeraClient:
     # METHOD: get_contacts
     # -------------------------------------------------------------------------
 
-    def get_contacts(self, contact_ids: list[int]) -> list[ContactDetails]:
+    def get_contacts(self, contact_keys: list[int]) -> list[ContactDetails]:
         """
-        Get contact(s) details by ID
+        Get contact(s) details by key
 
         Supported API Versions: 1
 
         Returns:
-            list[ContactDetails]: A list of contacts with the specified IDs.
+            list[ContactDetails]: A list of contacts with the specified keys.
         """
         request = GetContacts()
         request.session_token = self.get_session_token(api_version=1)
-        request.method_arguments = GetContactsArguments(requested_contacts=contact_ids)
+        request.method_arguments = GetContactsArguments(requested_contacts=contact_keys)
         data = self._post(request)
 
         content: list[Any] = cast(dict, data["Content"]).pop("Contacts", [])
@@ -1058,18 +1058,18 @@ class AjeraClient:
     # METHOD: get_vendors
     # -------------------------------------------------------------------------
 
-    def get_vendors(self, vendor_ids: list[int]) -> list[VendorDetails]:
+    def get_vendors(self, vendor_keys: list[int]) -> list[VendorDetails]:
         """
-        Get vendor(s) details by ID
+        Get vendor(s) details by key
 
         Supported API Versions: 1
 
         Returns:
-            list[VendorDetails]: A list of vendors with the specified IDs.
+            list[VendorDetails]: A list of vendors with the specified keys.
         """
         request = GetVendors()
         request.session_token = self.get_session_token(api_version=1)
-        request.method_arguments = GetVendorsArguments(requested_vendors=vendor_ids)
+        request.method_arguments = GetVendorsArguments(requested_vendors=vendor_keys)
         data = self._post(request)
 
         content: list[Any] = cast(dict, data["Content"]).pop("Vendors", [])
@@ -1253,7 +1253,7 @@ class AjeraClient:
     # METHOD: get_vendor_invoices
     # -------------------------------------------------------------------------
 
-    def get_vendor_invoices(self, invoice_ids: list[int]) -> VendorInvoiceBundle:
+    def get_vendor_invoices(self, invoice_keys: list[int]) -> VendorInvoiceBundle:
         """
         Get vendor invoice(s) by key, with their line items
 
@@ -1268,7 +1268,7 @@ class AjeraClient:
         request = GetVendorInvoices()
         request.session_token = self.get_session_token(api_version=2)
         request.method_arguments = GetVendorInvoicesArguments(
-            requested_vendor_invoices=invoice_ids
+            requested_vendor_invoices=invoice_keys
         )
         data = self._post(request)
 
@@ -1378,9 +1378,9 @@ class AjeraClient:
     # METHOD: get_projects
     # -------------------------------------------------------------------------
 
-    def get_projects(self, project_ids: list[int]) -> ProjectBundle:
+    def get_projects(self, project_keys: list[int]) -> ProjectBundle:
         """
-        Get project(s) by ID, with phases, invoice groups, and resources
+        Get project(s) by key, with phases, invoice groups, and resources
 
         The v2 bundle is flat parallel arrays (projects, invoice groups,
         phases, resources) linked by foreign keys.
@@ -1393,7 +1393,7 @@ class AjeraClient:
         request = GetProjectsV2()
         request.session_token = self.get_session_token(api_version=2)
         request.method_arguments = GetProjectsArgumentsV2(
-            requested_projects=project_ids
+            requested_projects=project_keys
         )
         data = self._post(request)
 
@@ -1403,7 +1403,7 @@ class AjeraClient:
     # METHOD: get_project_totals
     # -------------------------------------------------------------------------
 
-    def get_project_totals(self, project_id: int) -> ProjectTotalsDetails:
+    def get_project_totals(self, project_key: int) -> ProjectTotalsDetails:
         """
         Get a single project's details enriched with financial totals
 
@@ -1418,7 +1418,7 @@ class AjeraClient:
         request = GetProjectTotals()
         request.session_token = self.get_session_token(api_version=1)
         request.method_arguments = GetProjectTotalsArguments(
-            requested_project_totals=project_id
+            requested_project_totals=project_key
         )
         data = self._post(request)
 
@@ -1543,20 +1543,20 @@ class AjeraClient:
     # -------------------------------------------------------------------------
 
     def get_project_templates(
-        self, template_ids: list[int]
+        self, template_keys: list[int]
     ) -> list[ProjectTemplateDetails]:
         """
-        Get project template(s) details by ID
+        Get project template(s) details by key
 
         Supported API Versions: 1
 
         Returns:
-            list[ProjectTemplateDetails]: A list of templates with the given IDs.
+            list[ProjectTemplateDetails]: A list of templates with the given keys.
         """
         request = GetProjectTemplates()
         request.session_token = self.get_session_token(api_version=1)
         request.method_arguments = GetProjectTemplatesArguments(
-            requested_projects=template_ids
+            requested_projects=template_keys
         )
         data = self._post(request)
 
@@ -1725,7 +1725,7 @@ class AjeraClient:
 
     def get_ledger_accounts(
         self,
-        account_ids: list[int] | None = None,
+        account_keys: list[int] | None = None,
         *,
         exclude_close_year_entries: bool | None = None,
         as_of_date: str | None = None,
@@ -1736,7 +1736,7 @@ class AjeraClient:
         """
         Get general ledger account details, with calculated amounts
 
-        Pass `account_ids` to select specific accounts, or omit to return all.
+        Pass `account_keys` to select specific accounts, or omit to return all.
         `as_of_date` calculates balances as of that date, and
         `exclude_close_year_entries` omits close-year entries from the amounts.
 
@@ -1748,7 +1748,7 @@ class AjeraClient:
         request = GetLedgerAccounts()
         request.session_token = self.get_session_token(api_version=1)
         request.method_arguments = GetLedgerAccountsArguments(
-            requested_accounts=account_ids,
+            requested_accounts=account_keys,
             exclude_close_year_entries=exclude_close_year_entries,
             as_of_date=as_of_date,
             filter_by_account_group=filter_by_account_group,

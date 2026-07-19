@@ -20,7 +20,7 @@ def group() -> None:
     "filter_by_company",
     type=int,
     multiple=True,
-    help="Filter by company ID (repeatable).",
+    help="Filter by company key (repeatable).",
 )
 @status_option
 @click.option(
@@ -35,7 +35,7 @@ def group() -> None:
     "filter_by_vendor_type",
     type=int,
     multiple=True,
-    help="Filter by vendor type ID (repeatable).",
+    help="Filter by vendor type key (repeatable).",
 )
 @click.option(
     "--modified-after",
@@ -77,13 +77,13 @@ def list_(
 
 
 @group.command(name="get")
-@click.argument("vendor_ids", nargs=-1, required=True, type=int)
+@click.argument("vendor_keys", nargs=-1, required=True, type=int)
 @click.pass_obj
-def get(ctx: ClientContext, vendor_ids: tuple[int, ...]) -> None:
+def get(ctx: ClientContext, vendor_keys: tuple[int, ...]) -> None:
     """
-    Get one or more vendors by ID.
+    Get one or more vendors by key.
     """
-    render(ctx.client.get_vendors(list(vendor_ids)))
+    render(ctx.client.get_vendors(list(vendor_keys)))
 
 
 @group.command(name="update")
@@ -323,13 +323,13 @@ def invoices_list(
 
 
 @invoices.command(name="get")
-@click.argument("invoice_ids", nargs=-1, required=True, type=int)
+@click.argument("invoice_keys", nargs=-1, required=True, type=int)
 @click.pass_obj
-def invoices_get(ctx: ClientContext, invoice_ids: tuple[int, ...]) -> None:
+def invoices_get(ctx: ClientContext, invoice_keys: tuple[int, ...]) -> None:
     """
     Get one or more vendor invoices by key, with their line items.
     """
-    render(ctx.client.get_vendor_invoices(list(invoice_ids)))
+    render(ctx.client.get_vendor_invoices(list(invoice_keys)))
 
 
 @invoices.command(name="create")

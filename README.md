@@ -114,7 +114,7 @@ Docs: [Employees API](https://help.deltek.com/product/Ajera/api/employees.html) 
 | Command | Description |
 | --- | --- |
 | `ajera employees list` | List employees. |
-| `ajera employees get <id>...` | Get one or more employees by ID. |
+| `ajera employees get <key>...` | Get one or more employees by key. |
 | `ajera employees update <key> [options]` | Update simple fields on one employee. |
 | `ajera employees types` | List employee types. |
 | `ajera employees deductions` | List deductions. |
@@ -130,7 +130,7 @@ Docs: [Clients API](https://help.deltek.com/product/Ajera/api/clients.html)
 | Command | Description |
 | --- | --- |
 | `ajera clients list` | List clients. |
-| `ajera clients get <id>...` | Get one or more clients by ID. |
+| `ajera clients get <key>...` | Get one or more clients by key. |
 | `ajera clients update <key> [options]` | Update simple fields on one client. |
 | `ajera clients types` | List client types. |
 
@@ -141,7 +141,7 @@ Docs: [Contacts API](https://help.deltek.com/product/Ajera/api/contacts.html)
 | Command | Description |
 | --- | --- |
 | `ajera contacts list` | List contacts. |
-| `ajera contacts get <id>...` | Get one or more contacts by ID. |
+| `ajera contacts get <key>...` | Get one or more contacts by key. |
 | `ajera contacts update <key> [options]` | Update simple fields on one contact. |
 | `ajera contacts types` | List contact types. |
 
@@ -154,7 +154,7 @@ The `invoices` subcommands come from the Vendor Invoices (v2) API; the rest come
 | Command | Description |
 | --- | --- |
 | `ajera vendors list` | List vendors. |
-| `ajera vendors get <id>...` | Get one or more vendors by ID. |
+| `ajera vendors get <key>...` | Get one or more vendors by key. |
 | `ajera vendors update <key> [options]` | Update simple fields on one vendor. |
 | `ajera vendors types` | List vendor types. |
 | `ajera vendors invoices list` | List vendor invoices, optionally filtered. |
@@ -171,13 +171,13 @@ use the v1 Projects API; `chargeable-phases` comes from the List Methods API.
 | Command | Description |
 | --- | --- |
 | `ajera projects list` | List projects, optionally filtered. |
-| `ajera projects get <id>...` | Get one or more projects by ID. |
+| `ajera projects get <key>...` | Get one or more projects by key. |
 | `ajera projects create <description> [options]` | Create a new project. |
 | `ajera projects update <key> [options]` | Update simple fields on one project. |
-| `ajera projects totals <id>` | Get a project's financial totals. |
+| `ajera projects totals <key>` | Get a project's financial totals. |
 | `ajera projects types` | List project types. |
 | `ajera projects templates list` | List project templates, optionally filtered. |
-| `ajera projects templates get <id>...` | Get one or more project templates by ID. |
+| `ajera projects templates get <key>...` | Get one or more project templates by key. |
 | `ajera projects chargeable-phases <project-key>` | List the chargeable phases of a project. |
 
 ### General Ledger
