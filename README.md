@@ -43,21 +43,14 @@ For setting up an API user and generating credentials, see the [Deltek Ajera Lea
 
 ### Timeouts and retries
 
-Every request carries a timeout (default `(5, 30)` seconds for connect and read)
-so a stalled connection can't hang the caller forever. Pass `timeout=` to
-override it — a single float, a `(connect, read)` tuple, or `None` to disable —
-and `retries=` to retry connection-establishment failures:
+Every request carries a timeout (default `(5, 30)` seconds for connect and read) so a stalled connection can't hang the caller forever. Pass `timeout=` to override it (a single float, a `(connect, read)` tuple, or `None` to disable), and `retries=` to retry connection-establishment failures:
 
 ```python
 # Wait longer, and retry a dropped/stale connection up to 3 times.
 client = AjeraClient(timeout=60, retries=3)
 ```
 
-An `int` for `retries` retries only the connection stage (before any bytes reach
-the server), which is safe for the non-idempotent writes this client performs —
-a create whose response is merely lost is never resubmitted. For finer control,
-pass a preconfigured `urllib3` `Retry` instead. The CLI reads `AJERA_API_TIMEOUT`
-(seconds) and `AJERA_API_RETRIES` (count) for the same behavior.
+An `int` for `retries` retries only the connection stage (before any bytes reach the server), which is safe for the non-idempotent writes this client performs: a create whose response is merely lost is never resubmitted. For finer control, pass a preconfigured `urllib3` `Retry` instead. The CLI reads `AJERA_API_TIMEOUT` (seconds) and `AJERA_API_RETRIES` (count) for the same behavior.
 
 ## Quick start
 
@@ -89,9 +82,7 @@ $ ajera employees list
 ]
 ```
 
-> **Note:** List commands backed by an active/inactive status return only **active** records by
-> default. Pass `--status` to override - e.g. `--status Inactive`, or
-> `--status Active --status Inactive` to include both.
+> **Note:** List commands backed by an active/inactive status return only **active** records by default. Pass `--status` to override - e.g. `--status Inactive`, or `--status Active --status Inactive` to include both.
 
 ## Reference Documentation
 
@@ -101,9 +92,7 @@ https://help.deltek.com/product/Ajera/api/index.html
 
 ## API reference
 
-Each section below maps a CLI command group to the Ajera API(s) it is built on. The Python client
-exposes the same operations as `client.<method>()` (e.g. `client.list_employees()`,
-`client.get_projects(...)`).
+Each section below maps a CLI command group to the Ajera API(s) it is built on. The Python client exposes the same operations as `client.<method>()` (e.g. `client.list_employees()`, `client.get_projects(...)`).
 
 ### Employees
 
@@ -122,6 +111,8 @@ Docs: [Employees API](https://help.deltek.com/product/Ajera/api/employees.html) 
 | `ajera employees pays` | List pay types. |
 | `ajera employees payroll-taxes` | List payroll taxes. |
 | `ajera employees wage-tables` | List wage tables. |
+
+> **Note:** `employees list` returns `company_key` and `department_key` as bare integers - the API attaches no names to them. To group employees by department, join `department_key` against the `department_key` of `client.list_departments()` (`ajera departments`).
 
 ### Clients
 
@@ -165,8 +156,7 @@ The `invoices` subcommands come from the Vendor Invoices (v2) API; the rest come
 
 Docs: [Projects API (v2)](https://help.deltek.com/product/Ajera/api/version2/projects.html) · [Projects API (v1)](https://help.deltek.com/product/Ajera/api/projects.html) · [List Methods API](https://help.deltek.com/product/Ajera/api/list_methods.html)
 
-`list`, `get`, `update`, and `create` use the v2 Projects API; `totals`, `types`, and `templates`
-use the v1 Projects API; `chargeable-phases` comes from the List Methods API.
+`list`, `get`, `update`, and `create` use the v2 Projects API; `totals`, `types`, and `templates` use the v1 Projects API; `chargeable-phases` comes from the List Methods API.
 
 | Command | Description |
 | --- | --- |
@@ -196,8 +186,7 @@ Docs: [GL Accounts API](https://help.deltek.com/product/Ajera/api/gl_accounts.ht
 
 Docs: [List Methods API](https://help.deltek.com/product/Ajera/api/list_methods.html)
 
-Lightweight lookup lists. (Other List Methods endpoints are grouped with their domain - see
-`employees`, `ledger`, and `projects` above.)
+Lightweight lookup lists. (Other List Methods endpoints are grouped with their domain - see `employees`, `ledger`, and `projects` above.)
 
 | Command | Description |
 | --- | --- |

@@ -208,8 +208,8 @@ def _build_retry(retries: int | Retry) -> Retry:
     stage, before any bytes reach the server). Read-stage and status-based
     retries are disabled because this client issues non-idempotent POSTs:
     retrying a request whose response was merely lost in transit could
-    double-submit a create (for example, a vendor invoice — a permanent
-    accounting record with no delete/void). Callers who understand the risk can
+    double-submit a create (for example, a vendor invoice, which is a
+    permanent accounting record with no delete/void). Callers who understand the risk can
     pass a fully configured ``urllib3`` ``Retry`` to opt into more.
 
     Returns:
@@ -265,9 +265,9 @@ class AjeraClient:
             password: The password to authenticate with (Environment: `AJERA_API_PASSWORD`)
             headers: Additional headers to include in requests
             log: Enables request logging at INFO level
-            timeout: Per-request timeout in seconds applied to every call — a
-                single float, a `(connect, read)` tuple, or `None` to disable.
-                Defaults to `DEFAULT_TIMEOUT`.
+            timeout: Per-request timeout in seconds applied to every call.
+                Accepts a single float, a `(connect, read)` tuple, or `None`
+                to disable. Defaults to `DEFAULT_TIMEOUT`.
             retries: Connection-retry policy. An `int` retries only
                 connection-establishment failures that many times (safe for the
                 non-idempotent POSTs this client issues); a `urllib3` `Retry`
@@ -1440,8 +1440,8 @@ class AjeraClient:
         Get a consolidated, chart-ready overview of a single project
 
         Synthesizes the v2 GetProjects bundle and GetProjectTotals into one
-        derived view — identity, people, schedule, contract, budget, phases,
-        resources, financials, and computed health ratios — not a 1:1 mirror
+        derived view (identity, people, schedule, contract, budget, phases,
+        resources, financials, and computed health ratios), not a 1:1 mirror
         of any single API method.
 
         Phases form a tree; with `subphases` False each phase's `children` is

@@ -2,31 +2,14 @@
 
 ## [0.3.0] - 2026-08-01
 
-- Fixed `ProjectSummary` and `Performance` losing their contract basis across a
-  JSON round trip. `Performance.contract_total` was excluded from output, so a
-  model rebuilt from its own JSON reported a sign-flipped `backlog` (`-billed`)
-  and null `percent_complete` / `percent_contract_billed`. It is now serialized,
-  which adds one field mirroring `contract.total` to the payload and makes
-  `Performance` correct on its own as well as within a summary ([#12]).
-- Fixed `ProjectTotalsDetails` rejecting python field names and silently
-  discarding an explicitly supplied `Totals` map. Its `mode="before"` validator
-  now treats both aliases and python field names as standard project fields, and
-  merges collected totals into any `Totals` the caller passed instead of
-  overwriting it ([#13]).
-- Corrected the `VendorInvoice` documentation for vendor type: it is returned by
-  `ListVendorInvoices` as well as `GetVendorInvoices`, but only for invoices
-  whose vendor has a vendor type assigned — Ajera omits `VendorTypeKey` and
-  `VendorTypeDescription` entirely otherwise. The company and attachment claims
-  were verified as correct and are unchanged ([#14]).
+- **Breaking:** `Employee.company` and `Employee.department` renamed to `company_key` and `department_key`, matching `EmployeeDetails`. `ajera employees list` JSON keys change to match ([#11]).
+- `Performance.contract_total` is now serialized, so `backlog` and the contract ratios survive a JSON round trip ([#12]).
+- `ProjectTotalsDetails` now accepts python field names and keeps an explicitly supplied `Totals` map ([#13]).
+- Corrected `VendorInvoice` docs: `ListVendorInvoices` returns vendor type too, but only when the vendor has one assigned ([#14]).
 
 ## [0.2.0] - 2026-07-18
 
-- **Breaking:** standardized identifier vocabulary — surrogate record
-  identifiers are now consistently called `key`, reserving `id` for genuine
-  business numbers (project number, GL account number, etc.). The `get_*` client
-  methods and CLI `get`/`totals` commands renamed their `*_ids` parameters to
-  `*_keys` (`get_project_totals` renamed `project_id` to `project_key`).
-  Docstrings, CLI help, and schema field descriptions updated to match ([#8]).
+- **Breaking:** standardized identifier vocabulary on `key` for surrogate identifiers, reserving `id` for business numbers. The `get_*` methods and their CLI commands renamed `*_ids` to `*_keys` ([#8]).
 
 ## [0.1.7] - 2026-07-18
 
@@ -58,6 +41,7 @@
 [#3]: https://github.com/sbo-inc/ajera/issues/3
 [#5]: https://github.com/sbo-inc/ajera/issues/5
 [#8]: https://github.com/sbo-inc/ajera/issues/8
+[#11]: https://github.com/sbo-inc/ajera/issues/11
 [#12]: https://github.com/sbo-inc/ajera/issues/12
 [#13]: https://github.com/sbo-inc/ajera/issues/13
 [#14]: https://github.com/sbo-inc/ajera/issues/14 
