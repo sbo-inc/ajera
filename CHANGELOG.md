@@ -10,6 +10,7 @@
 - `Performance.contract_total` is now serialized, so `backlog` and the contract ratios survive a JSON round trip ([#12]).
 - `ProjectTotalsDetails` now accepts python field names and keeps an explicitly supplied `Totals` map ([#13]).
 - Corrected `VendorInvoice` docs: `ListVendorInvoices` returns vendor type too, but only when the vendor has one assigned ([#14]).
+- README links to the package on PyPI, with version, supported-Python, and license badges ([#7]).
 
 ## [0.2.0] - 2026-07-18
 
@@ -44,6 +45,7 @@
 [0.1.4]: https://github.com/sbo-inc/ajera/releases/tag/v0.1.4
 [#3]: https://github.com/sbo-inc/ajera/issues/3
 [#5]: https://github.com/sbo-inc/ajera/issues/5
+[#7]: https://github.com/sbo-inc/ajera/issues/7
 [#8]: https://github.com/sbo-inc/ajera/issues/8
 [#10]: https://github.com/sbo-inc/ajera/issues/10
 [#11]: https://github.com/sbo-inc/ajera/issues/11

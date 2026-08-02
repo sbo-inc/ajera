@@ -1,4 +1,7 @@
 [![CI](https://github.com/sbo-inc/ajera/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/sbo-inc/ajera/actions/workflows/ci.yaml)
+[![PyPI](https://img.shields.io/pypi/v/ajera.svg)](https://pypi.org/project/ajera/)
+[![Python versions](https://img.shields.io/pypi/pyversions/ajera.svg)](https://pypi.org/project/ajera/)
+[![License](https://img.shields.io/pypi/l/ajera.svg)](https://github.com/sbo-inc/ajera/blob/main/LICENSE)
 
 # Deltek Ajera Python client
 
@@ -15,6 +18,8 @@ Ajera exposes a single JSON-RPC style endpoint; this package wraps it in an ergo
 - **Read and write** - list, get, update, and create across the supported APIs.
 
 ## Installation
+
+The package is published on PyPI as [`ajera`](https://pypi.org/project/ajera/):
 
 ```bash
 pip install ajera
