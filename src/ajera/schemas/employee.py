@@ -195,15 +195,15 @@ class Employee(GenericBaseModel):
         alias="LastName",
         description="Employee last name.",
     )
-    company: int = Field(
+    company_key: int = Field(
         default=-1,
         alias="Company",
-        description="Company identifier.",
+        description="Company key.",
     )
-    department: int = Field(
+    department_key: int = Field(
         default=-1,
         alias="Department",
-        description="Department identifier.",
+        description="Department key.",
     )
     restrict_to_own_company: bool = Field(
         default=False,
