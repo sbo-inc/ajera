@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0] - 2026-08-01
+
+- Corrected the `VendorInvoice` documentation for vendor type: it is returned by
+  `ListVendorInvoices` as well as `GetVendorInvoices`, but only for invoices
+  whose vendor has a vendor type assigned — Ajera omits `VendorTypeKey` and
+  `VendorTypeDescription` entirely otherwise. The company and attachment claims
+  were verified as correct and are unchanged ([#14]).
+
 ## [0.2.0] - 2026-07-18
 
 - **Breaking:** standardized identifier vocabulary — surrogate record
@@ -30,6 +38,7 @@
 
 - Initial release.
 
+[0.3.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.3.0
 [0.2.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.2.0
 [0.1.7]: https://github.com/sbo-inc/ajera/releases/tag/v0.1.7
 [0.1.6]: https://github.com/sbo-inc/ajera/releases/tag/v0.1.6
@@ -37,4 +46,5 @@
 [0.1.4]: https://github.com/sbo-inc/ajera/releases/tag/v0.1.4
 [#3]: https://github.com/sbo-inc/ajera/issues/3
 [#5]: https://github.com/sbo-inc/ajera/issues/5
-[#8]: https://github.com/sbo-inc/ajera/issues/8 
+[#8]: https://github.com/sbo-inc/ajera/issues/8
+[#14]: https://github.com/sbo-inc/ajera/issues/14 
