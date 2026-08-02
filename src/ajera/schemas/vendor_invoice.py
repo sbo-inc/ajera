@@ -18,8 +18,10 @@ class VendorInvoice(GenericBaseModel):
     Vendor invoice header.
 
     Used for both ListVendorInvoices and the header records of
-    GetVendorInvoices. Some fields (company, vendor type, attachments) are only
-    populated by GetVendorInvoices.
+    GetVendorInvoices. Company and attachments are only populated by
+    GetVendorInvoices. Vendor type is returned by both, but only for invoices
+    whose vendor has a vendor type assigned; Ajera omits the properties
+    otherwise, leaving the model defaults in place.
     """
 
     vendor_invoice_key: int = Field(
@@ -40,12 +42,18 @@ class VendorInvoice(GenericBaseModel):
     vendor_type_key: int | None = Field(
         default=None,
         alias="VendorTypeKey",
-        description="Vendor type key (populated by GetVendorInvoices).",
+        description=(
+            "Vendor type key. Absent from the response when the vendor has no "
+            "vendor type assigned."
+        ),
     )
     vendor_type_description: str = Field(
         default="",
         alias="VendorTypeDescription",
-        description="Vendor type description (populated by GetVendorInvoices).",
+        description=(
+            "Vendor type description. Absent from the response when the vendor "
+            "has no vendor type assigned."
+        ),
     )
     company_key: int | None = Field(
         default=None,
