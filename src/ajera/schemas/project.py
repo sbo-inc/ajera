@@ -1065,13 +1065,17 @@ class ProjectTotalsDetails(ProjectDetails):
         Collect extra numeric totals into `Totals`.
 
         Every numeric top-level property that is not a standard project field
-        (nor a CF_ custom field) is moved into the `Totals` map.
+        (nor a CF_ custom field) is moved into the `Totals` map. Both aliases
+        and python field names are treated as standard, and any `Totals` map
+        the caller supplied is preserved rather than overwritten.
         """
         if not isinstance(data, dict):
             return data
         source = cast("dict[str, object]", data)
         standard = {
-            info.alias or name for name, info in ProjectDetails.model_fields.items()
+            alias_or_name
+            for name, info in ProjectDetails.model_fields.items()
+            for alias_or_name in (name, info.alias or name)
         }
         totals: dict[str, float] = {}
         rest: dict[str, object] = {}
@@ -1085,7 +1089,8 @@ class ProjectTotalsDetails(ProjectDetails):
                 totals[key] = float(value)
             else:
                 rest[key] = value
-        rest["Totals"] = totals
+        existing = source.get("Totals") or source.get("totals") or {}
+        rest["Totals"] = {**cast("dict[str, float]", existing), **totals}
         return rest
 
 

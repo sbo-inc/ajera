@@ -2,6 +2,11 @@
 
 ## [0.3.0] - 2026-08-01
 
+- Fixed `ProjectTotalsDetails` rejecting python field names and silently
+  discarding an explicitly supplied `Totals` map. Its `mode="before"` validator
+  now treats both aliases and python field names as standard project fields, and
+  merges collected totals into any `Totals` the caller passed instead of
+  overwriting it ([#13]).
 - Corrected the `VendorInvoice` documentation for vendor type: it is returned by
   `ListVendorInvoices` as well as `GetVendorInvoices`, but only for invoices
   whose vendor has a vendor type assigned — Ajera omits `VendorTypeKey` and
@@ -47,4 +52,5 @@
 [#3]: https://github.com/sbo-inc/ajera/issues/3
 [#5]: https://github.com/sbo-inc/ajera/issues/5
 [#8]: https://github.com/sbo-inc/ajera/issues/8
+[#13]: https://github.com/sbo-inc/ajera/issues/13
 [#14]: https://github.com/sbo-inc/ajera/issues/14 
