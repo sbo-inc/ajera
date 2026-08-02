@@ -249,9 +249,8 @@ class Performance(GenericBaseModel):
     )
     contract_total: float = Field(
         default=0.0,
-        exclude=True,
-        description="Total contract amount; basis for percent_contract_billed."
-        " Excluded from output (mirrors contract.total).",
+        description="Total contract amount; the basis for backlog,"
+        " percent_complete and percent_contract_billed.",
     )
 
     @computed_field(description="Profit to date (billed minus cost).")
