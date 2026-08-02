@@ -1,7 +1,7 @@
 import pytest
 
 from ajera.schemas.project import EmployeeReference
-from ajera.schemas.project_summary import ProjectSummary
+from ajera.schemas.project_summary import Performance, ProjectSummary
 from ajera.schemas.project_v2 import (
     InvoiceGroupV2,
     PhaseV2,
@@ -181,10 +181,6 @@ def test_build_computes_health_ratios() -> None:
     assert perf.percent_contract_billed == 0.5
     assert perf.percent_hours_used == 0.4
 
-    # contract_total backs the ratio but is excluded from serialized output.
-    dumped = summary.performance.model_dump()
-    assert "contract_total" not in dumped
-
 
 def test_build_computes_contract_health_metrics() -> None:
     summary = ProjectSummary.build(_bundle(), _totals())
@@ -310,3 +306,60 @@ def test_build_nests_phases_into_a_tree() -> None:
 def test_build_raises_without_project() -> None:
     with pytest.raises(ValueError, match="No project"):
         ProjectSummary.build(ProjectBundle(), _totals())
+
+
+# =============================================================================
+# TEST: JSON round trip
+# =============================================================================
+
+
+def test_round_trip_preserves_contract_ratios() -> None:
+    # contract_total is the basis for backlog and the two contract ratios. When
+    # it was excluded from output, a summary rebuilt from its own JSON arrived
+    # with a zero basis and silently reported backlog as -billed.
+    summary = ProjectSummary.build(_bundle(), _totals())
+    rebuilt = ProjectSummary.model_validate_json(summary.model_dump_json())
+
+    assert rebuilt.performance.contract_total == 400000.0
+    assert rebuilt.performance.backlog == summary.performance.backlog == 200000.0
+    assert rebuilt.performance.percent_complete == summary.performance.percent_complete
+    assert (
+        rebuilt.performance.percent_contract_billed
+        == summary.performance.percent_contract_billed
+    )
+
+
+def test_round_trip_serializes_the_contract_basis() -> None:
+    # The basis is carried in the payload rather than restored from a sibling
+    # block, which is what keeps Performance correct on its own.
+    summary = ProjectSummary.build(_bundle(), _totals())
+
+    assert summary.performance.model_dump()["contract_total"] == 400000.0
+    assert "contract_total" in summary.model_dump_json()
+
+
+def test_performance_round_trips_on_its_own() -> None:
+    # Performance is a public export, so it has to survive being serialized
+    # apart from the summary that owns its contract block.
+    performance = ProjectSummary.build(_bundle(), _totals()).performance
+    rebuilt = Performance.model_validate_json(performance.model_dump_json())
+
+    assert rebuilt.contract_total == performance.contract_total == 400000.0
+    assert rebuilt.backlog == performance.backlog == 200000.0
+    assert rebuilt.percent_complete == performance.percent_complete
+    assert rebuilt.percent_contract_billed == performance.percent_contract_billed
+
+
+def test_round_trip_without_a_contract_stays_zero() -> None:
+    # No contract anywhere, so a zero basis is the correct answer rather than a
+    # symptom of the field being dropped.
+    bundle = ProjectBundle(
+        Projects=[ProjectV2(ProjectKey=1003, ID="1003", Description="Project Gamma")]
+    )
+    summary = ProjectSummary.build(bundle, _totals())
+    rebuilt = ProjectSummary.model_validate_json(summary.model_dump_json())
+
+    assert rebuilt.performance.contract_total == 0.0
+    assert rebuilt.performance.backlog == summary.performance.backlog == -200000.0
+    assert rebuilt.performance.percent_complete is None
+    assert rebuilt.performance.percent_contract_billed is None

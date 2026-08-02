@@ -2,6 +2,12 @@
 
 ## [0.3.0] - 2026-08-01
 
+- Fixed `ProjectSummary` and `Performance` losing their contract basis across a
+  JSON round trip. `Performance.contract_total` was excluded from output, so a
+  model rebuilt from its own JSON reported a sign-flipped `backlog` (`-billed`)
+  and null `percent_complete` / `percent_contract_billed`. It is now serialized,
+  which adds one field mirroring `contract.total` to the payload and makes
+  `Performance` correct on its own as well as within a summary ([#12]).
 - Fixed `ProjectTotalsDetails` rejecting python field names and silently
   discarding an explicitly supplied `Totals` map. Its `mode="before"` validator
   now treats both aliases and python field names as standard project fields, and
@@ -52,5 +58,6 @@
 [#3]: https://github.com/sbo-inc/ajera/issues/3
 [#5]: https://github.com/sbo-inc/ajera/issues/5
 [#8]: https://github.com/sbo-inc/ajera/issues/8
+[#12]: https://github.com/sbo-inc/ajera/issues/12
 [#13]: https://github.com/sbo-inc/ajera/issues/13
 [#14]: https://github.com/sbo-inc/ajera/issues/14 
