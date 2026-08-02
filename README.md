@@ -10,6 +10,7 @@ Ajera exposes a single JSON-RPC style endpoint; this package wraps it in an ergo
 
 - **Typed models** - every response is parsed into Pydantic models with descriptive fields.
 - **Python client and CLI** - use it as a library or straight from the shell via `ajera`.
+- **Sync and async** - `AjeraClient` and `AsyncAjeraClient` expose the same methods over `httpx`.
 - **Sensible defaults** - handles session tokens and per-method API versions for you.
 - **Read and write** - list, get, update, and create across the supported APIs.
 
@@ -50,7 +51,7 @@ Every request carries a timeout (default `(5, 30)` seconds for connect and read)
 client = AjeraClient(timeout=60, retries=3)
 ```
 
-An `int` for `retries` retries only the connection stage (before any bytes reach the server), which is safe for the non-idempotent writes this client performs: a create whose response is merely lost is never resubmitted. For finer control, pass a preconfigured `urllib3` `Retry` instead. The CLI reads `AJERA_API_TIMEOUT` (seconds) and `AJERA_API_RETRIES` (count) for the same behavior.
+`retries` retries only the connection stage (before any bytes reach the server), which is safe for the non-idempotent writes this client performs: a create whose response is merely lost is never resubmitted. The CLI reads `AJERA_API_TIMEOUT` (seconds) and `AJERA_API_RETRIES` (count) for the same behavior.
 
 ## Quick start
 
@@ -66,6 +67,36 @@ client = AjeraClient()
 for employee in client.list_employees():
     print(employee.employee_key, employee.first_name, employee.last_name)
 ```
+
+### Python (async)
+
+`AsyncAjeraClient` mirrors `AjeraClient` method for method - same arguments, same return types, awaited. Share one instance across tasks so they reuse its connection pool and session token, and bound the fan-out with a semaphore (the API throttles at roughly 9 requests per second):
+
+```python
+import asyncio
+
+from ajera import AsyncAjeraClient
+
+
+async def main() -> None:
+    async with AsyncAjeraClient() as client:
+        projects = await client.list_projects()
+        limit = asyncio.Semaphore(5)
+
+        async def totals(project_key: int):
+            async with limit:
+                return await client.get_project_totals(project_key)
+
+        for total in await asyncio.gather(
+            *(totals(project.project_key) for project in projects)
+        ):
+            print(total.project_key, total.totals)
+
+
+asyncio.run(main())
+```
+
+Outside a context manager, call `await client.aclose()` when you're done with it.
 
 ### CLI
 
@@ -92,7 +123,7 @@ https://help.deltek.com/product/Ajera/api/index.html
 
 ## API reference
 
-Each section below maps a CLI command group to the Ajera API(s) it is built on. The Python client exposes the same operations as `client.<method>()` (e.g. `client.list_employees()`, `client.get_projects(...)`).
+Each section below maps a CLI command group to the Ajera API(s) it is built on. The Python client exposes the same operations as `client.<method>()` (e.g. `client.list_employees()`, `client.get_projects(...)`), and `AsyncAjeraClient` exposes every one of them as a coroutine of the same name.
 
 ### Employees
 

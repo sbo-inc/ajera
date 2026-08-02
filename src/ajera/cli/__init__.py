@@ -2,7 +2,7 @@ import logging
 import sys
 
 import click
-import requests
+import httpx
 
 from ajera.cli.commands import (
     activities,
@@ -86,7 +86,7 @@ def main() -> None:
         sys.exit(exc.exit_code)
     except click.exceptions.Abort:
         sys.exit(1)
-    except requests.HTTPError as exc:
+    except httpx.HTTPError as exc:
         click.echo(f"Error: {exc}", err=True)
         sys.exit(1)
     except Exception as exc:  # noqa: BLE001

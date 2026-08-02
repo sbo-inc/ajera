@@ -1,4 +1,4 @@
-import threading
+import asyncio
 from typing import Any, Self
 
 import httpx
@@ -58,19 +58,27 @@ from ajera.schemas.vendor_invoice import (
     VendorInvoiceBundle,
     VendorInvoiceLineItemCreate,
 )
-from ajera.transport import DEFAULT_TIMEOUT, BaseAjeraClient, logger
+from ajera.transport import DEFAULT_TIMEOUT, BaseAjeraClient
 
-__all__ = ["DEFAULT_TIMEOUT", "AjeraClient", "logger"]
+__all__ = ["AsyncAjeraClient"]
 
 
 # =============================================================================
-# CLASS: AjeraClient
+# CLASS: AsyncAjeraClient
 # =============================================================================
 
 
-class AjeraClient(BaseAjeraClient):
+class AsyncAjeraClient(BaseAjeraClient):
     """
-    Deltek Ajera Client
+    Asynchronous Deltek Ajera Client
+
+    Mirrors `AjeraClient` method for method, over `httpx.AsyncClient`. Both
+    clients build the same operations and differ only in how they put them on
+    the wire, so behaviour, arguments, and return types match exactly.
+
+    One instance is meant to be shared across tasks: its connection pool and
+    its session-token cache are both reused, and gathered calls on a cold cache
+    log in once rather than once each.
 
     https://help.deltek.com/Product/Ajera/api/index.html
     """
@@ -86,7 +94,7 @@ class AjeraClient(BaseAjeraClient):
         retries: int | None = None,
     ) -> None:
         """
-        Create a new client for the Deltek Ajera API.
+        Create a new asynchronous client for the Deltek Ajera API.
 
         Args:
             url: The base URL of the API (Environment: `AJERA_API_URL`)
@@ -111,50 +119,46 @@ class AjeraClient(BaseAjeraClient):
             timeout=timeout,
         )
 
-        self._http = httpx.Client(
+        self._http = httpx.AsyncClient(
             headers={"Content-Type": "application/json", **headers},
-            transport=httpx.HTTPTransport(retries=retries) if retries else None,
+            transport=httpx.AsyncHTTPTransport(retries=retries) if retries else None,
         )
 
-        # Guards token minting so concurrent callers on a cold cache log in
-        # once rather than once each.
-        self._token_lock = threading.Lock()
+        # Guards token minting so gathered callers on a cold cache log in once
+        # rather than once each.
+        self._token_lock = asyncio.Lock()
 
     @property
-    def http(self) -> httpx.Client:
-        return self._http
-
-    @property
-    def session(self) -> httpx.Client:
+    def http(self) -> httpx.AsyncClient:
         """
-        Deprecated alias for `http`, kept for one release.
+        The underlying HTTP client.
 
         Returns:
-            httpx.Client: The underlying HTTP client.
+            httpx.AsyncClient: The underlying HTTP client.
         """
         return self._http
 
     # -------------------------------------------------------------------------
-    # METHOD: close
+    # METHOD: aclose
     # -------------------------------------------------------------------------
 
-    def close(self) -> None:
+    async def aclose(self) -> None:
         """
         Close the underlying HTTP client and its connection pool.
         """
-        self._http.close()
+        await self._http.aclose()
 
-    def __enter__(self) -> Self:
+    async def __aenter__(self) -> Self:
         return self
 
-    def __exit__(self, *exc_info: object) -> None:
-        self.close()
+    async def __aexit__(self, *exc_info: object) -> None:
+        await self.aclose()
 
     # -------------------------------------------------------------------------
     # METHOD: _post
     # -------------------------------------------------------------------------
 
-    def _post(
+    async def _post(
         self,
         request: BaseModel,
         exclude: set[str] | dict[str, Any] | None = None,
@@ -168,7 +172,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             dict[str, Any]: The decoded JSON response body.
         """
-        response = self._http.post(
+        response = await self._http.post(
             url=self._require_url(),
             content=request.model_dump_json(
                 exclude_none=True, by_alias=True, exclude=exclude
@@ -182,15 +186,17 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: _run
     # -------------------------------------------------------------------------
 
-    def _run[T](self, operation: Operation[T]) -> T:
+    async def _run[T](self, operation: Operation[T]) -> T:
         """
         Authenticate, send, and parse one operation.
 
         Returns:
             T: Whatever the operation's parser produces.
         """
-        operation.request.session_token = self.get_session_token(operation.api_version)
-        data = self._post(operation.request, exclude=operation.exclude)
+        operation.request.session_token = await self.get_session_token(
+            operation.api_version
+        )
+        data = await self._post(operation.request, exclude=operation.exclude)
 
         return operation.parse(data)
 
@@ -198,7 +204,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: get_session_info
     # -------------------------------------------------------------------------
 
-    def get_session_info(self, api_version: int = 1) -> APISessionContent:
+    async def get_session_info(self, api_version: int = 1) -> APISessionContent:
         """
         Get information about the calling user and the API session.
 
@@ -211,7 +217,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             APISessionContent: The session and calling-user information.
         """
-        data = self._post(self._login_request(api_version))
+        data = await self._post(self._login_request(api_version))
         content = APISession.model_validate(data).content
 
         if content.session_token:
@@ -223,7 +229,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: get_session_token
     # -------------------------------------------------------------------------
 
-    def get_session_token(self, api_version: int) -> str:
+    async def get_session_token(self, api_version: int) -> str:
         """
         Get a session token for an API version, minting one if not cached.
 
@@ -234,18 +240,18 @@ class AjeraClient(BaseAjeraClient):
         if token:
             return token
 
-        with self._token_lock:
+        async with self._token_lock:
             token = self._session_tokens.get(api_version)
             if token:
                 return token
 
-            return self.get_session_info(api_version).session_token
+            return (await self.get_session_info(api_version)).session_token
 
     # -------------------------------------------------------------------------
     # METHOD: list_employees
     # -------------------------------------------------------------------------
 
-    def list_employees(
+    async def list_employees(
         self,
         *,
         filter_by_company: list[int] | None = None,
@@ -263,7 +269,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[Employee]: The list of employees.
         """
-        return self._run(
+        return await self._run(
             employee_ops.list_employees(
                 filter_by_company=filter_by_company,
                 filter_by_status=filter_by_status,
@@ -278,7 +284,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: get_employees
     # -------------------------------------------------------------------------
 
-    def get_employees(self, employee_keys: list[int]) -> list[EmployeeDetails]:
+    async def get_employees(self, employee_keys: list[int]) -> list[EmployeeDetails]:
         """
         Get employee(s) details by key
 
@@ -287,13 +293,13 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[EmployeeDetails]: A list of employees with the specified keys.
         """
-        return self._run(employee_ops.get_employees(employee_keys))
+        return await self._run(employee_ops.get_employees(employee_keys))
 
     # -------------------------------------------------------------------------
     # METHOD: list_employee_types
     # -------------------------------------------------------------------------
 
-    def list_employee_types(
+    async def list_employee_types(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -306,7 +312,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[EmployeeType]: The list of employee types.
         """
-        return self._run(
+        return await self._run(
             employee_ops.list_employee_types(filter_by_status=filter_by_status)
         )
 
@@ -314,7 +320,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_deductions
     # -------------------------------------------------------------------------
 
-    def list_deductions(
+    async def list_deductions(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -327,7 +333,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[Deduction]: The list of deductions.
         """
-        return self._run(
+        return await self._run(
             employee_ops.list_deductions(filter_by_status=filter_by_status)
         )
 
@@ -335,7 +341,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_fringes
     # -------------------------------------------------------------------------
 
-    def list_fringes(
+    async def list_fringes(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -348,13 +354,15 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[Fringe]: The list of fringes.
         """
-        return self._run(employee_ops.list_fringes(filter_by_status=filter_by_status))
+        return await self._run(
+            employee_ops.list_fringes(filter_by_status=filter_by_status)
+        )
 
     # -------------------------------------------------------------------------
     # METHOD: update_employee
     # -------------------------------------------------------------------------
 
-    def update_employee(
+    async def update_employee(
         self,
         employee_key: int,
         *,
@@ -384,7 +392,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             UpdatedEmployeeResult: The resulting employee record.
         """
-        employees = self.get_employees([employee_key])
+        employees = await self.get_employees([employee_key])
         if not employees:
             raise ValueError(f"No employee found with key {employee_key}")
         baseline = employees[0]
@@ -407,13 +415,13 @@ class AjeraClient(BaseAjeraClient):
         if modified == baseline:
             return employee_ops.unchanged_employee_result(baseline)
 
-        return self._run(employee_ops.update_employee(baseline, modified))
+        return await self._run(employee_ops.update_employee(baseline, modified))
 
     # -------------------------------------------------------------------------
     # METHOD: list_clients
     # -------------------------------------------------------------------------
 
-    def list_clients(
+    async def list_clients(
         self,
         *,
         filter_by_company: list[int] | None = None,
@@ -432,7 +440,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[Client]: The list of clients.
         """
-        return self._run(
+        return await self._run(
             client_ops.list_clients(
                 filter_by_company=filter_by_company,
                 filter_by_status=filter_by_status,
@@ -448,7 +456,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: get_clients
     # -------------------------------------------------------------------------
 
-    def get_clients(self, client_keys: list[int]) -> list[ClientDetails]:
+    async def get_clients(self, client_keys: list[int]) -> list[ClientDetails]:
         """
         Get client(s) details by key
 
@@ -457,13 +465,13 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[ClientDetails]: A list of clients with the specified keys.
         """
-        return self._run(client_ops.get_clients(client_keys))
+        return await self._run(client_ops.get_clients(client_keys))
 
     # -------------------------------------------------------------------------
     # METHOD: list_client_types
     # -------------------------------------------------------------------------
 
-    def list_client_types(
+    async def list_client_types(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -476,7 +484,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[ClientType]: The list of client types.
         """
-        return self._run(
+        return await self._run(
             client_ops.list_client_types(filter_by_status=filter_by_status)
         )
 
@@ -484,7 +492,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: update_client
     # -------------------------------------------------------------------------
 
-    def update_client(
+    async def update_client(
         self,
         client_key: int,
         *,
@@ -513,7 +521,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             UpdatedClientResult: The resulting client record.
         """
-        clients = self.get_clients([client_key])
+        clients = await self.get_clients([client_key])
         if not clients:
             raise ValueError(f"No client found with key {client_key}")
         baseline = clients[0]
@@ -535,13 +543,13 @@ class AjeraClient(BaseAjeraClient):
         if modified == baseline:
             return client_ops.unchanged_client_result(baseline)
 
-        return self._run(client_ops.update_client(baseline, modified))
+        return await self._run(client_ops.update_client(baseline, modified))
 
     # -------------------------------------------------------------------------
     # METHOD: list_contacts
     # -------------------------------------------------------------------------
 
-    def list_contacts(
+    async def list_contacts(
         self,
         *,
         filter_by_company: list[int] | None = None,
@@ -559,7 +567,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[Contact]: The list of contacts.
         """
-        return self._run(
+        return await self._run(
             contact_ops.list_contacts(
                 filter_by_company=filter_by_company,
                 filter_by_status=filter_by_status,
@@ -574,7 +582,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: get_contacts
     # -------------------------------------------------------------------------
 
-    def get_contacts(self, contact_keys: list[int]) -> list[ContactDetails]:
+    async def get_contacts(self, contact_keys: list[int]) -> list[ContactDetails]:
         """
         Get contact(s) details by key
 
@@ -583,13 +591,13 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[ContactDetails]: A list of contacts with the specified keys.
         """
-        return self._run(contact_ops.get_contacts(contact_keys))
+        return await self._run(contact_ops.get_contacts(contact_keys))
 
     # -------------------------------------------------------------------------
     # METHOD: list_contact_types
     # -------------------------------------------------------------------------
 
-    def list_contact_types(
+    async def list_contact_types(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -602,7 +610,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[ContactType]: The list of contact types.
         """
-        return self._run(
+        return await self._run(
             contact_ops.list_contact_types(filter_by_status=filter_by_status)
         )
 
@@ -610,7 +618,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: update_contact
     # -------------------------------------------------------------------------
 
-    def update_contact(
+    async def update_contact(
         self,
         contact_key: int,
         *,
@@ -642,7 +650,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             UpdatedContactResult: The resulting contact record.
         """
-        contacts = self.get_contacts([contact_key])
+        contacts = await self.get_contacts([contact_key])
         if not contacts:
             raise ValueError(f"No contact found with key {contact_key}")
         baseline = contacts[0]
@@ -667,13 +675,13 @@ class AjeraClient(BaseAjeraClient):
         if modified == baseline:
             return contact_ops.unchanged_contact_result(baseline)
 
-        return self._run(contact_ops.update_contact(baseline, modified))
+        return await self._run(contact_ops.update_contact(baseline, modified))
 
     # -------------------------------------------------------------------------
     # METHOD: list_vendors
     # -------------------------------------------------------------------------
 
-    def list_vendors(
+    async def list_vendors(
         self,
         *,
         filter_by_company: list[int] | None = None,
@@ -691,7 +699,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[Vendor]: The list of vendors.
         """
-        return self._run(
+        return await self._run(
             vendor_ops.list_vendors(
                 filter_by_company=filter_by_company,
                 filter_by_status=filter_by_status,
@@ -706,7 +714,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: get_vendors
     # -------------------------------------------------------------------------
 
-    def get_vendors(self, vendor_keys: list[int]) -> list[VendorDetails]:
+    async def get_vendors(self, vendor_keys: list[int]) -> list[VendorDetails]:
         """
         Get vendor(s) details by key
 
@@ -715,13 +723,13 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[VendorDetails]: A list of vendors with the specified keys.
         """
-        return self._run(vendor_ops.get_vendors(vendor_keys))
+        return await self._run(vendor_ops.get_vendors(vendor_keys))
 
     # -------------------------------------------------------------------------
     # METHOD: list_vendor_types
     # -------------------------------------------------------------------------
 
-    def list_vendor_types(
+    async def list_vendor_types(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -736,7 +744,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[VendorType]: The list of vendor types.
         """
-        return self._run(
+        return await self._run(
             vendor_ops.list_vendor_types(
                 filter_by_status=filter_by_status,
                 filter_by_is_credit_card=filter_by_is_credit_card,
@@ -748,7 +756,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: update_vendor
     # -------------------------------------------------------------------------
 
-    def update_vendor(
+    async def update_vendor(
         self,
         vendor_key: int,
         *,
@@ -778,7 +786,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             UpdatedVendorResult: The resulting vendor record.
         """
-        vendors = self.get_vendors([vendor_key])
+        vendors = await self.get_vendors([vendor_key])
         if not vendors:
             raise ValueError(f"No vendor found with key {vendor_key}")
         baseline = vendors[0]
@@ -800,13 +808,13 @@ class AjeraClient(BaseAjeraClient):
         if modified == baseline:
             return vendor_ops.unchanged_vendor_result(baseline)
 
-        return self._run(vendor_ops.update_vendor(baseline, modified))
+        return await self._run(vendor_ops.update_vendor(baseline, modified))
 
     # -------------------------------------------------------------------------
     # METHOD: list_vendor_invoices
     # -------------------------------------------------------------------------
 
-    def list_vendor_invoices(
+    async def list_vendor_invoices(
         self,
         *,
         with_payment_status: bool = False,
@@ -862,14 +870,14 @@ class AjeraClient(BaseAjeraClient):
             filter_by_equal_to_amount=filter_by_equal_to_amount,
         )
 
-        invoices = self._run(vendor_invoice_ops.list_vendor_invoices(arguments))
+        invoices = await self._run(vendor_invoice_ops.list_vendor_invoices(arguments))
 
         if with_payment_status:
             paid = vendor_invoice_ops.paid_keys_or_query(arguments, invoices)
             if not isinstance(paid, set):
                 paid = {
                     invoice.vendor_invoice_key
-                    for invoice in self._run(
+                    for invoice in await self._run(
                         vendor_invoice_ops.list_vendor_invoices(paid)
                     )
                 }
@@ -881,7 +889,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: get_vendor_invoices
     # -------------------------------------------------------------------------
 
-    def get_vendor_invoices(self, invoice_keys: list[int]) -> VendorInvoiceBundle:
+    async def get_vendor_invoices(self, invoice_keys: list[int]) -> VendorInvoiceBundle:
         """
         Get vendor invoice(s) by key, with their line items
 
@@ -893,13 +901,13 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             VendorInvoiceBundle: The invoice headers and line items.
         """
-        return self._run(vendor_invoice_ops.get_vendor_invoices(invoice_keys))
+        return await self._run(vendor_invoice_ops.get_vendor_invoices(invoice_keys))
 
     # -------------------------------------------------------------------------
     # METHOD: create_vendor_invoice
     # -------------------------------------------------------------------------
 
-    def create_vendor_invoice(
+    async def create_vendor_invoice(
         self,
         *,
         vendor_key: int,
@@ -924,7 +932,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             VendorInvoiceBundle: The created invoice header and line items.
         """
-        return self._run(
+        return await self._run(
             vendor_invoice_ops.create_vendor_invoice(
                 vendor_key=vendor_key,
                 company_key=company_key,
@@ -942,7 +950,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_projects
     # -------------------------------------------------------------------------
 
-    def list_projects(
+    async def list_projects(
         self,
         *,
         filter_by_company: list[int] | None = None,
@@ -966,7 +974,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[Project]: The list of projects.
         """
-        return self._run(
+        return await self._run(
             project_ops.list_projects(
                 filter_by_company=filter_by_company,
                 filter_by_status=filter_by_status,
@@ -985,7 +993,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: get_projects
     # -------------------------------------------------------------------------
 
-    def get_projects(self, project_keys: list[int]) -> ProjectBundle:
+    async def get_projects(self, project_keys: list[int]) -> ProjectBundle:
         """
         Get project(s) by key, with phases, invoice groups, and resources
 
@@ -997,13 +1005,13 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             ProjectBundle: The projects and their related records.
         """
-        return self._run(project_ops.get_projects(project_keys))
+        return await self._run(project_ops.get_projects(project_keys))
 
     # -------------------------------------------------------------------------
     # METHOD: get_project_totals
     # -------------------------------------------------------------------------
 
-    def get_project_totals(self, project_key: int) -> ProjectTotalsDetails:
+    async def get_project_totals(self, project_key: int) -> ProjectTotalsDetails:
         """
         Get a single project's details enriched with financial totals
 
@@ -1015,13 +1023,13 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             ProjectTotalsDetails: The project with project-level totals.
         """
-        return self._run(project_ops.get_project_totals(project_key))
+        return await self._run(project_ops.get_project_totals(project_key))
 
     # -------------------------------------------------------------------------
     # METHOD: get_project_summary
     # -------------------------------------------------------------------------
 
-    def get_project_summary(
+    async def get_project_summary(
         self,
         project_key: int,
         *,
@@ -1043,8 +1051,8 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             ProjectSummary: The consolidated project overview.
         """
-        bundle = self.get_projects([project_key])
-        totals = self.get_project_totals(project_key).totals
+        bundle = await self.get_projects([project_key])
+        totals = (await self.get_project_totals(project_key)).totals
 
         return project_ops.build_project_summary(bundle, totals, subphases=subphases)
 
@@ -1052,7 +1060,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_project_types
     # -------------------------------------------------------------------------
 
-    def list_project_types(
+    async def list_project_types(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -1065,7 +1073,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[ProjectType]: The list of project types.
         """
-        return self._run(
+        return await self._run(
             project_ops.list_project_types(filter_by_status=filter_by_status)
         )
 
@@ -1073,7 +1081,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_project_templates
     # -------------------------------------------------------------------------
 
-    def list_project_templates(
+    async def list_project_templates(
         self,
         *,
         filter_by_company: list[int] | None = None,
@@ -1095,7 +1103,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[ProjectTemplate]: The list of project templates.
         """
-        return self._run(
+        return await self._run(
             project_ops.list_project_templates(
                 filter_by_company=filter_by_company,
                 filter_by_status=filter_by_status,
@@ -1114,7 +1122,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: get_project_templates
     # -------------------------------------------------------------------------
 
-    def get_project_templates(
+    async def get_project_templates(
         self, template_keys: list[int]
     ) -> list[ProjectTemplateDetails]:
         """
@@ -1125,13 +1133,13 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[ProjectTemplateDetails]: A list of templates with the given keys.
         """
-        return self._run(project_ops.get_project_templates(template_keys))
+        return await self._run(project_ops.get_project_templates(template_keys))
 
     # -------------------------------------------------------------------------
     # METHOD: update_project
     # -------------------------------------------------------------------------
 
-    def update_project(
+    async def update_project(
         self,
         project_key: int,
         *,
@@ -1155,7 +1163,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             ProjectBundle: The updated project bundle.
         """
-        data = self._run(project_ops.get_projects_raw([project_key]))
+        data = await self._run(project_ops.get_projects_raw([project_key]))
         baseline = project_ops.project_baseline(data, project_key)
 
         operation = project_ops.update_project(
@@ -1170,13 +1178,13 @@ class AjeraClient(BaseAjeraClient):
         if operation is None:
             return project_ops.parse_project_bundle(data)
 
-        return self._run(operation)
+        return await self._run(operation)
 
     # -------------------------------------------------------------------------
     # METHOD: create_project
     # -------------------------------------------------------------------------
 
-    def create_project(
+    async def create_project(
         self,
         description: str,
         *,
@@ -1201,7 +1209,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             ProjectBundle: The created project bundle.
         """
-        return self._run(
+        return await self._run(
             project_ops.create_project(
                 description,
                 billing_type=billing_type,
@@ -1218,7 +1226,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_ledger_accounts
     # -------------------------------------------------------------------------
 
-    def list_ledger_accounts(
+    async def list_ledger_accounts(
         self,
         *,
         filter_by_account_group: list[int] | None = None,
@@ -1233,7 +1241,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[LedgerAccount]: The list of ledger accounts.
         """
-        return self._run(
+        return await self._run(
             ledger_ops.list_ledger_accounts(
                 filter_by_account_group=filter_by_account_group,
                 filter_by_status=filter_by_status,
@@ -1245,7 +1253,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: get_ledger_accounts
     # -------------------------------------------------------------------------
 
-    def get_ledger_accounts(
+    async def get_ledger_accounts(
         self,
         account_keys: list[int] | None = None,
         *,
@@ -1267,7 +1275,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[LedgerAccountDetails]: The requested accounts with amounts.
         """
-        return self._run(
+        return await self._run(
             ledger_ops.get_ledger_accounts(
                 account_keys,
                 exclude_close_year_entries=exclude_close_year_entries,
@@ -1282,7 +1290,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_account_groups
     # -------------------------------------------------------------------------
 
-    def list_account_groups(
+    async def list_account_groups(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -1295,7 +1303,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[AccountGroup]: The list of account groups.
         """
-        return self._run(
+        return await self._run(
             ledger_ops.list_account_groups(filter_by_status=filter_by_status)
         )
 
@@ -1303,7 +1311,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_activities
     # -------------------------------------------------------------------------
 
-    def list_activities(
+    async def list_activities(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -1317,7 +1325,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[Activity]: The list of activities.
         """
-        return self._run(
+        return await self._run(
             reference_ops.list_activities(
                 filter_by_status=filter_by_status,
                 filter_by_description_like=filter_by_description_like,
@@ -1328,7 +1336,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_bank_accounts
     # -------------------------------------------------------------------------
 
-    def list_bank_accounts(
+    async def list_bank_accounts(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -1341,7 +1349,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[BankAccount]: The list of bank accounts.
         """
-        return self._run(
+        return await self._run(
             reference_ops.list_bank_accounts(filter_by_status=filter_by_status)
         )
 
@@ -1349,7 +1357,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_companies
     # -------------------------------------------------------------------------
 
-    def list_companies(
+    async def list_companies(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -1362,7 +1370,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[Company]: The list of companies.
         """
-        return self._run(
+        return await self._run(
             reference_ops.list_companies(filter_by_status=filter_by_status)
         )
 
@@ -1370,7 +1378,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_departments
     # -------------------------------------------------------------------------
 
-    def list_departments(
+    async def list_departments(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -1383,7 +1391,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[Department]: The list of departments.
         """
-        return self._run(
+        return await self._run(
             reference_ops.list_departments(filter_by_status=filter_by_status)
         )
 
@@ -1391,7 +1399,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_invoice_formats
     # -------------------------------------------------------------------------
 
-    def list_invoice_formats(
+    async def list_invoice_formats(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -1404,7 +1412,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[InvoiceFormat]: The list of invoice formats.
         """
-        return self._run(
+        return await self._run(
             reference_ops.list_invoice_formats(filter_by_status=filter_by_status)
         )
 
@@ -1412,7 +1420,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_payroll_taxes
     # -------------------------------------------------------------------------
 
-    def list_payroll_taxes(
+    async def list_payroll_taxes(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -1425,7 +1433,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[PayrollTax]: The list of payroll taxes.
         """
-        return self._run(
+        return await self._run(
             reference_ops.list_payroll_taxes(filter_by_status=filter_by_status)
         )
 
@@ -1433,7 +1441,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_pays
     # -------------------------------------------------------------------------
 
-    def list_pays(
+    async def list_pays(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -1446,13 +1454,15 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[Pay]: The list of pay types.
         """
-        return self._run(reference_ops.list_pays(filter_by_status=filter_by_status))
+        return await self._run(
+            reference_ops.list_pays(filter_by_status=filter_by_status)
+        )
 
     # -------------------------------------------------------------------------
     # METHOD: list_rate_tables
     # -------------------------------------------------------------------------
 
-    def list_rate_tables(
+    async def list_rate_tables(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -1465,7 +1475,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[RateTable]: The list of rate tables.
         """
-        return self._run(
+        return await self._run(
             reference_ops.list_rate_tables(filter_by_status=filter_by_status)
         )
 
@@ -1473,7 +1483,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_wage_tables
     # -------------------------------------------------------------------------
 
-    def list_wage_tables(
+    async def list_wage_tables(
         self,
         *,
         filter_by_status: list[str] | None = ["Active"],
@@ -1486,7 +1496,7 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[WageTable]: The list of wage tables.
         """
-        return self._run(
+        return await self._run(
             reference_ops.list_wage_tables(filter_by_status=filter_by_status)
         )
 
@@ -1494,7 +1504,7 @@ class AjeraClient(BaseAjeraClient):
     # METHOD: list_chargeable_phases
     # -------------------------------------------------------------------------
 
-    def list_chargeable_phases(self, project_key: int) -> list[ChargeablePhase]:
+    async def list_chargeable_phases(self, project_key: int) -> list[ChargeablePhase]:
         """
         List the chargeable phases of a single project
 
@@ -1503,4 +1513,4 @@ class AjeraClient(BaseAjeraClient):
         Returns:
             list[ChargeablePhase]: The project's chargeable phases.
         """
-        return self._run(reference_ops.list_chargeable_phases(project_key))
+        return await self._run(reference_ops.list_chargeable_phases(project_key))

@@ -1,3 +1,4 @@
+from ajera.async_client import AsyncAjeraClient
 from ajera.client import AjeraClient
 from ajera.schemas.client import (
     Client,
@@ -61,6 +62,7 @@ __all__ = [
     "AccountGroup",
     "Activity",
     "AjeraClient",
+    "AsyncAjeraClient",
     "BankAccount",
     "ChargeablePhase",
     "Client",
