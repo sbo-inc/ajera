@@ -1,5 +1,5 @@
+import httpx
 import pytest
-from urllib3.util.retry import Retry
 
 from ajera.cli.context import ClientContext
 from ajera.client import DEFAULT_TIMEOUT
@@ -14,7 +14,7 @@ def test_client_reads_headers_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
     client = ClientContext().client
 
-    assert client.session.headers["Authorization"] == "Bearer token123"
+    assert client.http.headers["Authorization"] == "Bearer token123"
 
 
 def test_client_without_headers_env(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -22,7 +22,7 @@ def test_client_without_headers_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
     client = ClientContext().client
 
-    assert "Authorization" not in client.session.headers
+    assert "Authorization" not in client.http.headers
 
 
 # =============================================================================
@@ -39,9 +39,9 @@ def test_client_reads_timeout_and_retries_from_env(
     client = ClientContext().client
 
     assert client.timeout == 45.0
-    retry = client.session.get_adapter("https://example.test/api").max_retries
-    assert isinstance(retry, Retry)
-    assert retry.connect == 2
+    transport = client.http._transport
+    assert isinstance(transport, httpx.HTTPTransport)
+    assert transport._pool._retries == 2
 
 
 def test_client_without_timeout_env_uses_default(
@@ -53,3 +53,4 @@ def test_client_without_timeout_env_uses_default(
     client = ClientContext().client
 
     assert client.timeout == DEFAULT_TIMEOUT
+    assert client.http._transport._pool._retries == 0

@@ -2,6 +2,9 @@
 
 ## [0.3.0] - 2026-08-01
 
+- `AsyncAjeraClient`, an asyncio client mirroring `AjeraClient` method for method, so async callers can `asyncio.gather` requests instead of wrapping each one in `asyncio.to_thread`. Gathered calls share one connection pool and mint a single session token ([#10]).
+- **Breaking:** `requests` is replaced by `httpx`, which is now a required dependency. `AjeraClient.session` is a `httpx.Client`, available as `client.http` and deprecated under its old name; `retries` accepts only an `int` (a `urllib3.Retry` is no longer supported); and the CLI reports `httpx` transport errors that previously surfaced as generic failures ([#10]).
+- `AjeraClient` gained `close()` and context-manager support, alongside the async client's `aclose()` and `async with` ([#10]).
 - **Breaking:** `Employee.company` and `Employee.department` renamed to `company_key` and `department_key`, matching `EmployeeDetails`. `ajera employees list` JSON keys change to match ([#11]).
 - `list_vendor_invoices(with_payment_status=True)` populates a derived `VendorInvoice.payment`, which Ajera exposes only as list filters. Costs one extra request ([#15]).
 - `Performance.contract_total` is now serialized, so `backlog` and the contract ratios survive a JSON round trip ([#12]).
@@ -42,6 +45,7 @@
 [#3]: https://github.com/sbo-inc/ajera/issues/3
 [#5]: https://github.com/sbo-inc/ajera/issues/5
 [#8]: https://github.com/sbo-inc/ajera/issues/8
+[#10]: https://github.com/sbo-inc/ajera/issues/10
 [#11]: https://github.com/sbo-inc/ajera/issues/11
 [#12]: https://github.com/sbo-inc/ajera/issues/12
 [#13]: https://github.com/sbo-inc/ajera/issues/13
