@@ -277,6 +277,12 @@ def invoices() -> None:
     default=None,
     help="Amount equal to this value.",
 )
+@click.option(
+    "--with-payment-status",
+    is_flag=True,
+    default=False,
+    help="Derive each invoice's paid/unpaid/voided state (one extra request).",
+)
 @click.pass_obj
 def invoices_list(
     ctx: ClientContext,
@@ -295,12 +301,17 @@ def invoices_list(
     filter_by_greater_than_amount: float | None,
     filter_by_less_than_amount: float | None,
     filter_by_equal_to_amount: float | None,
+    with_payment_status: bool,
 ) -> None:
     """
     List vendor invoices, optionally filtered.
+
+    The API reports no payment property; --with-payment-status derives one and
+    fills in each invoice's `payment` field, at the cost of one extra request.
     """
     render(
         ctx.client.list_vendor_invoices(
+            with_payment_status=with_payment_status,
             filter_by_vendor=list(filter_by_vendor) or None,
             filter_by_company=filter_by_company,
             filter_by_vendor_type=filter_by_vendor_type,

@@ -152,6 +152,13 @@ The `invoices` subcommands come from the Vendor Invoices (v2) API; the rest come
 | `ajera vendors invoices get <key>...` | Get one or more vendor invoices, with their line items. |
 | `ajera vendors invoices create [options]` | Create a vendor invoice with a single line item. |
 
+Ajera reports no payment property on a vendor invoice: paid, unpaid, and voided exist only as list filters. Passing `--with-payment-status` (or `with_payment_status=True` to `list_vendor_invoices`) derives it and fills in each invoice's `payment` field with `Paid`, `Unpaid`, or `Voided`. It costs one extra request, so the field stays `null` unless you ask for it:
+
+```python
+for invoice in client.list_vendor_invoices(with_payment_status=True):
+    print(invoice.vendor_invoice_key, invoice.payment)
+```
+
 ### Projects
 
 Docs: [Projects API (v2)](https://help.deltek.com/product/Ajera/api/version2/projects.html) · [Projects API (v1)](https://help.deltek.com/product/Ajera/api/projects.html) · [List Methods API](https://help.deltek.com/product/Ajera/api/list_methods.html)
