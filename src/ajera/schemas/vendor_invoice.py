@@ -1,3 +1,4 @@
+from enum import StrEnum
 from typing import Any, Literal, override
 
 from pydantic import Field
@@ -7,6 +8,26 @@ from ajera.schemas.generic import (
     GenericRequest,
     GenericResponse,
 )
+
+# =============================================================================
+# CLASS: VendorInvoicePayment
+# =============================================================================
+
+
+class VendorInvoicePayment(StrEnum):
+    """
+    Payment state of a vendor invoice.
+
+    Ajera exposes payment state only as a filter dimension (`FilterByPaid`,
+    `FilterByUnpaid`, `FilterByVoided`) and reports no payment property on any
+    response, so this is derived by the client rather than returned by the API.
+    The three states partition the book: every invoice is exactly one of them.
+    """
+
+    paid = "Paid"
+    unpaid = "Unpaid"
+    voided = "Voided"
+
 
 # =============================================================================
 # CLASS: VendorInvoice
@@ -74,6 +95,14 @@ class VendorInvoice(GenericBaseModel):
         default="",
         alias="Status",
         description="Status, e.g. Normal or Voided.",
+    )
+    payment: VendorInvoicePayment | None = Field(
+        default=None,
+        alias="Payment",
+        description="Payment state, populated when list_vendor_invoices is "
+        "called with with_payment_status. The API does not return it; it is "
+        "derived from the status field and the paid filter, and stays None "
+        "when it was not requested.",
     )
     type: str = Field(
         default="",

@@ -3,6 +3,7 @@
 ## [0.3.0] - 2026-08-01
 
 - **Breaking:** `Employee.company` and `Employee.department` renamed to `company_key` and `department_key`, matching `EmployeeDetails`. `ajera employees list` JSON keys change to match ([#11]).
+- `list_vendor_invoices(with_payment_status=True)` populates a derived `VendorInvoice.payment`, which Ajera exposes only as list filters. Costs one extra request ([#15]).
 - `Performance.contract_total` is now serialized, so `backlog` and the contract ratios survive a JSON round trip ([#12]).
 - `ProjectTotalsDetails` now accepts python field names and keeps an explicitly supplied `Totals` map ([#13]).
 - Corrected `VendorInvoice` docs: `ListVendorInvoices` returns vendor type too, but only when the vendor has one assigned ([#14]).
@@ -44,4 +45,5 @@
 [#11]: https://github.com/sbo-inc/ajera/issues/11
 [#12]: https://github.com/sbo-inc/ajera/issues/12
 [#13]: https://github.com/sbo-inc/ajera/issues/13
-[#14]: https://github.com/sbo-inc/ajera/issues/14 
+[#14]: https://github.com/sbo-inc/ajera/issues/14
+[#15]: https://github.com/sbo-inc/ajera/issues/15 

@@ -53,6 +53,7 @@ from ajera.schemas.vendor_invoice import (
     VendorInvoice,
     VendorInvoiceBundle,
     VendorInvoiceLineItemCreate,
+    VendorInvoicePayment,
 )
 
 __all__ = [
@@ -98,6 +99,7 @@ __all__ = [
     "VendorInvoice",
     "VendorInvoiceBundle",
     "VendorInvoiceLineItemCreate",
+    "VendorInvoicePayment",
     "VendorType",
     "WageTable",
 ]

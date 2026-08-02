@@ -187,6 +187,7 @@ from ajera.schemas.vendor_invoice import (
     VendorInvoiceBundle,
     VendorInvoiceCreate,
     VendorInvoiceLineItemCreate,
+    VendorInvoicePayment,
 )
 
 logger = logging.getLogger("ajera")
@@ -198,6 +199,12 @@ logger.addHandler(console_handler)
 # applies no timeout by default, so without this a stalled connection or an
 # unresponsive server would block the caller forever.
 DEFAULT_TIMEOUT: tuple[float, float] = (5.0, 30.0)
+
+# The `Status` value a voided vendor invoice carries. On the tenant this was
+# measured against, `FilterByVoided` returns exactly the invoices holding this
+# status, which is what lets `with_payment_status` read the voided state
+# straight off the record instead of spending a request on it.
+VOIDED_VENDOR_INVOICE_STATUS = "Voided"
 
 
 def _build_retry(retries: int | Retry) -> Retry:
@@ -1195,6 +1202,7 @@ class AjeraClient:
     def list_vendor_invoices(
         self,
         *,
+        with_payment_status: bool = False,
         filter_by_vendor: list[int] | None = None,
         filter_by_company: int | None = None,
         filter_by_vendor_type: int | None = None,
@@ -1214,13 +1222,20 @@ class AjeraClient:
         """
         List vendor invoices
 
+        Ajera reports no payment property on any vendor invoice response and
+        exposes payment state only through the paid/unpaid/voided filters. Pass
+        `with_payment_status=True` to have the client derive it and populate
+        `VendorInvoice.payment`; it stays None otherwise, since a derived value
+        should not look like a reported one. Deriving it costs one additional
+        request (the API appears to cap near 9 calls per second), so leave it
+        off when the payment state is not needed.
+
         Supported API Versions: 2
 
         Returns:
             list[VendorInvoice]: The matching vendor invoice headers.
         """
-        request = ListVendorInvoices()
-        request.method_arguments = ListVendorInvoicesArguments(
+        arguments = ListVendorInvoicesArguments(
             filter_by_vendor=filter_by_vendor,
             filter_by_company=filter_by_company,
             filter_by_vendor_type=filter_by_vendor_type,
@@ -1240,6 +1255,27 @@ class AjeraClient:
             filter_by_equal_to_amount=filter_by_equal_to_amount,
         )
 
+        invoices = self._list_vendor_invoices(arguments)
+
+        if with_payment_status:
+            self._apply_payment_status(invoices, arguments)
+
+        return invoices
+
+    # -------------------------------------------------------------------------
+    # METHOD: _list_vendor_invoices
+    # -------------------------------------------------------------------------
+
+    def _list_vendor_invoices(
+        self, arguments: ListVendorInvoicesArguments
+    ) -> list[VendorInvoice]:
+        """
+        Issue one ListVendorInvoices call with the given arguments.
+
+        Returns:
+            list[VendorInvoice]: The matching vendor invoice headers.
+        """
+        request = ListVendorInvoices(method_arguments=arguments)
         request.session_token = self.get_session_token(api_version=2)
         data = self._post(request)
 
@@ -1248,6 +1284,51 @@ class AjeraClient:
         data["Content"] = cast(dict, data["Content"]).pop("VendorInvoices", [])
 
         return ListVendorInvoicesResponse.model_validate(data).content
+
+    # -------------------------------------------------------------------------
+    # METHOD: _apply_payment_status
+    # -------------------------------------------------------------------------
+
+    def _apply_payment_status(
+        self,
+        invoices: list[VendorInvoice],
+        arguments: ListVendorInvoicesArguments,
+    ) -> None:
+        """
+        Set the derived `payment` field on each invoice, in place.
+
+        Voided is read from the record's own `Status`, which makes the paid set
+        the only thing that has to be fetched, so this costs one extra request
+        instead of three. If `FilterByVoided` ever stops agreeing with
+        `Status == "Voided"`, fetch the voided key set the same way the paid one
+        is fetched here and test membership in it instead of reading the status.
+        """
+        if arguments.filter_by_paid:
+            # The caller already narrowed the result to paid invoices, and
+            # re-issuing that filter alongside itself would buy nothing.
+            paid_keys = {invoice.vendor_invoice_key for invoice in invoices}
+        elif arguments.filter_by_unpaid or arguments.filter_by_voided:
+            # The caller already excluded paid invoices, and asking for paid
+            # ones on top of those filters would be a contradictory request.
+            paid_keys = set()
+        else:
+            # Re-issue the caller's own filters alongside FilterByPaid: the key
+            # set has to be drawn from the same population as the records being
+            # labelled, or it will not line up with them.
+            paid_arguments = arguments.model_copy()
+            paid_arguments.filter_by_paid = True
+            paid_keys = {
+                invoice.vendor_invoice_key
+                for invoice in self._list_vendor_invoices(paid_arguments)
+            }
+
+        for invoice in invoices:
+            if invoice.status == VOIDED_VENDOR_INVOICE_STATUS:
+                invoice.payment = VendorInvoicePayment.voided
+            elif invoice.vendor_invoice_key in paid_keys:
+                invoice.payment = VendorInvoicePayment.paid
+            else:
+                invoice.payment = VendorInvoicePayment.unpaid
 
     # -------------------------------------------------------------------------
     # METHOD: get_vendor_invoices
