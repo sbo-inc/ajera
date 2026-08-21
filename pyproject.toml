@@ -52,3 +52,6 @@ ajera = "ajera.cli:main"
 [build-system]
 requires = ["uv_build<0.9.0"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+source-include = ["CHANGELOG.md"]
