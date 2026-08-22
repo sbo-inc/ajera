@@ -150,6 +150,60 @@ Docs: [Employees API](https://help.deltek.com/product/Ajera/api/employees.html) 
 
 > **Note:** `employees list` returns `company_key` and `department_key` as bare integers - the API attaches no names to them. To group employees by department, join `department_key` against the `department_key` of `client.list_departments()` (`ajera departments`).
 
+### Timesheets
+
+Docs: [Timesheets API (v2)](https://help.deltek.com/product/Ajera/api/version2/timesheets.html)
+
+| Command | Description |
+| --- | --- |
+| `ajera timesheets list` | List timesheets, optionally filtered. |
+| `ajera timesheets get <key>...` | Get one or more timesheets by key, with their rows and daily hours. |
+| `ajera timesheets create [options]` | Create a timesheet for one employee's week. |
+| `ajera timesheets update <key> [options]` | Set daily hours and notes on one row of a timesheet. |
+| `ajera timesheets submit <key>... [--unsubmit]` | Submit timesheets for approval, or withdraw them. |
+
+> **Note:** the timesheet methods are only available to an API user with an active authorizing employee set; without one Ajera refuses them. See [setting up an API user](https://learning.deltek.com/bundle/ajera/page/Content/api_setting_up_api_user.htm).
+
+A timesheet covers a week, and its hours live in day slots `D1` through `D7` rather than on dates. `list` returns a summary per week; `get` returns the overhead and project rows behind it.
+
+`update_timesheet` fetches the timesheet for its baseline and submits your edits against it, so the opaque `UnchangedData` the API requires never reaches your code. Each edit names one row and only the days it changes; days you leave out keep their hours:
+
+```python
+from ajera import (
+    AjeraClient,
+    TimesheetOverheadEdit,
+    TimesheetProjectEdit,
+    TimesheetProjectRowCreate,
+)
+
+client = AjeraClient()
+
+client.update_timesheet(
+    147,
+    overheads=[TimesheetOverheadEdit(overhead_group_detail_key=30, d1_regular=1)],
+    projects=[
+        # Correct Tuesday on a row that is already on the timesheet.
+        TimesheetProjectEdit(
+            timesheet_project_key=2, d2_regular=1, d2_notes="Client meeting"
+        ),
+        # Add a row for work not on it yet.
+        TimesheetProjectRowCreate(
+            project_key=32, phase_key=33, activity_key=2, d3_regular=4
+        ),
+    ],
+)
+
+client.submit_timesheets([147])
+```
+
+The CLI edits one row per invocation, naming its days as `DAY=VALUE`:
+
+```console
+$ ajera timesheets update 147 --project-row-key 2 --hours 2=1 --note 2="Client meeting"
+```
+
+Overtime is readable but not editable: `UpdateTimesheets` accepts regular hours only, so enter overtime in Ajera directly. There is no API method to delete a timesheet or a row.
+
 ### Clients
 
 Docs: [Clients API](https://help.deltek.com/product/Ajera/api/clients.html)

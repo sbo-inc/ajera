@@ -10,6 +10,7 @@ from ajera.operations import employee as employee_ops
 from ajera.operations import ledger as ledger_ops
 from ajera.operations import project as project_ops
 from ajera.operations import reference as reference_ops
+from ajera.operations import timesheet as timesheet_ops
 from ajera.operations import vendor as vendor_ops
 from ajera.operations import vendor_invoice as vendor_invoice_ops
 from ajera.operations.generic import Operation
@@ -52,6 +53,13 @@ from ajera.schemas.reference import (
     WageTable,
 )
 from ajera.schemas.session import APISession, APISessionContent
+from ajera.schemas.timesheet import (
+    Timesheet,
+    TimesheetDetails,
+    TimesheetOverheadEdit,
+    TimesheetProjectEdit,
+    TimesheetProjectRowCreate,
+)
 from ajera.schemas.vendor import UpdatedVendorResult, Vendor, VendorDetails, VendorType
 from ajera.schemas.vendor_invoice import (
     VendorInvoice,
@@ -416,6 +424,181 @@ class AsyncAjeraClient(BaseAjeraClient):
             return employee_ops.unchanged_employee_result(baseline)
 
         return await self._run(employee_ops.update_employee(baseline, modified))
+
+    # -------------------------------------------------------------------------
+    # METHOD: list_timesheets
+    # -------------------------------------------------------------------------
+
+    async def list_timesheets(
+        self,
+        *,
+        filter_by_company: list[int] | None = None,
+        filter_by_employee: list[int] | None = None,
+        filter_by_name_like: str | None = None,
+        filter_by_paid: bool | None = None,
+        filter_by_unpaid: bool | None = None,
+        filter_by_submitted: bool | None = None,
+        filter_by_unsubmitted: bool | None = None,
+        filter_by_rejected: bool | None = None,
+        filter_by_earliest_timesheet_date: str | None = None,
+        filter_by_latest_timesheet_date: str | None = None,
+    ) -> list[Timesheet]:
+        """
+        List timesheets, optionally filtered.
+
+        Returns one summary record per timesheet week, with its approval and
+        payment flags but not its hours; pass the keys to get_timesheets for
+        the rows behind them. Like every timesheet method, this one is only
+        available to an API user with an active authorizing employee set.
+
+        Supported API Versions: 2
+
+        Returns:
+            list[Timesheet]: The matching timesheet summaries.
+        """
+        return await self._run(
+            timesheet_ops.list_timesheets(
+                filter_by_company=filter_by_company,
+                filter_by_employee=filter_by_employee,
+                filter_by_name_like=filter_by_name_like,
+                filter_by_paid=filter_by_paid,
+                filter_by_unpaid=filter_by_unpaid,
+                filter_by_submitted=filter_by_submitted,
+                filter_by_unsubmitted=filter_by_unsubmitted,
+                filter_by_rejected=filter_by_rejected,
+                filter_by_earliest_timesheet_date=filter_by_earliest_timesheet_date,
+                filter_by_latest_timesheet_date=filter_by_latest_timesheet_date,
+            )
+        )
+
+    # -------------------------------------------------------------------------
+    # METHOD: get_timesheets
+    # -------------------------------------------------------------------------
+
+    async def get_timesheets(self, timesheet_keys: list[int]) -> list[TimesheetDetails]:
+        """
+        Get one or more timesheets by key, with their rows and daily hours.
+
+        Each record carries the overhead and project sections and the opaque
+        baseline that update_timesheet needs, so a read is the starting point
+        for any edit.
+
+        Supported API Versions: 2
+
+        Returns:
+            list[TimesheetDetails]: The requested timesheets.
+        """
+        return await self._run(timesheet_ops.get_timesheets(timesheet_keys))
+
+    # -------------------------------------------------------------------------
+    # METHOD: create_timesheet
+    # -------------------------------------------------------------------------
+
+    async def create_timesheet(
+        self,
+        employee_key: int,
+        timesheet_date: str,
+        *,
+        prefill_recent: bool | None = None,
+        prefill_scheduled: bool | None = None,
+        copy_from_timesheet_key: int | None = None,
+        activity_key: int | None = None,
+        allow_past_90_days: bool | None = None,
+    ) -> TimesheetDetails:
+        """
+        Create a timesheet for one employee's week.
+
+        The timesheet is empty unless a prefill option seeds it from the
+        employee's recent or scheduled work, or copy_from_timesheet_key copies
+        an existing week's rows. Ajera refuses a date more than 90 days in the
+        past unless allow_past_90_days is set. There is no API method to
+        delete a timesheet.
+
+        Supported API Versions: 2
+
+        Returns:
+            TimesheetDetails: The created timesheet.
+        """
+        return await self._run(
+            timesheet_ops.create_timesheet(
+                employee_key=employee_key,
+                timesheet_date=timesheet_date,
+                prefill_recent=prefill_recent,
+                prefill_scheduled=prefill_scheduled,
+                copy_from_timesheet_key=copy_from_timesheet_key,
+                activity_key=activity_key,
+                allow_past_90_days=allow_past_90_days,
+            )
+        )
+
+    # -------------------------------------------------------------------------
+    # METHOD: update_timesheet
+    # -------------------------------------------------------------------------
+
+    async def update_timesheet(
+        self,
+        timesheet_key: int,
+        *,
+        overheads: list[TimesheetOverheadEdit] | None = None,
+        projects: list[TimesheetProjectEdit | TimesheetProjectRowCreate] | None = None,
+    ) -> TimesheetDetails:
+        """
+        Set daily hours and notes on the rows of one timesheet.
+
+        Facade over the batch UpdateTimesheets API: fetches the timesheet for
+        its baseline and submits the edits against it, so the caller never
+        handles the opaque UnchangedData themselves. Each edit names the row
+        it applies to and only the days it changes, and days left unset keep
+        their hours. TimesheetProjectRowCreate adds a project row that is not
+        on the timesheet yet; overhead rows and overtime are not creatable
+        here, so enter those in Ajera directly. Passing no edits returns the
+        current timesheet without calling the update.
+
+        Supported API Versions: 2
+
+        Returns:
+            TimesheetDetails: The resulting timesheet.
+        """
+        timesheets = await self.get_timesheets([timesheet_key])
+        if not timesheets:
+            raise ValueError(f"No timesheet found with key {timesheet_key}")
+        baseline = timesheets[0]
+
+        if not overheads and not projects:
+            return baseline
+
+        return await self._run(
+            timesheet_ops.update_timesheet(
+                timesheet_key,
+                baseline.unchanged_data,
+                overheads or [],
+                projects or [],
+            )
+        )
+
+    # -------------------------------------------------------------------------
+    # METHOD: submit_timesheets
+    # -------------------------------------------------------------------------
+
+    async def submit_timesheets(
+        self, timesheet_keys: list[int], *, unsubmit: bool = False
+    ) -> list[TimesheetDetails]:
+        """
+        Submit one or more timesheets for approval, or withdraw them.
+
+        Submitting is a batch operation in Ajera, so a whole week of employees
+        goes in one request. Pass unsubmit to pull previously submitted
+        timesheets back out of approval.
+
+        Supported API Versions: 2
+
+        Returns:
+            list[TimesheetDetails]: The affected timesheets, carrying their
+                new status and submission details.
+        """
+        return await self._run(
+            timesheet_ops.submit_timesheets(timesheet_keys, unsubmit=unsubmit)
+        )
 
     # -------------------------------------------------------------------------
     # METHOD: list_clients

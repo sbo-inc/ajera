@@ -17,6 +17,7 @@ from ajera.cli.commands import (
     projects,
     rate_tables,
     session,
+    timesheets,
     vendors,
 )
 from ajera.cli.context import ClientContext
@@ -57,6 +58,7 @@ def cli(ctx: click.Context, log: bool) -> None:
 for module in (
     session,
     employees,
+    timesheets,
     clients,
     contacts,
     vendors,

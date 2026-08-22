@@ -66,6 +66,14 @@ def keys(client: AjeraClient) -> dict[str, Any]:
 
     project_key = first(client.list_projects(), "project_key")
 
+    # Timesheet methods are refused outright on a tenant whose API user has no
+    # active authorizing employee, so an unavailable surface resolves to None
+    # and skips its reads rather than failing the sweep.
+    try:
+        timesheet_key = first(client.list_timesheets(), "timesheet_key")
+    except Exception:
+        timesheet_key = None
+
     return {
         "employee": first(client.list_employees(), "employee_key"),
         "client": first(client.list_clients(), "client_key"),
@@ -77,6 +85,7 @@ def keys(client: AjeraClient) -> dict[str, Any]:
             client.list_project_templates(), "project_template_key"
         ),
         "ledger_account": first(client.list_ledger_accounts(), "account_key"),
+        "timesheet": timesheet_key,
     }
 
 
@@ -151,6 +160,9 @@ READS: list[tuple[str, Builder]] = [
     ("list_employee_types", lambda keys: NO_ARGS),
     ("list_deductions", lambda keys: NO_ARGS),
     ("list_fringes", lambda keys: NO_ARGS),
+    # Timesheets, skipped unless the tenant grants the surface
+    ("list_timesheets", lambda keys: NO_ARGS if keys["timesheet"] else None),
+    ("get_timesheets", _by_key("timesheet")),
     # Clients
     ("list_clients", lambda keys: NO_ARGS),
     ("get_clients", _by_key("client")),

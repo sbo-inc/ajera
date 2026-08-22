@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.0] - 2026-08-22
+
+- Timesheets: list, get, create, update, and submit, with matching `ajera timesheets` commands ([#1]).
+
 ## [0.3.0] - 2026-08-01
 
 - `AsyncAjeraClient`, an asyncio client mirroring `AjeraClient` method for method, so async callers can `asyncio.gather` requests instead of wrapping each one in `asyncio.to_thread`. Gathered calls share one connection pool and mint a single session token ([#10]).
@@ -47,6 +51,7 @@
 [#5]: https://github.com/sbo-inc/ajera/issues/5
 [#7]: https://github.com/sbo-inc/ajera/issues/7
 [#8]: https://github.com/sbo-inc/ajera/issues/8
+[#1]: https://github.com/sbo-inc/ajera/issues/1
 [#10]: https://github.com/sbo-inc/ajera/issues/10
 [#11]: https://github.com/sbo-inc/ajera/issues/11
 [#12]: https://github.com/sbo-inc/ajera/issues/12
