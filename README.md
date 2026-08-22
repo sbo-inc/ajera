@@ -5,7 +5,7 @@
 
 # Deltek Ajera Python client
 
-A typed Python client and command-line interface for the [Deltek Ajera](https://www.deltek.com/en/project-based-erp/ajera) API.
+An unofficial typed Python client and command-line interface for the [Deltek Ajera](https://www.deltek.com/en/project-based-erp/ajera) API - no affiliation with Deltek is implied or intended.
 
 Ajera exposes a single JSON-RPC style endpoint; this package wraps it in an ergonomic, fully type-hinted client built on [Pydantic](https://docs.pydantic.dev/) models, plus an `ajera` CLI for quick access from the terminal. Responses are validated and normalized into predictable Python objects so you can work with employees, projects, vendors, invoices, and general-ledger data without hand-rolling request payloads.
 
