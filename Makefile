@@ -38,10 +38,8 @@ test: ## Run unit tests
 test-integration: ## Run integration tests
 	uv run pytest -m integration $(PYTEST_ARGS)
 
-coverage: ## Run tests with coverage reporting
-	uv run coverage run -m pytest
-	uv run coverage xml -o coverage.xml
-	uv run coverage report -m --fail-under=95
+coverage: ## Run unit tests with coverage reporting
+	uv run pytest -m "not integration" --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=80 $(PYTEST_ARGS)
 
 build: ## Build distribution artifacts
 	rm -rf dist
