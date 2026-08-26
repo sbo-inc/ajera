@@ -2,6 +2,7 @@
 
 ## [0.5.0] - 2026-08-26
 
+- Python 3.14 is now tested in CI and declared in the package metadata, so the supported-versions badge and the PyPI classifiers list it ([#26]).
 - **Fixed:** every call except `CreateAPISession` raised an error on success. Ajera answers `ResponseCode: 200` only for the session call, and `0` for every other method. The envelope decoder treated any other code as a failure. A non-empty `Errors` array now decides, because the code `0` can also carry a failure ([#27]).
 
 ## [0.4.0] - 2026-08-22
@@ -62,4 +63,5 @@
 [#13]: https://github.com/sbo-inc/ajera/issues/13
 [#14]: https://github.com/sbo-inc/ajera/issues/14
 [#15]: https://github.com/sbo-inc/ajera/issues/15
+[#26]: https://github.com/sbo-inc/ajera/issues/26
 [#27]: https://github.com/sbo-inc/ajera/issues/27
