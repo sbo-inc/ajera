@@ -17,6 +17,12 @@ logger.addHandler(console_handler)
 # far longer than any Ajera call legitimately takes.
 DEFAULT_TIMEOUT: tuple[float, float] = (5.0, 30.0)
 
+# ResponseCode values that do not by themselves mean the call failed.
+# CreateAPISession answers 200 and every other method answers 0, so a code
+# outside this pair is a failure and a code inside it settles nothing on its
+# own. A failure carries entries in Errors, which is the signal that decides.
+SUCCESS_CODES: tuple[int, ...] = (0, 200)
+
 
 # =============================================================================
 # CLASS: BaseAjeraClient
@@ -141,8 +147,10 @@ class BaseAjeraClient:
         Raise on a transport or API-level failure, and decode the envelope.
 
         Every Ajera response is the same envelope, and a failed call still
-        arrives as HTTP 200 with a non-200 `ResponseCode`, so the status check
-        alone would let errors through.
+        arrives as HTTP 200, so the status check alone would let errors
+        through. `Errors` is what separates the two cases: `ResponseCode` is
+        `200` for `CreateAPISession` and `0` for every other method, and `0`
+        also accompanies a failure, so the code alone decides nothing.
 
         Returns:
             dict[str, Any]: The decoded JSON response body.
@@ -150,10 +158,10 @@ class BaseAjeraClient:
         response.raise_for_status()
         data: dict[str, Any] = json.loads(response.text)
 
-        if "ResponseCode" in data and data["ResponseCode"] != 200:
-            code = data.get("ResponseCode", "No code")
+        code = data.get("ResponseCode", "No code")
+        errors: list = data.get("Errors") or []
+        if errors or ("ResponseCode" in data and code not in SUCCESS_CODES):
             message = data.get("Message", "No message")
-            errors: list = data.get("Errors", [])
             raise Exception(
                 f"API Error (Response Code: {code})\nMessage: {message}\nErrors: {errors}"
             )

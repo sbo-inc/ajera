@@ -3,7 +3,7 @@ from typing import Any
 
 import httpx
 import pytest
-from conftest import body, envelope, error_envelope, session_envelope
+from conftest import body, envelope, error_envelope, session_envelope, with_login
 
 from ajera.client import DEFAULT_TIMEOUT, AjeraClient
 
@@ -149,13 +149,34 @@ def test_session_is_an_alias_for_http() -> None:
 # =============================================================================
 
 
-def test_non_200_response_code_raises(
+def test_a_reported_error_raises(
     make_client: Callable[..., AjeraClient],
 ) -> None:
     client = make_client(lambda request: error_envelope("Nope"), login=False)
 
     with pytest.raises(Exception, match="Nope"):
         client.get_session_info()
+
+
+def test_a_zero_response_code_carrying_errors_raises(
+    make_client: Callable[..., AjeraClient],
+) -> None:
+    client = make_client(
+        lambda request: error_envelope("Bad args", code=0), login=False
+    )
+
+    with pytest.raises(Exception, match="Bad args"):
+        client.get_session_info()
+
+
+def test_a_zero_response_code_without_errors_is_a_success(
+    make_client: Callable[..., AjeraClient],
+) -> None:
+    # Every method except CreateAPISession answers 0 on success, so reading
+    # the code alone would fail every List call against a live tenant.
+    client = make_client(with_login(lambda request: envelope({"Departments": []})))
+
+    assert client.list_departments() == []
 
 
 def test_http_error_raises(make_client: Callable[..., AjeraClient]) -> None:

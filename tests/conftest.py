@@ -40,11 +40,17 @@ def envelope(content: Any = None, **extra: Any) -> httpx.Response:
     """
     Build an HTTP 200 carrying a successful Ajera envelope.
 
+    ResponseCode is 0 because that is what every method except
+    CreateAPISession answers on success. Use session_envelope for the one
+    that answers 200.
+
     Returns:
         httpx.Response: The mocked response.
     """
     payload: dict[str, Any] = {
-        "ResponseCode": 200,
+        "ResponseCode": 0,
+        "Message": "Success",
+        "Errors": [],
         "Content": {} if content is None else content,
         **extra,
     }
@@ -56,7 +62,7 @@ def error_envelope(message: str = "Boom", code: int = -100) -> httpx.Response:
     Build an HTTP 200 carrying a failed Ajera envelope.
 
     A failed Ajera call still arrives as HTTP 200, which is why the clients
-    check `ResponseCode` rather than the status alone.
+    read the envelope rather than the status alone.
 
     Returns:
         httpx.Response: The mocked response.
@@ -71,10 +77,12 @@ def session_envelope(token: str = "token") -> httpx.Response:
     """
     Build the CreateAPISession response.
 
+    This is the one method that answers ResponseCode 200.
+
     Returns:
         httpx.Response: The mocked login response.
     """
-    return envelope({"SessionToken": token})
+    return envelope({"SessionToken": token}, ResponseCode=200)
 
 
 def with_login(handler: Handler, token: str = "token") -> Handler:

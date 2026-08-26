@@ -170,7 +170,7 @@ class AjeraClient(BaseAjeraClient):
         """
         POST a request and return the decoded JSON envelope.
 
-        Raises on a non-200 ResponseCode. `exclude` omits fields from the
+        Raises when the envelope reports errors. `exclude` omits fields from the
         serialized request body.
 
         Returns:
