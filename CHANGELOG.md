@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.0] - 2026-11-01
+
+- `AjeraOdbc.aggregate` totals on the server with `GROUP BY`. The measures are `sum_`, `count`, `count_distinct`, `min_`, `max_`, and `avg`, and date fields group by `day`, `week`, `month`, `quarter`, or `year`. A monthly total no longer moves every row through Deltek's pipeline ([#30]).
+- `AjeraOdbc.rows` reads only the named fields. Rows are dictionaries whose values validate like a full read, and the primary key always comes along ([#30]).
+- `after=` on `read`, `stream`, and `rows` resumes a keyed read after a key, so a long read can continue in another request or process ([#30]).
+- `current=True` on `read`, `stream`, `rows`, `count`, and `aggregate` keeps only the current version of each row, for the sources where Ajera keeps edited and deleted rows. `Source.current_column` and `Source.deleted_column` name the marker columns ([#30]).
+- `timeout=` sets the query timeout for one call. It works on `read`, `stream`, `rows`, `count`, `get`, `call`, `aggregate`, and every typed function method ([#30]).
+- `describe(model)` and `ajera odbc describe` describe a source offline: its fields, SQL types, keys, foreign keys, and Deltek's documented code labels. Each code has a `label`, and `CODE_LABELS` holds them all ([#30]).
+- The sensitive-column classification is public: `Source.sensitive`, `SENSITIVE_COLUMNS`, and `json_schema_extra={"sensitive": True}` on each such field. Each field also records its `sql_type` there ([#30]).
+- **Fixed:** a statement that ran past the query timeout raised only once Deltek's server finished it, because closing its connection waited for the server. The connection now closes in the background, so the timeout raises on time ([#30]).
+
 ## [0.6.0] - 2026-11-01
 
 - `ajera[odbc]` is a new optional extra. `AjeraOdbc` reads the Ajera database read-only through Deltek's ODBC entitlement into typed models for every table, view, and table-valued function, and `ajera odbc` brings the same reads to the CLI ([#25]).
@@ -71,3 +82,4 @@
 [#25]: https://github.com/sbo-inc/ajera/issues/25
 [#26]: https://github.com/sbo-inc/ajera/issues/26
 [#27]: https://github.com/sbo-inc/ajera/issues/27
+[#30]: https://github.com/sbo-inc/ajera/issues/30

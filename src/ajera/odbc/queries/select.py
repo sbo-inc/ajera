@@ -7,18 +7,73 @@ names that resolve against the model or the live column list reach the SQL,
 and every value is a bound parameter.
 """
 
-from collections.abc import Mapping, Sequence
+import types
+from collections.abc import Callable, Mapping, Sequence
+from datetime import date, datetime
+from decimal import Decimal
+from enum import Enum
+from functools import cache
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
+from pydantic import TypeAdapter
+from pydantic.fields import FieldInfo
+
 from ajera.odbc.filters import Condition
+from ajera.odbc.measures import Measure
 from ajera.odbc.queries.generic import Query, Record, placeholders
-from ajera.schemas.database.base import DatabaseRecord
+from ajera.schemas.database.base import DatabaseRecord, annotation_members
 
 type Where = Mapping[str, object]
+type ColumnKind = Literal["code", "binary", "date", "numeric", "other"]
 
 # SQL Server accepts at most 2100 parameters per statement; key lookups are
 # split well below that.
 KEY_BATCH = 1000
+
+# Each date bucket returns the first day of its period as a `date`. None
+# depends on the session's @@DATEFIRST or language: day 0 (1900-01-01) is a
+# Monday, so weeks start on Monday, as in ISO 8601.
+BUCKETS: dict[str, Callable[[str], str]] = {
+    "day": lambda column: f"CAST({column} AS date)",
+    "week": lambda column: (
+        f"DATEADD(day, -(DATEDIFF(day, 0, {column}) % 7), CAST({column} AS date))"
+    ),
+    "month": lambda column: f"DATEFROMPARTS(YEAR({column}), MONTH({column}), 1)",
+    "quarter": lambda column: (
+        f"DATEFROMPARTS(YEAR({column}), (DATEPART(quarter, {column}) - 1) * 3 + 1, 1)"
+    ),
+    "year": lambda column: f"DATEFROMPARTS(YEAR({column}), 1, 1)",
+}
+
+# The SQL for each measure. Only these reach the statement: a `Measure` built
+# by hand with any other function is refused.
+AGGREGATES: dict[str, Callable[[str], str]] = {
+    "SUM": lambda column: f"SUM({column})",
+    "AVG": lambda column: f"AVG({column})",
+    "MIN": lambda column: f"MIN({column})",
+    "MAX": lambda column: f"MAX({column})",
+    "COUNT_DISTINCT": lambda column: f"COUNT_BIG(DISTINCT {column})",
+}
+
+# SQL types of the tenant's custom columns, which no model declares.
+NUMERIC_SQL = frozenset(
+    {
+        "int",
+        "smallint",
+        "tinyint",
+        "bigint",
+        "decimal",
+        "numeric",
+        "money",
+        "smallmoney",
+    }
+    | {"float", "real"}
+)
+DATE_SQL = frozenset(
+    {"date", "datetime", "datetime2", "smalldatetime", "datetimeoffset"}
+)
+BINARY_SQL = frozenset({"image", "varbinary", "binary", "timestamp"})
 
 
 # =============================================================================
@@ -57,6 +112,137 @@ def resolve(model: type[DatabaseRecord], name: str, live: Sequence[str] = ()) ->
     if name in live or any(f.alias == name for f in model.model_fields.values()):
         return name
     raise ValueError(f"{model.__name__} has no field or column named {name!r}")
+
+
+# =============================================================================
+# FUNCTIONS: per-column metadata
+# =============================================================================
+
+
+@cache
+def _fields_by_column(model: type[DatabaseRecord]) -> dict[str, tuple[str, FieldInfo]]:
+    return {
+        info.alias or name: (name, info) for name, info in model.model_fields.items()
+    }
+
+
+def field_name(model: type[DatabaseRecord], column: str) -> str:
+    """
+    The field name a column is returned under in a projected read.
+
+    Returns:
+        str: The model's field name, or the column itself for a custom field.
+    """
+    declared = _fields_by_column(model).get(column)
+    return declared[0] if declared else column
+
+
+@cache
+def field_adapter(model: type[DatabaseRecord], column: str) -> TypeAdapter[Any] | None:
+    """
+    A validator for one column's values, as the model validates them.
+
+    The field's metadata comes along, so a code column validates
+    left-to-right and decodes to its enum, as it does in a full read. Built
+    once per column, because building one per row is slow.
+
+    Returns:
+        TypeAdapter | None: The validator, or None for a custom field.
+    """
+    declared = _fields_by_column(model).get(column)
+    annotation = declared[1].annotation if declared else None
+    if declared is None or annotation is None:
+        return None
+    metadata = declared[1].metadata
+    form: Any = Annotated[annotation, *metadata] if metadata else annotation
+    return TypeAdapter(form)
+
+
+def decode(model: type[DatabaseRecord], column: str, value: object) -> object:
+    """
+    Validate one value of a column the way a full read would.
+
+    Returns:
+        object: The validated value; NULLs and custom fields as they came.
+    """
+    adapter = field_adapter(model, column)
+    return value if adapter is None or value is None else adapter.validate_python(value)
+
+
+def column_kind(
+    model: type[DatabaseRecord], column: str, live: Mapping[str, str] | None = None
+) -> ColumnKind:
+    """
+    Classify a column for the aggregate rules, by its field's type.
+
+    A custom column has no field, so its live SQL type decides.
+
+    Returns:
+        ColumnKind: `code`, `binary`, `date`, `numeric`, or `other`.
+    """
+    declared = _fields_by_column(model).get(column)
+    if declared is None:
+        sql_type = (live or {}).get(column, "")
+        if sql_type in BINARY_SQL:
+            return "binary"
+        if sql_type in DATE_SQL:
+            return "date"
+        return "numeric" if sql_type in NUMERIC_SQL else "other"
+
+    members = [
+        m for m in annotation_members(declared[1].annotation) if m is not types.NoneType
+    ]
+    if any(isinstance(m, type) and issubclass(m, Enum) for m in members):
+        return "code"
+    if bytes in members:
+        return "binary"
+    if date in members or datetime in members:
+        return "date"
+    if members and all(m in (int, Decimal, float) for m in members):
+        return "numeric"
+    return "other"
+
+
+# =============================================================================
+# FUNCTION: with_current
+# =============================================================================
+
+
+def with_current(model: type[DatabaseRecord], where: Where | None) -> dict[str, object]:
+    """
+    Add the current-version filter of a versioned source to a `where`.
+
+    Ajera keeps earlier versions of an edited row with its current marker
+    cleared, and keeps a deleted row with its deleted marker set. A read or a
+    total that does not filter them counts the same work more than once.
+
+    Returns:
+        dict[str, object]: The `where`, plus `current_column = 1` and
+        `deleted_column = 0` for whichever of the two the source has.
+    """
+    source = model.__source__
+    markers = {
+        column: value
+        for column, value in (
+            (source.current_column, True),
+            (source.deleted_column, False),
+        )
+        if column
+    }
+    if not markers:
+        raise ValueError(
+            f"{source.name} keeps no row versions, so current=True does not apply"
+        )
+    merged = dict(where or {})
+    for name in merged:
+        declared = model.model_fields.get(name)
+        column = declared.alias if declared and declared.alias else name
+        if column in markers:
+            raise ValueError(
+                f"current=True already filters {column}; drop {name!r} from where"
+            )
+    merged.update(markers)
+    return merged
 
 
 # =============================================================================
@@ -282,4 +468,150 @@ def live_columns(model: type[DatabaseRecord]) -> Query[list[tuple[str, str]]]:
         ),
         parse=parse,
         parameters=(source.name,),
+    )
+
+
+# =============================================================================
+# QUERY: aggregate
+# =============================================================================
+
+
+def aggregate(
+    model: type[DatabaseRecord],
+    measures: Sequence[Measure],
+    *,
+    group_by: Sequence[str] = (),
+    where: Where | None = None,
+    order_by: Sequence[str] | None = None,
+    limit: int | None = None,
+    arguments: Sequence[object] = (),
+    live: Mapping[str, str] | None = None,
+) -> Query[list[dict[str, object]]]:
+    """
+    Build a server-side `GROUP BY` over the model's source.
+
+    Every column resolves against the model or the live columns, and every
+    bucket and function comes from a fixed set, so nothing the caller types
+    reaches the statement except a resolved name inside `quote_name`.
+
+    Args:
+        model: The model of a table, view, or function.
+        measures: The totals to compute, from `ajera.odbc.measures`.
+        group_by: Fields to group by; `field:day`, `field:week`,
+            `field:month`, `field:quarter`, or `field:year` groups a date
+            field by the first day of its period.
+        where: As for `select`.
+        order_by: Group keys or measure aliases, `-` for descending. Defaults
+            to the group keys.
+        limit: The most groups to return.
+        arguments: A function's arguments, in declaration order.
+        live: The source's live columns and their SQL types, for custom fields.
+
+    Returns:
+        Query[list[dict[str, object]]]: One dictionary per group, keyed by
+        each `group_by` entry as spelled and each measure's alias.
+    """
+    if not measures:
+        raise ValueError("aggregate needs at least one measure")
+    live = live or {}
+    target, parameters = source_clause(model, arguments)
+    filters, filter_parameters = _where(model, where, list(live))
+
+    keys: list[str] = []
+    selected: list[str] = []
+    grouped: list[str] = []
+    decoded: dict[str, str] = {}
+
+    def claim(key: str, what: str) -> None:
+        if key in keys:
+            raise ValueError(f"{what} {key!r} collides with another group key or alias")
+        keys.append(key)
+
+    for entry in group_by:
+        name, _, bucket = entry.partition(":")
+        column = resolve(model, name, list(live))
+        kind = column_kind(model, column, live)
+        expression = quote_name(column)
+        if kind == "binary":
+            raise ValueError(f"cannot group by binary field {name!r}")
+        if bucket:
+            if bucket not in BUCKETS:
+                raise ValueError(
+                    f"{entry!r}: unknown bucket {bucket!r}; use one of "
+                    + ", ".join(BUCKETS)
+                )
+            if kind != "date":
+                raise ValueError(f"{entry!r}: a {bucket} bucket needs a date field")
+            expression = BUCKETS[bucket](expression)
+        else:
+            decoded[entry] = column
+        claim(entry, "group key")
+        selected.append(f"{expression} AS {quote_name(entry)}")
+        grouped.append(expression)
+
+    for measure in measures:
+        if measure.function == "COUNT":
+            if measure.field is not None:
+                raise ValueError("count() takes no field; use count_distinct(field)")
+            expression, default = "COUNT_BIG(*)", "count"
+        elif measure.function in AGGREGATES:
+            if measure.field is None:
+                raise ValueError(f"{measure.function} needs a field")
+            column = resolve(model, measure.field, list(live))
+            kind = column_kind(model, column, live)
+            if kind == "binary":
+                raise ValueError(f"cannot aggregate binary field {measure.field!r}")
+            if measure.function in ("SUM", "AVG") and kind != "numeric":
+                described = "a code column" if kind == "code" else "not numeric"
+                raise ValueError(
+                    f"{measure.function} needs a numeric field; "
+                    f"{measure.field!r} is {described}"
+                )
+            expression = AGGREGATES[measure.function](quote_name(column))
+            default = f"{measure.function}_{field_name(model, column)}".lower()
+        else:
+            raise ValueError(f"unknown aggregate function {measure.function!r}")
+        alias = measure.alias or default
+        if not alias.isidentifier():
+            raise ValueError(
+                f"measure alias {alias!r} is not a Python identifier; pass alias="
+            )
+        claim(alias, "measure alias")
+        selected.append(f"{expression} AS {quote_name(alias)}")
+
+    ordering: list[str] = []
+    for name in order_by if order_by is not None else group_by:
+        key = name.removeprefix("-")
+        if key not in keys:
+            raise ValueError(
+                f"order_by {name!r} names neither a group key nor a measure alias"
+            )
+        ordering.append(quote_name(key) + (" DESC" if name.startswith("-") else ""))
+
+    head: list[object] = []
+    top = ""
+    if limit is not None:
+        top = "TOP (?) "
+        head.append(limit)
+
+    statement = (
+        f"SELECT {top}{', '.join(selected)} FROM {target}{filters}"
+        f"{' GROUP BY ' + ', '.join(grouped) if grouped else ''}"
+        f"{' ORDER BY ' + ', '.join(ordering) if ordering else ''}"
+    )
+
+    def parse(records: list[Record]) -> list[dict[str, object]]:
+        return [
+            {
+                key: decode(model, decoded[key], value) if key in decoded else value
+                for key, value in record.items()
+            }
+            for record in records
+        ]
+
+    return Query(
+        statement=statement,
+        parse=parse,
+        parameters=(*head, *parameters, *filter_parameters),
+        keep_nulls=True,
     )

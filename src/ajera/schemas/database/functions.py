@@ -52,25 +52,59 @@ class Ax1099TotalsRow(DatabaseRecord):
         parameters=("Minimum", "StartDate", "EndDate"),
     )
 
-    key: int = Field(alias="vKey")
-    description: str = Field(alias="vDescription")
-    receives1099: bool = Field(alias="vReceives1099")
-    v1099_recipient_id: str = Field(alias="v1099RecipientID")
-    v1099_recipient_name: str = Field(alias="v1099RecipientName")
-    v1099_form_type: int = Field(alias="v1099FormType")
-    v1099_w9_form_received: bool = Field(alias="v1099W9FormReceived")
-    v1099_w9_business_type: str = Field(alias="v1099W9BusinessType")
-    v1099_w9_other_description: str = Field(alias="v1099W9OtherDescription")
-    mailing_address1: str = Field(alias="vMailingAddress1")
-    mailing_address2: str = Field(alias="vMailingAddress2")
-    mailing_address3: str = Field(alias="vMailingAddress3")
-    mailing_city: str = Field(alias="vMailingCity")
-    mailing_state: str = Field(alias="vMailingState")
-    mailing_zip: str = Field(alias="vMailingZip")
-    account_id: str = Field(alias="vAccountID")
-    phone1: str = Field(alias="vPhone1")
-    payments: Decimal = Field(alias="vPayments")
-    previous_year: Decimal = Field(alias="vPreviousYear")
+    key: int = Field(alias="vKey", json_schema_extra={"sql_type": "int"})
+    description: str = Field(
+        alias="vDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    receives1099: bool = Field(
+        alias="vReceives1099", json_schema_extra={"sql_type": "bit"}
+    )
+    v1099_recipient_id: str = Field(
+        alias="v1099RecipientID", json_schema_extra={"sql_type": "varchar"}
+    )
+    v1099_recipient_name: str = Field(
+        alias="v1099RecipientName", json_schema_extra={"sql_type": "varchar"}
+    )
+    v1099_form_type: int = Field(
+        alias="v1099FormType", json_schema_extra={"sql_type": "int"}
+    )
+    v1099_w9_form_received: bool = Field(
+        alias="v1099W9FormReceived", json_schema_extra={"sql_type": "bit"}
+    )
+    v1099_w9_business_type: str = Field(
+        alias="v1099W9BusinessType", json_schema_extra={"sql_type": "varchar"}
+    )
+    v1099_w9_other_description: str = Field(
+        alias="v1099W9OtherDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_address1: str = Field(
+        alias="vMailingAddress1", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_address2: str = Field(
+        alias="vMailingAddress2", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_address3: str = Field(
+        alias="vMailingAddress3", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_city: str = Field(
+        alias="vMailingCity", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_state: str = Field(
+        alias="vMailingState", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_zip: str = Field(
+        alias="vMailingZip", json_schema_extra={"sql_type": "varchar"}
+    )
+    account_id: str = Field(
+        alias="vAccountID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phone1: str = Field(alias="vPhone1", json_schema_extra={"sql_type": "varchar"})
+    payments: Decimal = Field(
+        alias="vPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    previous_year: Decimal = Field(
+        alias="vPreviousYear", json_schema_extra={"sql_type": "decimal"}
+    )
 
 
 class CreditMemoRow(DatabaseRecord):
@@ -78,39 +112,81 @@ class CreditMemoRow(DatabaseRecord):
 
     __source__ = Source(kind="function", name="AxCreditMemo", parameters=("Receipt",))
 
-    receipt_key: int = Field(alias="rKey")
-    ci_client_description: str | None = Field(None, alias="ciClientDescription")
-    client_invoice_key: int | None = Field(None, alias="tClientInvoice")
-    invoice_date: datetime | None = Field(None, alias="ciInvoiceDate")
-    client_key: int | None = Field(None, alias="ciClient")
-    invoice_number: str | None = Field(None, alias="ciInvoiceNumber")
-    project_id: str | None = Field(None, alias="igProjectID")
-    project_description: str | None = Field(None, alias="igProjectDescription")
+    receipt_key: int = Field(alias="rKey", json_schema_extra={"sql_type": "int"})
+    ci_client_description: str | None = Field(
+        None, alias="ciClientDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_invoice_key: int | None = Field(
+        None, alias="tClientInvoice", json_schema_extra={"sql_type": "int"}
+    )
+    invoice_date: datetime | None = Field(
+        None, alias="ciInvoiceDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    client_key: int | None = Field(
+        None, alias="ciClient", json_schema_extra={"sql_type": "int"}
+    )
+    invoice_number: str | None = Field(
+        None, alias="ciInvoiceNumber", json_schema_extra={"sql_type": "varchar"}
+    )
+    project_id: str | None = Field(
+        None, alias="igProjectID", json_schema_extra={"sql_type": "varchar"}
+    )
+    project_description: str | None = Field(
+        None, alias="igProjectDescription", json_schema_extra={"sql_type": "varchar"}
+    )
     client_billing_contact_name: str | None = Field(
-        None, alias="igClientBillingContactName"
+        None,
+        alias="igClientBillingContactName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     client_billing_contact_phone1: str | None = Field(
-        None, alias="igClientBillingContactPhone1"
+        None,
+        alias="igClientBillingContactPhone1",
+        json_schema_extra={"sql_type": "varchar"},
     )
     client_billing_contact_email: str | None = Field(
-        None, alias="igClientBillingContactEmail"
+        None,
+        alias="igClientBillingContactEmail",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    invoice_address1: str | None = Field(None, alias="igInvoiceAddress1")
-    invoice_address2: str | None = Field(None, alias="igInvoiceAddress2")
-    invoice_address3: str | None = Field(None, alias="igInvoiceAddress3")
-    invoice_city: str | None = Field(None, alias="igInvoiceCity")
-    invoice_state: str | None = Field(None, alias="igInvoiceState")
-    invoice_zip: str | None = Field(None, alias="igInvoiceZip")
-    accounting_date: datetime | None = Field(None, alias="gldAccountingDate")
-    billed_amount: Decimal | None = Field(None, alias="tBilledAmount")
-    t_total_receipts: Decimal | None = Field(None, alias="tTotalReceipts")
-    t_total_credited: Decimal | None = Field(None, alias="tTotalCredited")
-    t_total_this_credit: Decimal | None = Field(None, alias="tTotalThisCredit")
+    invoice_address1: str | None = Field(
+        None, alias="igInvoiceAddress1", json_schema_extra={"sql_type": "varchar"}
+    )
+    invoice_address2: str | None = Field(
+        None, alias="igInvoiceAddress2", json_schema_extra={"sql_type": "varchar"}
+    )
+    invoice_address3: str | None = Field(
+        None, alias="igInvoiceAddress3", json_schema_extra={"sql_type": "varchar"}
+    )
+    invoice_city: str | None = Field(
+        None, alias="igInvoiceCity", json_schema_extra={"sql_type": "varchar"}
+    )
+    invoice_state: str | None = Field(
+        None, alias="igInvoiceState", json_schema_extra={"sql_type": "varchar"}
+    )
+    invoice_zip: str | None = Field(
+        None, alias="igInvoiceZip", json_schema_extra={"sql_type": "varchar"}
+    )
+    accounting_date: datetime | None = Field(
+        None, alias="gldAccountingDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    billed_amount: Decimal | None = Field(
+        None, alias="tBilledAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    t_total_receipts: Decimal | None = Field(
+        None, alias="tTotalReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    t_total_credited: Decimal | None = Field(
+        None, alias="tTotalCredited", json_schema_extra={"sql_type": "decimal"}
+    )
+    t_total_this_credit: Decimal | None = Field(
+        None, alias="tTotalThisCredit", json_schema_extra={"sql_type": "decimal"}
+    )
     t_total_receivable_balance: Decimal | None = Field(
-        None, alias="tTotalReceivableBalance"
+        None, alias="tTotalReceivableBalance", json_schema_extra={"sql_type": "decimal"}
     )
     t_total_from_this_receipt: Decimal | None = Field(
-        None, alias="tTotalFromThisReceipt"
+        None, alias="tTotalFromThisReceipt", json_schema_extra={"sql_type": "decimal"}
     )
 
 
@@ -123,54 +199,122 @@ class FinancialsRow(DatabaseRecord):
         parameters=("StartDate", "EndDate", "CloseYear", "AccrualCash"),
     )
 
-    gl_account_key: int | None = Field(None, alias="glaKey")
+    gl_account_key: int | None = Field(
+        None, alias="glaKey", json_schema_extra={"sql_type": "int"}
+    )
     gla_status: GLAccountStatus | int | None = Field(
-        None, alias="glaStatus", union_mode="left_to_right"
+        None,
+        alias="glaStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "int"},
     )
-    gla_order: int | None = Field(None, alias="glaOrder")
-    id: str | None = Field(None, alias="glaID")
-    gla_description: str | None = Field(None, alias="glaDescription")
+    gla_order: int | None = Field(
+        None, alias="glaOrder", json_schema_extra={"sql_type": "int"}
+    )
+    id: str | None = Field(
+        None, alias="glaID", json_schema_extra={"sql_type": "varchar"}
+    )
+    gla_description: str | None = Field(
+        None, alias="glaDescription", json_schema_extra={"sql_type": "varchar"}
+    )
     type: GLAccountType | int | None = Field(
-        None, alias="glaType", union_mode="left_to_right"
+        None,
+        alias="glaType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "int"},
     )
-    allow_journal_entries: bool | None = Field(None, alias="glaAllowJournalEntries")
-    is_normal_debit_balance: bool | None = Field(None, alias="glaIsNormalDebitBalance")
-    gl_account_group_key: int | None = Field(None, alias="agKey")
-    ag_order: int | None = Field(None, alias="agOrder")
-    ag_description: str | None = Field(None, alias="agDescription")
+    allow_journal_entries: bool | None = Field(
+        None, alias="glaAllowJournalEntries", json_schema_extra={"sql_type": "bit"}
+    )
+    is_normal_debit_balance: bool | None = Field(
+        None, alias="glaIsNormalDebitBalance", json_schema_extra={"sql_type": "bit"}
+    )
+    gl_account_group_key: int | None = Field(
+        None, alias="agKey", json_schema_extra={"sql_type": "int"}
+    )
+    ag_order: int | None = Field(
+        None, alias="agOrder", json_schema_extra={"sql_type": "int"}
+    )
+    ag_description: str | None = Field(
+        None, alias="agDescription", json_schema_extra={"sql_type": "varchar"}
+    )
     ag_status: GLAccountGroupStatus | int | None = Field(
-        None, alias="agStatus", union_mode="left_to_right"
+        None,
+        alias="agStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    summarize: bool | None = Field(None, alias="agSummarize")
-    print_net_profit: bool | None = Field(None, alias="agPrintNetProfit")
-    type_description: str | None = Field(None, alias="glaTypeDescription")
-    entity_key: int | None = Field(None, alias="eKey")
+    summarize: bool | None = Field(
+        None, alias="agSummarize", json_schema_extra={"sql_type": "bit"}
+    )
+    print_net_profit: bool | None = Field(
+        None, alias="agPrintNetProfit", json_schema_extra={"sql_type": "bit"}
+    )
+    type_description: str | None = Field(
+        None, alias="glaTypeDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    entity_key: int | None = Field(
+        None, alias="eKey", json_schema_extra={"sql_type": "int"}
+    )
     e_status: EntityStatus | int | None = Field(
-        None, alias="eStatus", union_mode="left_to_right"
+        None,
+        alias="eStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "int"},
     )
-    e_order: int | None = Field(None, alias="eOrder")
-    parent_entity_key: int | None = Field(None, alias="eParentEntity")
-    e_description: str | None = Field(None, alias="eDescription")
-    dpe_percent: int | None = Field(None, alias="eDPEPercent")
-    overhead_percent: int | None = Field(None, alias="eOverheadPercent")
-    current_month: Decimal | None = Field(None, alias="glaCurrentMonth")
-    current_ytd_balance: Decimal | None = Field(None, alias="glaCurrentYTDBalance")
-    prior_year_month: Decimal | None = Field(None, alias="glaPriorYearMonth")
-    prior_year_ytd_balance: Decimal | None = Field(None, alias="glaPriorYearYTDBalance")
-    budget_current_month: Decimal | None = Field(None, alias="glaBudgetCurrentMonth")
-    budget_ytd: Decimal | None = Field(None, alias="glaBudgetYTD")
+    e_order: int | None = Field(
+        None, alias="eOrder", json_schema_extra={"sql_type": "int"}
+    )
+    parent_entity_key: int | None = Field(
+        None, alias="eParentEntity", json_schema_extra={"sql_type": "int"}
+    )
+    e_description: str | None = Field(
+        None, alias="eDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    dpe_percent: int | None = Field(
+        None, alias="eDPEPercent", json_schema_extra={"sql_type": "int"}
+    )
+    overhead_percent: int | None = Field(
+        None, alias="eOverheadPercent", json_schema_extra={"sql_type": "int"}
+    )
+    current_month: Decimal | None = Field(
+        None, alias="glaCurrentMonth", json_schema_extra={"sql_type": "decimal"}
+    )
+    current_ytd_balance: Decimal | None = Field(
+        None, alias="glaCurrentYTDBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    prior_year_month: Decimal | None = Field(
+        None, alias="glaPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
+    )
+    prior_year_ytd_balance: Decimal | None = Field(
+        None, alias="glaPriorYearYTDBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    budget_current_month: Decimal | None = Field(
+        None, alias="glaBudgetCurrentMonth", json_schema_extra={"sql_type": "decimal"}
+    )
+    budget_ytd: Decimal | None = Field(
+        None, alias="glaBudgetYTD", json_schema_extra={"sql_type": "decimal"}
+    )
     budget_prior_year_month: Decimal | None = Field(
-        None, alias="glaBudgetPriorYearMonth"
+        None, alias="glaBudgetPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
     )
-    budget_prior_ytd: Decimal | None = Field(None, alias="glaBudgetPriorYTD")
+    budget_prior_ytd: Decimal | None = Field(
+        None, alias="glaBudgetPriorYTD", json_schema_extra={"sql_type": "decimal"}
+    )
     last_day_current_fiscal_year: datetime | None = Field(
-        None, alias="LastDayCurrentFiscalYear"
+        None,
+        alias="LastDayCurrentFiscalYear",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     first_day_current_fiscal_year: datetime | None = Field(
-        None, alias="FirstDayCurrentFiscalYear"
+        None,
+        alias="FirstDayCurrentFiscalYear",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     any_fiscal_year_begin_date: datetime | None = Field(
-        None, alias="AnyFiscalYearBeginDate"
+        None,
+        alias="AnyFiscalYearBeginDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
 
 
@@ -183,59 +327,134 @@ class FinancialsMCRow(DatabaseRecord):
         parameters=("StartDate", "EndDate", "CloseYear", "AccrualCash", "pCompany"),
     )
 
-    fy_company: int | None = Field(None, alias="fyCompany")
-    fy_company_description: str | None = Field(None, alias="fyCompanyDescription")
-    gl_account_key: int | None = Field(None, alias="glaKey")
+    fy_company: int | None = Field(
+        None, alias="fyCompany", json_schema_extra={"sql_type": "int"}
+    )
+    fy_company_description: str | None = Field(
+        None, alias="fyCompanyDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    gl_account_key: int | None = Field(
+        None, alias="glaKey", json_schema_extra={"sql_type": "int"}
+    )
     gla_status: GLAccountStatus | int | None = Field(
-        None, alias="glaStatus", union_mode="left_to_right"
+        None,
+        alias="glaStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "int"},
     )
-    gla_order: int | None = Field(None, alias="glaOrder")
-    id: str | None = Field(None, alias="glaID")
-    gla_description: str | None = Field(None, alias="glaDescription")
+    gla_order: int | None = Field(
+        None, alias="glaOrder", json_schema_extra={"sql_type": "int"}
+    )
+    id: str | None = Field(
+        None, alias="glaID", json_schema_extra={"sql_type": "varchar"}
+    )
+    gla_description: str | None = Field(
+        None, alias="glaDescription", json_schema_extra={"sql_type": "varchar"}
+    )
     type: GLAccountType | int | None = Field(
-        None, alias="glaType", union_mode="left_to_right"
+        None,
+        alias="glaType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "int"},
     )
-    allow_journal_entries: bool | None = Field(None, alias="glaAllowJournalEntries")
-    is_normal_debit_balance: bool | None = Field(None, alias="glaIsNormalDebitBalance")
-    gl_account_group_key: int | None = Field(None, alias="agKey")
-    ag_order: int | None = Field(None, alias="agOrder")
-    ag_description: str | None = Field(None, alias="agDescription")
+    allow_journal_entries: bool | None = Field(
+        None, alias="glaAllowJournalEntries", json_schema_extra={"sql_type": "bit"}
+    )
+    is_normal_debit_balance: bool | None = Field(
+        None, alias="glaIsNormalDebitBalance", json_schema_extra={"sql_type": "bit"}
+    )
+    gl_account_group_key: int | None = Field(
+        None, alias="agKey", json_schema_extra={"sql_type": "int"}
+    )
+    ag_order: int | None = Field(
+        None, alias="agOrder", json_schema_extra={"sql_type": "int"}
+    )
+    ag_description: str | None = Field(
+        None, alias="agDescription", json_schema_extra={"sql_type": "varchar"}
+    )
     ag_status: GLAccountGroupStatus | int | None = Field(
-        None, alias="agStatus", union_mode="left_to_right"
+        None,
+        alias="agStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    summarize: bool | None = Field(None, alias="agSummarize")
-    print_net_profit: bool | None = Field(None, alias="agPrintNetProfit")
-    type_description: str | None = Field(None, alias="glaTypeDescription")
-    entity_key: int | None = Field(None, alias="eKey")
+    summarize: bool | None = Field(
+        None, alias="agSummarize", json_schema_extra={"sql_type": "bit"}
+    )
+    print_net_profit: bool | None = Field(
+        None, alias="agPrintNetProfit", json_schema_extra={"sql_type": "bit"}
+    )
+    type_description: str | None = Field(
+        None, alias="glaTypeDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    entity_key: int | None = Field(
+        None, alias="eKey", json_schema_extra={"sql_type": "int"}
+    )
     e_status: EntityStatus | int | None = Field(
-        None, alias="eStatus", union_mode="left_to_right"
+        None,
+        alias="eStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "int"},
     )
-    e_order: int | None = Field(None, alias="eOrder")
-    parent_entity_key: int | None = Field(None, alias="eParentEntity")
-    e_description: str | None = Field(None, alias="eDescription")
-    dpe_percent: int | None = Field(None, alias="eDPEPercent")
-    overhead_percent: int | None = Field(None, alias="eOverheadPercent")
-    current_month: Decimal | None = Field(None, alias="glaCurrentMonth")
-    current_ytd_balance: Decimal | None = Field(None, alias="glaCurrentYTDBalance")
-    prior_year_month: Decimal | None = Field(None, alias="glaPriorYearMonth")
-    prior_year_ytd_balance: Decimal | None = Field(None, alias="glaPriorYearYTDBalance")
-    budget_current_month: Decimal | None = Field(None, alias="glaBudgetCurrentMonth")
-    budget_ytd: Decimal | None = Field(None, alias="glaBudgetYTD")
+    e_order: int | None = Field(
+        None, alias="eOrder", json_schema_extra={"sql_type": "int"}
+    )
+    parent_entity_key: int | None = Field(
+        None, alias="eParentEntity", json_schema_extra={"sql_type": "int"}
+    )
+    e_description: str | None = Field(
+        None, alias="eDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    dpe_percent: int | None = Field(
+        None, alias="eDPEPercent", json_schema_extra={"sql_type": "int"}
+    )
+    overhead_percent: int | None = Field(
+        None, alias="eOverheadPercent", json_schema_extra={"sql_type": "int"}
+    )
+    current_month: Decimal | None = Field(
+        None, alias="glaCurrentMonth", json_schema_extra={"sql_type": "decimal"}
+    )
+    current_ytd_balance: Decimal | None = Field(
+        None, alias="glaCurrentYTDBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    prior_year_month: Decimal | None = Field(
+        None, alias="glaPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
+    )
+    prior_year_ytd_balance: Decimal | None = Field(
+        None, alias="glaPriorYearYTDBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    budget_current_month: Decimal | None = Field(
+        None, alias="glaBudgetCurrentMonth", json_schema_extra={"sql_type": "decimal"}
+    )
+    budget_ytd: Decimal | None = Field(
+        None, alias="glaBudgetYTD", json_schema_extra={"sql_type": "decimal"}
+    )
     budget_prior_year_month: Decimal | None = Field(
-        None, alias="glaBudgetPriorYearMonth"
+        None, alias="glaBudgetPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
     )
-    budget_prior_ytd: Decimal | None = Field(None, alias="glaBudgetPriorYTD")
+    budget_prior_ytd: Decimal | None = Field(
+        None, alias="glaBudgetPriorYTD", json_schema_extra={"sql_type": "decimal"}
+    )
     last_day_current_fiscal_year: datetime | None = Field(
-        None, alias="LastDayCurrentFiscalYear"
+        None,
+        alias="LastDayCurrentFiscalYear",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     first_day_current_fiscal_year: datetime | None = Field(
-        None, alias="FirstDayCurrentFiscalYear"
+        None,
+        alias="FirstDayCurrentFiscalYear",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     any_fiscal_year_begin_date: datetime | None = Field(
-        None, alias="AnyFiscalYearBeginDate"
+        None,
+        alias="AnyFiscalYearBeginDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     inter_company_type: GLAccountInterCompanyType | int | None = Field(
-        None, alias="glaInterCompanyType", union_mode="left_to_right"
+        None,
+        alias="glaInterCompanyType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
 
 
@@ -248,59 +467,134 @@ class FinancialsMCTrialBalanceRow(DatabaseRecord):
         parameters=("StartDate", "EndDate", "CloseYear", "AccrualCash", "pCompany"),
     )
 
-    fy_company: int | None = Field(None, alias="fyCompany")
-    fy_company_description: str | None = Field(None, alias="fyCompanyDescription")
-    gl_account_key: int | None = Field(None, alias="glaKey")
+    fy_company: int | None = Field(
+        None, alias="fyCompany", json_schema_extra={"sql_type": "int"}
+    )
+    fy_company_description: str | None = Field(
+        None, alias="fyCompanyDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    gl_account_key: int | None = Field(
+        None, alias="glaKey", json_schema_extra={"sql_type": "int"}
+    )
     gla_status: GLAccountStatus | int | None = Field(
-        None, alias="glaStatus", union_mode="left_to_right"
+        None,
+        alias="glaStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "int"},
     )
-    gla_order: int | None = Field(None, alias="glaOrder")
-    id: str | None = Field(None, alias="glaID")
-    gla_description: str | None = Field(None, alias="glaDescription")
+    gla_order: int | None = Field(
+        None, alias="glaOrder", json_schema_extra={"sql_type": "int"}
+    )
+    id: str | None = Field(
+        None, alias="glaID", json_schema_extra={"sql_type": "varchar"}
+    )
+    gla_description: str | None = Field(
+        None, alias="glaDescription", json_schema_extra={"sql_type": "varchar"}
+    )
     type: GLAccountType | int | None = Field(
-        None, alias="glaType", union_mode="left_to_right"
+        None,
+        alias="glaType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "int"},
     )
-    allow_journal_entries: bool | None = Field(None, alias="glaAllowJournalEntries")
-    is_normal_debit_balance: bool | None = Field(None, alias="glaIsNormalDebitBalance")
-    gl_account_group_key: int | None = Field(None, alias="agKey")
-    ag_order: int | None = Field(None, alias="agOrder")
-    ag_description: str | None = Field(None, alias="agDescription")
+    allow_journal_entries: bool | None = Field(
+        None, alias="glaAllowJournalEntries", json_schema_extra={"sql_type": "bit"}
+    )
+    is_normal_debit_balance: bool | None = Field(
+        None, alias="glaIsNormalDebitBalance", json_schema_extra={"sql_type": "bit"}
+    )
+    gl_account_group_key: int | None = Field(
+        None, alias="agKey", json_schema_extra={"sql_type": "int"}
+    )
+    ag_order: int | None = Field(
+        None, alias="agOrder", json_schema_extra={"sql_type": "int"}
+    )
+    ag_description: str | None = Field(
+        None, alias="agDescription", json_schema_extra={"sql_type": "varchar"}
+    )
     ag_status: GLAccountGroupStatus | int | None = Field(
-        None, alias="agStatus", union_mode="left_to_right"
+        None,
+        alias="agStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    summarize: bool | None = Field(None, alias="agSummarize")
-    print_net_profit: bool | None = Field(None, alias="agPrintNetProfit")
-    type_description: str | None = Field(None, alias="glaTypeDescription")
-    entity_key: int | None = Field(None, alias="eKey")
+    summarize: bool | None = Field(
+        None, alias="agSummarize", json_schema_extra={"sql_type": "bit"}
+    )
+    print_net_profit: bool | None = Field(
+        None, alias="agPrintNetProfit", json_schema_extra={"sql_type": "bit"}
+    )
+    type_description: str | None = Field(
+        None, alias="glaTypeDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    entity_key: int | None = Field(
+        None, alias="eKey", json_schema_extra={"sql_type": "int"}
+    )
     e_status: EntityStatus | int | None = Field(
-        None, alias="eStatus", union_mode="left_to_right"
+        None,
+        alias="eStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "int"},
     )
-    e_order: int | None = Field(None, alias="eOrder")
-    parent_entity_key: int | None = Field(None, alias="eParentEntity")
-    e_description: str | None = Field(None, alias="eDescription")
-    dpe_percent: int | None = Field(None, alias="eDPEPercent")
-    overhead_percent: int | None = Field(None, alias="eOverheadPercent")
-    current_month: Decimal | None = Field(None, alias="glaCurrentMonth")
-    current_ytd_balance: Decimal | None = Field(None, alias="glaCurrentYTDBalance")
-    prior_year_month: Decimal | None = Field(None, alias="glaPriorYearMonth")
-    prior_year_ytd_balance: Decimal | None = Field(None, alias="glaPriorYearYTDBalance")
-    budget_current_month: Decimal | None = Field(None, alias="glaBudgetCurrentMonth")
-    budget_ytd: Decimal | None = Field(None, alias="glaBudgetYTD")
+    e_order: int | None = Field(
+        None, alias="eOrder", json_schema_extra={"sql_type": "int"}
+    )
+    parent_entity_key: int | None = Field(
+        None, alias="eParentEntity", json_schema_extra={"sql_type": "int"}
+    )
+    e_description: str | None = Field(
+        None, alias="eDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    dpe_percent: int | None = Field(
+        None, alias="eDPEPercent", json_schema_extra={"sql_type": "int"}
+    )
+    overhead_percent: int | None = Field(
+        None, alias="eOverheadPercent", json_schema_extra={"sql_type": "int"}
+    )
+    current_month: Decimal | None = Field(
+        None, alias="glaCurrentMonth", json_schema_extra={"sql_type": "decimal"}
+    )
+    current_ytd_balance: Decimal | None = Field(
+        None, alias="glaCurrentYTDBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    prior_year_month: Decimal | None = Field(
+        None, alias="glaPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
+    )
+    prior_year_ytd_balance: Decimal | None = Field(
+        None, alias="glaPriorYearYTDBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    budget_current_month: Decimal | None = Field(
+        None, alias="glaBudgetCurrentMonth", json_schema_extra={"sql_type": "decimal"}
+    )
+    budget_ytd: Decimal | None = Field(
+        None, alias="glaBudgetYTD", json_schema_extra={"sql_type": "decimal"}
+    )
     budget_prior_year_month: Decimal | None = Field(
-        None, alias="glaBudgetPriorYearMonth"
+        None, alias="glaBudgetPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
     )
-    budget_prior_ytd: Decimal | None = Field(None, alias="glaBudgetPriorYTD")
+    budget_prior_ytd: Decimal | None = Field(
+        None, alias="glaBudgetPriorYTD", json_schema_extra={"sql_type": "decimal"}
+    )
     last_day_current_fiscal_year: datetime | None = Field(
-        None, alias="LastDayCurrentFiscalYear"
+        None,
+        alias="LastDayCurrentFiscalYear",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     first_day_current_fiscal_year: datetime | None = Field(
-        None, alias="FirstDayCurrentFiscalYear"
+        None,
+        alias="FirstDayCurrentFiscalYear",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     any_fiscal_year_begin_date: datetime | None = Field(
-        None, alias="AnyFiscalYearBeginDate"
+        None,
+        alias="AnyFiscalYearBeginDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     inter_company_type: GLAccountInterCompanyType | int | None = Field(
-        None, alias="glaInterCompanyType", union_mode="left_to_right"
+        None,
+        alias="glaInterCompanyType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
 
 
@@ -311,10 +605,14 @@ class GLBalanceTotalsRow(DatabaseRecord):
         kind="function", name="AxGLBalanceTotals", parameters=("CutoffDate",)
     )
 
-    internal1: int = Field(alias="glfaInternal1")
-    internal2: int = Field(alias="glfaInternal2")
-    balance: Decimal | None = Field(None, alias="glfaBalance")
-    cash_basis_balance: Decimal | None = Field(None, alias="glfaCashBasisBalance")
+    internal1: int = Field(alias="glfaInternal1", json_schema_extra={"sql_type": "int"})
+    internal2: int = Field(alias="glfaInternal2", json_schema_extra={"sql_type": "int"})
+    balance: Decimal | None = Field(
+        None, alias="glfaBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    cash_basis_balance: Decimal | None = Field(
+        None, alias="glfaCashBasisBalance", json_schema_extra={"sql_type": "decimal"}
+    )
 
 
 class GLDTotalsRow(DatabaseRecord):
@@ -326,51 +624,113 @@ class GLDTotalsRow(DatabaseRecord):
         parameters=("TotalType", "StartDate", "EndDate"),
     )
 
-    key: int = Field(alias="tcdKey")
-    type: int = Field(alias="tcdType")
-    project: int | None = Field(None, alias="tcdProject")
-    activity_type: int = Field(alias="tcdActivityType")
-    employee: int | None = Field(None, alias="tcdEmployee")
-    client_invoice: int | None = Field(None, alias="tcdClientInvoice")
-    vendor_invoice: int | None = Field(None, alias="tcdVendorInvoice")
-    total_billed: Decimal | None = Field(None, alias="tcdTotalBilled")
-    labor_billed: Decimal | None = Field(None, alias="tcdLaborBilled")
-    expense_billed: Decimal | None = Field(None, alias="tcdExpenseBilled")
-    consultant_billed: Decimal | None = Field(None, alias="tcdConsultantBilled")
-    total_sales_tax: Decimal | None = Field(None, alias="tcdTotalSalesTax")
-    labor_sales_tax: Decimal | None = Field(None, alias="tcdLaborSalesTax")
-    expense_sales_tax: Decimal | None = Field(None, alias="tcdExpenseSalesTax")
-    consultant_sales_tax: Decimal | None = Field(None, alias="tcdConsultantSalesTax")
-    total_receipts: Decimal | None = Field(None, alias="tcdTotalReceipts")
-    labor_receipts: Decimal | None = Field(None, alias="tcdLaborReceipts")
-    expense_receipts: Decimal | None = Field(None, alias="tcdExpenseReceipts")
-    consultant_receipts: Decimal | None = Field(None, alias="tcdConsultantReceipts")
+    key: int = Field(alias="tcdKey", json_schema_extra={"sql_type": "int"})
+    type: int = Field(alias="tcdType", json_schema_extra={"sql_type": "tinyint"})
+    project: int | None = Field(
+        None, alias="tcdProject", json_schema_extra={"sql_type": "int"}
+    )
+    activity_type: int = Field(
+        alias="tcdActivityType", json_schema_extra={"sql_type": "tinyint"}
+    )
+    employee: int | None = Field(
+        None, alias="tcdEmployee", json_schema_extra={"sql_type": "int"}
+    )
+    client_invoice: int | None = Field(
+        None, alias="tcdClientInvoice", json_schema_extra={"sql_type": "int"}
+    )
+    vendor_invoice: int | None = Field(
+        None, alias="tcdVendorInvoice", json_schema_extra={"sql_type": "int"}
+    )
+    total_billed: Decimal | None = Field(
+        None, alias="tcdTotalBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_billed: Decimal | None = Field(
+        None, alias="tcdLaborBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_billed: Decimal | None = Field(
+        None, alias="tcdExpenseBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_billed: Decimal | None = Field(
+        None, alias="tcdConsultantBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_sales_tax: Decimal | None = Field(
+        None, alias="tcdTotalSalesTax", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_sales_tax: Decimal | None = Field(
+        None, alias="tcdLaborSalesTax", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_sales_tax: Decimal | None = Field(
+        None, alias="tcdExpenseSalesTax", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_sales_tax: Decimal | None = Field(
+        None, alias="tcdConsultantSalesTax", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_receipts: Decimal | None = Field(
+        None, alias="tcdTotalReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_receipts: Decimal | None = Field(
+        None, alias="tcdLaborReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_receipts: Decimal | None = Field(
+        None, alias="tcdExpenseReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_receipts: Decimal | None = Field(
+        None, alias="tcdConsultantReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
     total_receivable_balance: Decimal | None = Field(
-        None, alias="tcdTotalReceivableBalance"
+        None,
+        alias="tcdTotalReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
     labor_receivable_balance: Decimal | None = Field(
-        None, alias="tcdLaborReceivableBalance"
+        None,
+        alias="tcdLaborReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
     expense_receivable_balance: Decimal | None = Field(
-        None, alias="tcdExpenseReceivableBalance"
+        None,
+        alias="tcdExpenseReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_receivable_balance: Decimal | None = Field(
-        None, alias="tcdConsultantReceivableBalance"
+        None,
+        alias="tcdConsultantReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    vendor_invoiced: Decimal | None = Field(None, alias="tcdVendorInvoiced")
-    payments: Decimal | None = Field(None, alias="tcdPayments")
-    labor_payments: Decimal | None = Field(None, alias="tcdLaborPayments")
-    expense_payments: Decimal | None = Field(None, alias="tcdExpensePayments")
-    consultant_payments: Decimal | None = Field(None, alias="tcdConsultantPayments")
-    payable_balance: Decimal | None = Field(None, alias="tcdPayableBalance")
-    labor_payable_balance: Decimal | None = Field(None, alias="tcdLaborPayableBalance")
+    vendor_invoiced: Decimal | None = Field(
+        None, alias="tcdVendorInvoiced", json_schema_extra={"sql_type": "decimal"}
+    )
+    payments: Decimal | None = Field(
+        None, alias="tcdPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_payments: Decimal | None = Field(
+        None, alias="tcdLaborPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_payments: Decimal | None = Field(
+        None, alias="tcdExpensePayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_payments: Decimal | None = Field(
+        None, alias="tcdConsultantPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    payable_balance: Decimal | None = Field(
+        None, alias="tcdPayableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_payable_balance: Decimal | None = Field(
+        None, alias="tcdLaborPayableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
     expense_payable_balance: Decimal | None = Field(
-        None, alias="tcdExpensePayableBalance"
+        None,
+        alias="tcdExpensePayableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_payable_balance: Decimal | None = Field(
-        None, alias="tcdConsultantPayableBalance"
+        None,
+        alias="tcdConsultantPayableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    prepayment_balance: Decimal | None = Field(None, alias="tcdPrepaymentBalance")
+    prepayment_balance: Decimal | None = Field(
+        None, alias="tcdPrepaymentBalance", json_schema_extra={"sql_type": "decimal"}
+    )
 
 
 class LedgerRow(DatabaseRecord):
@@ -383,13 +743,19 @@ class LedgerRow(DatabaseRecord):
     )
 
     last_day_current_fiscal_year: datetime | None = Field(
-        None, alias="LastDayCurrentFiscalYear"
+        None,
+        alias="LastDayCurrentFiscalYear",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     first_day_current_fiscal_year: datetime | None = Field(
-        None, alias="FirstDayCurrentFiscalYear"
+        None,
+        alias="FirstDayCurrentFiscalYear",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     any_fiscal_year_begin_date: datetime | None = Field(
-        None, alias="AnyFiscalYearBeginDate"
+        None,
+        alias="AnyFiscalYearBeginDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
 
 
@@ -402,84 +768,200 @@ class TranTotalsRow(DatabaseRecord):
         parameters=("TotalType", "StartDate", "EndDate"),
     )
 
-    key: int = Field(alias="twdKey")
-    type: int = Field(alias="twdType")
-    project: int | None = Field(None, alias="twdProject")
-    activity_type: int = Field(alias="twdActivityType")
-    employee: int | None = Field(None, alias="twdEmployee")
-    client_invoice: int | None = Field(None, alias="twdClientInvoice")
-    vendor_invoice: int | None = Field(None, alias="twdVendorInvoice")
-    total_cost: Decimal | None = Field(None, alias="twdTotalCost")
-    labor_cost: Decimal | None = Field(None, alias="twdLaborCost")
-    expense_cost: Decimal | None = Field(None, alias="twdExpenseCost")
-    consultant_cost: Decimal | None = Field(None, alias="twdConsultantCost")
-    total_burdened_cost: Decimal | None = Field(None, alias="twdTotalBurdenedCost")
-    labor_burdened_cost: Decimal | None = Field(None, alias="twdLaborBurdenedCost")
-    expense_burdened_cost: Decimal | None = Field(None, alias="twdExpenseBurdenedCost")
+    key: int = Field(alias="twdKey", json_schema_extra={"sql_type": "int"})
+    type: int = Field(alias="twdType", json_schema_extra={"sql_type": "tinyint"})
+    project: int | None = Field(
+        None, alias="twdProject", json_schema_extra={"sql_type": "int"}
+    )
+    activity_type: int = Field(
+        alias="twdActivityType", json_schema_extra={"sql_type": "tinyint"}
+    )
+    employee: int | None = Field(
+        None, alias="twdEmployee", json_schema_extra={"sql_type": "int"}
+    )
+    client_invoice: int | None = Field(
+        None, alias="twdClientInvoice", json_schema_extra={"sql_type": "int"}
+    )
+    vendor_invoice: int | None = Field(
+        None, alias="twdVendorInvoice", json_schema_extra={"sql_type": "int"}
+    )
+    total_cost: Decimal | None = Field(
+        None, alias="twdTotalCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_cost: Decimal | None = Field(
+        None, alias="twdLaborCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_cost: Decimal | None = Field(
+        None, alias="twdExpenseCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_cost: Decimal | None = Field(
+        None, alias="twdConsultantCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_burdened_cost: Decimal | None = Field(
+        None, alias="twdTotalBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_burdened_cost: Decimal | None = Field(
+        None, alias="twdLaborBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_burdened_cost: Decimal | None = Field(
+        None, alias="twdExpenseBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+    )
     consultant_burdened_cost: Decimal | None = Field(
-        None, alias="twdConsultantBurdenedCost"
+        None,
+        alias="twdConsultantBurdenedCost",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    total_billed_units: Decimal | None = Field(None, alias="twdTotalBilledUnits")
-    total_wip_units: Decimal | None = Field(None, alias="twdTotalWIPUnits")
+    total_billed_units: Decimal | None = Field(
+        None, alias="twdTotalBilledUnits", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_wip_units: Decimal | None = Field(
+        None, alias="twdTotalWIPUnits", json_schema_extra={"sql_type": "decimal"}
+    )
     total_wip_to_bill_units: Decimal | None = Field(
-        None, alias="twdTotalWIPToBillUnits"
+        None, alias="twdTotalWIPToBillUnits", json_schema_extra={"sql_type": "decimal"}
     )
-    billed_hours: Decimal | None = Field(None, alias="twdBilledHours")
-    wip_hours: Decimal | None = Field(None, alias="twdWIPHours")
-    wip_to_bill_hours: Decimal | None = Field(None, alias="twdWIPToBillHours")
-    expense_billed_units: Decimal | None = Field(None, alias="twdExpenseBilledUnits")
-    expense_wip_units: Decimal | None = Field(None, alias="twdExpenseWIPUnits")
+    billed_hours: Decimal | None = Field(
+        None, alias="twdBilledHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    wip_hours: Decimal | None = Field(
+        None, alias="twdWIPHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    wip_to_bill_hours: Decimal | None = Field(
+        None, alias="twdWIPToBillHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_billed_units: Decimal | None = Field(
+        None, alias="twdExpenseBilledUnits", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_wip_units: Decimal | None = Field(
+        None, alias="twdExpenseWIPUnits", json_schema_extra={"sql_type": "decimal"}
+    )
     expense_wip_to_bill_units: Decimal | None = Field(
-        None, alias="twdExpenseWIPToBillUnits"
+        None,
+        alias="twdExpenseWIPToBillUnits",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_billed_units: Decimal | None = Field(
-        None, alias="twdConsultantBilledUnits"
+        None,
+        alias="twdConsultantBilledUnits",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    consultant_wip_units: Decimal | None = Field(None, alias="twdConsultantWIPUnits")
+    consultant_wip_units: Decimal | None = Field(
+        None, alias="twdConsultantWIPUnits", json_schema_extra={"sql_type": "decimal"}
+    )
     consultant_wip_to_bill_units: Decimal | None = Field(
-        None, alias="twdConsultantWIPToBillUnits"
+        None,
+        alias="twdConsultantWIPToBillUnits",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    total_hours: Decimal | None = Field(None, alias="twdTotalHours")
-    total_hours_bb: Decimal | None = Field(None, alias="twdTotalHoursBB")
-    total_earned: Decimal | None = Field(None, alias="twdTotalEarned")
-    labor_earned: Decimal | None = Field(None, alias="twdLaborEarned")
-    expense_earned: Decimal | None = Field(None, alias="twdExpenseEarned")
-    consultant_earned: Decimal | None = Field(None, alias="twdConsultantEarned")
-    total_billed: Decimal | None = Field(None, alias="twdTotalBilled")
-    labor_billed: Decimal | None = Field(None, alias="twdLaborBilled")
-    expense_billed: Decimal | None = Field(None, alias="twdExpenseBilled")
-    consultant_billed: Decimal | None = Field(None, alias="twdConsultantBilled")
-    total_sales_tax: Decimal | None = Field(None, alias="twdTotalSalesTax")
-    labor_sales_tax: Decimal | None = Field(None, alias="twdLaborSalesTax")
-    expense_sales_tax: Decimal | None = Field(None, alias="twdExpenseSalesTax")
-    consultant_sales_tax: Decimal | None = Field(None, alias="twdConsultantSalesTax")
-    total_invoice: Decimal | None = Field(None, alias="twdTotalInvoice")
-    labor_invoice: Decimal | None = Field(None, alias="twdLaborInvoice")
-    expense_invoice: Decimal | None = Field(None, alias="twdExpenseInvoice")
-    consultant_invoice: Decimal | None = Field(None, alias="twdConsultantInvoice")
-    total_wip: Decimal | None = Field(None, alias="twdTotalWIP")
-    labor_wip: Decimal | None = Field(None, alias="twdLaborWIP")
-    expense_wip: Decimal | None = Field(None, alias="twdExpenseWIP")
-    consultant_wip: Decimal | None = Field(None, alias="twdConsultantWIP")
-    total_wip_to_bill: Decimal | None = Field(None, alias="twdTotalWIPToBill")
-    labor_wip_to_bill: Decimal | None = Field(None, alias="twdLaborWIPToBill")
-    expense_wip_to_bill: Decimal | None = Field(None, alias="twdExpenseWIPToBill")
-    consultant_wip_to_bill: Decimal | None = Field(None, alias="twdConsultantWIPToBill")
-    total_writeoff: Decimal | None = Field(None, alias="twdTotalWriteoff")
-    labor_writeoff: Decimal | None = Field(None, alias="twdLaborWriteoff")
-    expense_writeoff: Decimal | None = Field(None, alias="twdExpenseWriteoff")
-    consultant_writeoff: Decimal | None = Field(None, alias="twdConsultantWriteoff")
+    total_hours: Decimal | None = Field(
+        None, alias="twdTotalHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_hours_bb: Decimal | None = Field(
+        None, alias="twdTotalHoursBB", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_earned: Decimal | None = Field(
+        None, alias="twdTotalEarned", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_earned: Decimal | None = Field(
+        None, alias="twdLaborEarned", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_earned: Decimal | None = Field(
+        None, alias="twdExpenseEarned", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_earned: Decimal | None = Field(
+        None, alias="twdConsultantEarned", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_billed: Decimal | None = Field(
+        None, alias="twdTotalBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_billed: Decimal | None = Field(
+        None, alias="twdLaborBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_billed: Decimal | None = Field(
+        None, alias="twdExpenseBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_billed: Decimal | None = Field(
+        None, alias="twdConsultantBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_sales_tax: Decimal | None = Field(
+        None, alias="twdTotalSalesTax", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_sales_tax: Decimal | None = Field(
+        None, alias="twdLaborSalesTax", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_sales_tax: Decimal | None = Field(
+        None, alias="twdExpenseSalesTax", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_sales_tax: Decimal | None = Field(
+        None, alias="twdConsultantSalesTax", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_invoice: Decimal | None = Field(
+        None, alias="twdTotalInvoice", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_invoice: Decimal | None = Field(
+        None, alias="twdLaborInvoice", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_invoice: Decimal | None = Field(
+        None, alias="twdExpenseInvoice", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_invoice: Decimal | None = Field(
+        None, alias="twdConsultantInvoice", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_wip: Decimal | None = Field(
+        None, alias="twdTotalWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_wip: Decimal | None = Field(
+        None, alias="twdLaborWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_wip: Decimal | None = Field(
+        None, alias="twdExpenseWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_wip: Decimal | None = Field(
+        None, alias="twdConsultantWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_wip_to_bill: Decimal | None = Field(
+        None, alias="twdTotalWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_wip_to_bill: Decimal | None = Field(
+        None, alias="twdLaborWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_wip_to_bill: Decimal | None = Field(
+        None, alias="twdExpenseWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_wip_to_bill: Decimal | None = Field(
+        None, alias="twdConsultantWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_writeoff: Decimal | None = Field(
+        None, alias="twdTotalWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_writeoff: Decimal | None = Field(
+        None, alias="twdLaborWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_writeoff: Decimal | None = Field(
+        None, alias="twdExpenseWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_writeoff: Decimal | None = Field(
+        None, alias="twdConsultantWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
     total_invoice_adjustment: Decimal | None = Field(
-        None, alias="twdTotalInvoiceAdjustment"
+        None,
+        alias="twdTotalInvoiceAdjustment",
+        json_schema_extra={"sql_type": "decimal"},
     )
     labor_invoice_adjustment: Decimal | None = Field(
-        None, alias="twdLaborInvoiceAdjustment"
+        None,
+        alias="twdLaborInvoiceAdjustment",
+        json_schema_extra={"sql_type": "decimal"},
     )
     expense_invoice_adjustment: Decimal | None = Field(
-        None, alias="twdExpenseInvoiceAdjustment"
+        None,
+        alias="twdExpenseInvoiceAdjustment",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_invoice_adjustment: Decimal | None = Field(
-        None, alias="twdConsultantInvoiceAdjustment"
+        None,
+        alias="twdConsultantInvoiceAdjustment",
+        json_schema_extra={"sql_type": "decimal"},
     )
 
 
@@ -488,44 +970,104 @@ class BankEntriesRow(DatabaseRecord):
 
     __source__ = Source(kind="function", name="BankEntries", parameters=("CutoffDate",))
 
-    bank_entry_key: int = Field(alias="beKey")
-    type: BankEntryType | int = Field(alias="beType", union_mode="left_to_right")
-    bank_account_key: int = Field(alias="beBankAccount")
-    vendor_key: int | None = Field(None, alias="beVendor")
-    number: str = Field(alias="beNumber")
-    date: datetime = Field(alias="beDate")
-    is_cleared: bool = Field(alias="beIsCleared")
-    bank_statement_key: int | None = Field(None, alias="beBankStatement")
-    notes: str = Field(alias="beNotes")
-    status: BankEntryStatus | int = Field(alias="beStatus", union_mode="left_to_right")
-    bank_transfer: int | None = Field(None, alias="beBankTransfer")
-    employee_key: int | None = Field(None, alias="beEmployee")
-    expense_report_key: int | None = Field(None, alias="beExpenseReport")
-    expense_report_row: int | None = Field(None, alias="beExpenseReportRow")
-    name: str = Field(alias="beName")
-    original_statement_key: int | None = Field(None, alias="beOriginalStatement")
-    attachments: str | None = Field(None, alias="beAttachments")
-    cash_basis_entries_created: bool = Field(alias="beCashBasisEntriesCreated")
-    credit_card_import_detail_key: int | None = Field(
-        None, alias="beCreditCardImportDetail"
+    bank_entry_key: int = Field(alias="beKey", json_schema_extra={"sql_type": "int"})
+    type: BankEntryType | int = Field(
+        alias="beType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    dd_type: int = Field(alias="beDDType")
-    bank_feed_detail_key: int | None = Field(None, alias="beBankFeedDetail")
-    vendor_name: str | None = Field(None, alias="beVendorName")
-    accounting_date: datetime | None = Field(None, alias="beAccountingDate")
-    point_in_time_cleared: int = Field(alias="bePointInTimeCleared")
-    payee: int | None = Field(None, alias="bePayee")
-    amount: Decimal = Field(alias="beAmount")
-    payment_amount: Decimal | None = Field(None, alias="bePaymentAmount")
-    deposit_amount: Decimal = Field(alias="beDepositAmount")
-    check_number: Decimal | None = Field(None, alias="beCheckNumber")
-    reference: str = Field(alias="beReference")
-    voided: bool | None = Field(None, alias="beVoided")
-    register_entry: bool | None = Field(None, alias="beRegisterEntry")
-    beginning_balance: bool | None = Field(None, alias="beBeginningBalance")
-    is_payroll_check: bool | None = Field(None, alias="beIsPayrollCheck")
-    number_of_receipts: int = Field(alias="beNumberOfReceipts")
-    transfer_bank_account: int | None = Field(None, alias="beTransferBankAccount")
+    bank_account_key: int = Field(
+        alias="beBankAccount", json_schema_extra={"sql_type": "int"}
+    )
+    vendor_key: int | None = Field(
+        None, alias="beVendor", json_schema_extra={"sql_type": "int"}
+    )
+    number: str = Field(alias="beNumber", json_schema_extra={"sql_type": "varchar"})
+    date: datetime = Field(
+        alias="beDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    is_cleared: bool = Field(alias="beIsCleared", json_schema_extra={"sql_type": "bit"})
+    bank_statement_key: int | None = Field(
+        None, alias="beBankStatement", json_schema_extra={"sql_type": "int"}
+    )
+    notes: str = Field(alias="beNotes", json_schema_extra={"sql_type": "text"})
+    status: BankEntryStatus | int = Field(
+        alias="beStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
+    )
+    bank_transfer: int | None = Field(
+        None, alias="beBankTransfer", json_schema_extra={"sql_type": "int"}
+    )
+    employee_key: int | None = Field(
+        None, alias="beEmployee", json_schema_extra={"sql_type": "int"}
+    )
+    expense_report_key: int | None = Field(
+        None, alias="beExpenseReport", json_schema_extra={"sql_type": "int"}
+    )
+    expense_report_row: int | None = Field(
+        None, alias="beExpenseReportRow", json_schema_extra={"sql_type": "int"}
+    )
+    name: str = Field(alias="beName", json_schema_extra={"sql_type": "varchar"})
+    original_statement_key: int | None = Field(
+        None, alias="beOriginalStatement", json_schema_extra={"sql_type": "int"}
+    )
+    attachments: str | None = Field(
+        None, alias="beAttachments", json_schema_extra={"sql_type": "varchar"}
+    )
+    cash_basis_entries_created: bool = Field(
+        alias="beCashBasisEntriesCreated", json_schema_extra={"sql_type": "bit"}
+    )
+    credit_card_import_detail_key: int | None = Field(
+        None, alias="beCreditCardImportDetail", json_schema_extra={"sql_type": "int"}
+    )
+    dd_type: int = Field(alias="beDDType", json_schema_extra={"sql_type": "tinyint"})
+    bank_feed_detail_key: int | None = Field(
+        None, alias="beBankFeedDetail", json_schema_extra={"sql_type": "int"}
+    )
+    vendor_name: str | None = Field(
+        None, alias="beVendorName", json_schema_extra={"sql_type": "varchar"}
+    )
+    accounting_date: datetime | None = Field(
+        None, alias="beAccountingDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    point_in_time_cleared: int = Field(
+        alias="bePointInTimeCleared", json_schema_extra={"sql_type": "int"}
+    )
+    payee: int | None = Field(
+        None, alias="bePayee", json_schema_extra={"sql_type": "int"}
+    )
+    amount: Decimal = Field(alias="beAmount", json_schema_extra={"sql_type": "decimal"})
+    payment_amount: Decimal | None = Field(
+        None, alias="bePaymentAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    deposit_amount: Decimal = Field(
+        alias="beDepositAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    check_number: Decimal | None = Field(
+        None, alias="beCheckNumber", json_schema_extra={"sql_type": "decimal"}
+    )
+    reference: str = Field(
+        alias="beReference", json_schema_extra={"sql_type": "varchar"}
+    )
+    voided: bool | None = Field(
+        None, alias="beVoided", json_schema_extra={"sql_type": "bit"}
+    )
+    register_entry: bool | None = Field(
+        None, alias="beRegisterEntry", json_schema_extra={"sql_type": "bit"}
+    )
+    beginning_balance: bool | None = Field(
+        None, alias="beBeginningBalance", json_schema_extra={"sql_type": "bit"}
+    )
+    is_payroll_check: bool | None = Field(
+        None, alias="beIsPayrollCheck", json_schema_extra={"sql_type": "bit"}
+    )
+    number_of_receipts: int = Field(
+        alias="beNumberOfReceipts", json_schema_extra={"sql_type": "int"}
+    )
+    transfer_bank_account: int | None = Field(
+        None, alias="beTransferBankAccount", json_schema_extra={"sql_type": "int"}
+    )
 
 
 class ClientInvoiceTotalsRow(DatabaseRecord):
@@ -538,731 +1080,1703 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         parameters=("TotalType", "StartDate", "EndDate"),
     )
 
-    client_invoice_key: int = Field(alias="ciKey")
-    ci_invoice_group: int | None = Field(None, alias="ciInvoiceGroup")
-    ci_client: int | None = Field(None, alias="ciClient")
+    client_invoice_key: int = Field(
+        alias="ciKey", json_schema_extra={"sql_type": "int"}
+    )
+    ci_invoice_group: int | None = Field(
+        None, alias="ciInvoiceGroup", json_schema_extra={"sql_type": "int"}
+    )
+    ci_client: int | None = Field(
+        None, alias="ciClient", json_schema_extra={"sql_type": "int"}
+    )
     ci_status: ClientInvoiceStatus | int = Field(
-        alias="ciStatus", union_mode="left_to_right"
+        alias="ciStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     beginning_balance_type: ClientInvoiceBeginningBalanceType | int = Field(
-        alias="ciBeginningBalanceType", union_mode="left_to_right"
+        alias="ciBeginningBalanceType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    reduce_billed: bool = Field(alias="ciReduceBilled")
-    invoice_number: str = Field(alias="ciInvoiceNumber")
-    cutoff_date: datetime | None = Field(None, alias="ciCutoffDate")
-    invoice_date: datetime | None = Field(None, alias="ciInvoiceDate")
-    accounting_date: datetime | None = Field(None, alias="ciAccountingDate")
-    prepayment_amount: Decimal = Field(alias="ciPrepaymentAmount")
-    ci_header_text: str = Field(alias="ciHeaderText")
-    ci_footer_text: str = Field(alias="ciFooterText")
-    ci_notes: str = Field(alias="ciNotes")
-    pdf_image: bytes | None = Field(None, alias="ciPDFImage")
+    reduce_billed: bool = Field(
+        alias="ciReduceBilled", json_schema_extra={"sql_type": "bit"}
+    )
+    invoice_number: str = Field(
+        alias="ciInvoiceNumber", json_schema_extra={"sql_type": "varchar"}
+    )
+    cutoff_date: datetime | None = Field(
+        None, alias="ciCutoffDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    invoice_date: datetime | None = Field(
+        None, alias="ciInvoiceDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    accounting_date: datetime | None = Field(
+        None, alias="ciAccountingDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    prepayment_amount: Decimal = Field(
+        alias="ciPrepaymentAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_header_text: str = Field(
+        alias="ciHeaderText", json_schema_extra={"sql_type": "text"}
+    )
+    ci_footer_text: str = Field(
+        alias="ciFooterText", json_schema_extra={"sql_type": "text"}
+    )
+    ci_notes: str = Field(alias="ciNotes", json_schema_extra={"sql_type": "text"})
+    pdf_image: bytes | None = Field(
+        None, alias="ciPDFImage", json_schema_extra={"sql_type": "image"}
+    )
     invoice_type: ClientInvoiceInvoiceType | int = Field(
-        alias="ciInvoiceType", union_mode="left_to_right"
+        alias="ciInvoiceType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    ci_attachments: str | None = Field(None, alias="ciAttachments")
-    final_design_key: int | None = Field(None, alias="ciFinalDesign")
-    final_data: bytes | None = Field(None, alias="ciFinalData")
-    adjustment_override: bool = Field(alias="ciAdjustmentOverride")
-    revenue_key: int | None = Field(None, alias="ciRevenue")
-    is_zero_invoice: bool = Field(alias="ciIsZeroInvoice")
-    email_invoice_sent: bool = Field(alias="ciEmailInvoiceSent")
-    email_invoice_sent_on: datetime | None = Field(None, alias="ciEmailInvoiceSentOn")
-    email_invoice_sent_by_key: int | None = Field(None, alias="ciEmailInvoiceSentBy")
-    pay_now_url: str | None = Field(None, alias="ciPayNowURL")
-    bill_and_pay_version: int = Field(alias="ciBillAndPayVersion")
-    sent_to_bill_and_pay: bool = Field(alias="ciSentToBillAndPay")
-    ig_key: int | None = Field(None, alias="igKey")
-    ig_client: int | None = Field(None, alias="igClient")
-    ig_project: int | None = Field(None, alias="igProject")
-    ig_order: int | None = Field(None, alias="igOrder")
-    invoice_format_key: int | None = Field(None, alias="igInvoiceFormat")
-    billing_manager_key: int | None = Field(None, alias="igBillingManager")
-    client_billing_contact_key: int | None = Field(None, alias="igClientBillingContact")
-    ig_header_text: str | None = Field(None, alias="igHeaderText")
-    ig_footer_text: str | None = Field(None, alias="igFooterText")
-    scope_of_work: str | None = Field(None, alias="igScopeOfWork")
-    ig_notes: str | None = Field(None, alias="igNotes")
-    ig_description: str | None = Field(None, alias="igDescription")
-    ig_row_version: bytes | None = Field(None, alias="igRowVersion")
-    email_invoice_template_key: int | None = Field(None, alias="igEmailInvoiceTemplate")
-    print_backup: bool | None = Field(None, alias="igPrintBackup")
-    email_include_backup: bool | None = Field(None, alias="igEmailIncludeBackup")
+    ci_attachments: str | None = Field(
+        None, alias="ciAttachments", json_schema_extra={"sql_type": "varchar"}
+    )
+    final_design_key: int | None = Field(
+        None, alias="ciFinalDesign", json_schema_extra={"sql_type": "int"}
+    )
+    final_data: bytes | None = Field(
+        None, alias="ciFinalData", json_schema_extra={"sql_type": "image"}
+    )
+    adjustment_override: bool = Field(
+        alias="ciAdjustmentOverride", json_schema_extra={"sql_type": "bit"}
+    )
+    revenue_key: int | None = Field(
+        None, alias="ciRevenue", json_schema_extra={"sql_type": "int"}
+    )
+    is_zero_invoice: bool = Field(
+        alias="ciIsZeroInvoice", json_schema_extra={"sql_type": "bit"}
+    )
+    email_invoice_sent: bool = Field(
+        alias="ciEmailInvoiceSent", json_schema_extra={"sql_type": "bit"}
+    )
+    email_invoice_sent_on: datetime | None = Field(
+        None,
+        alias="ciEmailInvoiceSentOn",
+        json_schema_extra={"sql_type": "smalldatetime"},
+    )
+    email_invoice_sent_by_key: int | None = Field(
+        None, alias="ciEmailInvoiceSentBy", json_schema_extra={"sql_type": "int"}
+    )
+    pay_now_url: str | None = Field(
+        None, alias="ciPayNowURL", json_schema_extra={"sql_type": "varchar"}
+    )
+    bill_and_pay_version: int = Field(
+        alias="ciBillAndPayVersion", json_schema_extra={"sql_type": "int"}
+    )
+    sent_to_bill_and_pay: bool = Field(
+        alias="ciSentToBillAndPay", json_schema_extra={"sql_type": "bit"}
+    )
+    ig_key: int | None = Field(
+        None, alias="igKey", json_schema_extra={"sql_type": "int"}
+    )
+    ig_client: int | None = Field(
+        None, alias="igClient", json_schema_extra={"sql_type": "int"}
+    )
+    ig_project: int | None = Field(
+        None, alias="igProject", json_schema_extra={"sql_type": "int"}
+    )
+    ig_order: int | None = Field(
+        None, alias="igOrder", json_schema_extra={"sql_type": "int"}
+    )
+    invoice_format_key: int | None = Field(
+        None, alias="igInvoiceFormat", json_schema_extra={"sql_type": "int"}
+    )
+    billing_manager_key: int | None = Field(
+        None, alias="igBillingManager", json_schema_extra={"sql_type": "int"}
+    )
+    client_billing_contact_key: int | None = Field(
+        None, alias="igClientBillingContact", json_schema_extra={"sql_type": "int"}
+    )
+    ig_header_text: str | None = Field(
+        None, alias="igHeaderText", json_schema_extra={"sql_type": "text"}
+    )
+    ig_footer_text: str | None = Field(
+        None, alias="igFooterText", json_schema_extra={"sql_type": "text"}
+    )
+    scope_of_work: str | None = Field(
+        None, alias="igScopeOfWork", json_schema_extra={"sql_type": "text"}
+    )
+    ig_notes: str | None = Field(
+        None, alias="igNotes", json_schema_extra={"sql_type": "text"}
+    )
+    ig_description: str | None = Field(
+        None, alias="igDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    ig_row_version: bytes | None = Field(
+        None, alias="igRowVersion", json_schema_extra={"sql_type": "timestamp"}
+    )
+    email_invoice_template_key: int | None = Field(
+        None, alias="igEmailInvoiceTemplate", json_schema_extra={"sql_type": "int"}
+    )
+    print_backup: bool | None = Field(
+        None, alias="igPrintBackup", json_schema_extra={"sql_type": "bit"}
+    )
+    email_include_backup: bool | None = Field(
+        None, alias="igEmailIncludeBackup", json_schema_extra={"sql_type": "bit"}
+    )
     email_client_statement_template_key: int | None = Field(
-        None, alias="igEmailClientStatementTemplate"
+        None,
+        alias="igEmailClientStatementTemplate",
+        json_schema_extra={"sql_type": "int"},
     )
-    ig_client_description: str | None = Field(None, alias="igClientDescription")
-    ig_project_id: str | None = Field(None, alias="igProjectID")
-    ig_project_description: str | None = Field(None, alias="igProjectDescription")
+    ig_client_description: str | None = Field(
+        None, alias="igClientDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    ig_project_id: str | None = Field(
+        None, alias="igProjectID", json_schema_extra={"sql_type": "varchar"}
+    )
+    ig_project_description: str | None = Field(
+        None, alias="igProjectDescription", json_schema_extra={"sql_type": "varchar"}
+    )
     ig_invoice_format_description: str | None = Field(
-        None, alias="igInvoiceFormatDescription"
+        None,
+        alias="igInvoiceFormatDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    ig_project_manager: int | None = Field(None, alias="igProjectManager")
-    ig_project_manager_name: str | None = Field(None, alias="igProjectManagerName")
-    ig_project_manager_title: str | None = Field(None, alias="igProjectManagerTitle")
-    ig_principal_in_charge: int | None = Field(None, alias="igPrincipalInCharge")
+    ig_project_manager: int | None = Field(
+        None, alias="igProjectManager", json_schema_extra={"sql_type": "int"}
+    )
+    ig_project_manager_name: str | None = Field(
+        None, alias="igProjectManagerName", json_schema_extra={"sql_type": "varchar"}
+    )
+    ig_project_manager_title: str | None = Field(
+        None, alias="igProjectManagerTitle", json_schema_extra={"sql_type": "varchar"}
+    )
+    ig_principal_in_charge: int | None = Field(
+        None, alias="igPrincipalInCharge", json_schema_extra={"sql_type": "int"}
+    )
     ig_principal_in_charge_name: str | None = Field(
-        None, alias="igPrincipalInChargeName"
+        None, alias="igPrincipalInChargeName", json_schema_extra={"sql_type": "varchar"}
     )
     ig_principal_in_charge_title: str | None = Field(
-        None, alias="igPrincipalInChargeTitle"
+        None,
+        alias="igPrincipalInChargeTitle",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    ig_billing_manager_name: str | None = Field(None, alias="igBillingManagerName")
+    ig_billing_manager_name: str | None = Field(
+        None, alias="igBillingManagerName", json_schema_extra={"sql_type": "varchar"}
+    )
     ig_billing_manager_first_name: str | None = Field(
-        None, alias="igBillingManagerFirstName"
+        None,
+        alias="igBillingManagerFirstName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     ig_billing_manager_middle_name: str | None = Field(
-        None, alias="igBillingManagerMiddleName"
+        None,
+        alias="igBillingManagerMiddleName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     ig_billing_manager_last_name: str | None = Field(
-        None, alias="igBillingManagerLastName"
+        None,
+        alias="igBillingManagerLastName",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    ig_billing_manager_title: str | None = Field(None, alias="igBillingManagerTitle")
+    ig_billing_manager_title: str | None = Field(
+        None, alias="igBillingManagerTitle", json_schema_extra={"sql_type": "varchar"}
+    )
     ig_client_billing_contact_name: str | None = Field(
-        None, alias="igClientBillingContactName"
+        None,
+        alias="igClientBillingContactName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     ig_client_billing_contact_phone1: str | None = Field(
-        None, alias="igClientBillingContactPhone1"
+        None,
+        alias="igClientBillingContactPhone1",
+        json_schema_extra={"sql_type": "varchar"},
     )
     ig_client_billing_contact_email: str | None = Field(
-        None, alias="igClientBillingContactEmail"
+        None,
+        alias="igClientBillingContactEmail",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    ig_invoice_address1: str | None = Field(None, alias="igInvoiceAddress1")
-    ig_invoice_address2: str | None = Field(None, alias="igInvoiceAddress2")
-    ig_invoice_address3: str | None = Field(None, alias="igInvoiceAddress3")
-    ig_invoice_city: str | None = Field(None, alias="igInvoiceCity")
-    ig_invoice_state: str | None = Field(None, alias="igInvoiceState")
-    ig_invoice_zip: str | None = Field(None, alias="igInvoiceZip")
-    ig_company: int | None = Field(None, alias="igCompany")
-    prj_key: int | None = Field(None, alias="prjKey")
+    ig_invoice_address1: str | None = Field(
+        None, alias="igInvoiceAddress1", json_schema_extra={"sql_type": "varchar"}
+    )
+    ig_invoice_address2: str | None = Field(
+        None, alias="igInvoiceAddress2", json_schema_extra={"sql_type": "varchar"}
+    )
+    ig_invoice_address3: str | None = Field(
+        None, alias="igInvoiceAddress3", json_schema_extra={"sql_type": "varchar"}
+    )
+    ig_invoice_city: str | None = Field(
+        None, alias="igInvoiceCity", json_schema_extra={"sql_type": "varchar"}
+    )
+    ig_invoice_state: str | None = Field(
+        None, alias="igInvoiceState", json_schema_extra={"sql_type": "varchar"}
+    )
+    ig_invoice_zip: str | None = Field(
+        None, alias="igInvoiceZip", json_schema_extra={"sql_type": "varchar"}
+    )
+    ig_company: int | None = Field(
+        None, alias="igCompany", json_schema_extra={"sql_type": "int"}
+    )
+    prj_key: int | None = Field(
+        None, alias="prjKey", json_schema_extra={"sql_type": "int"}
+    )
     prj_status: ProjectStatus | int | None = Field(
-        None, alias="prjStatus", union_mode="left_to_right"
+        None,
+        alias="prjStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    prj_order: int | None = Field(None, alias="prjOrder")
-    is_template: bool | None = Field(None, alias="prjIsTemplate")
-    prj_description: str | None = Field(None, alias="prjDescription")
-    id: str | None = Field(None, alias="prjID")
-    project_type_key: int | None = Field(None, alias="prjProjectType")
-    project_manager_key: int | None = Field(None, alias="prjProjectManager")
-    principal_in_charge_key: int | None = Field(None, alias="prjPrincipalInCharge")
-    marketing_contact_key: int | None = Field(None, alias="prjMarketingContact")
-    location: str | None = Field(None, alias="prjLocation")
-    estimated_start_date: datetime | None = Field(None, alias="prjEstimatedStartDate")
+    prj_order: int | None = Field(
+        None, alias="prjOrder", json_schema_extra={"sql_type": "int"}
+    )
+    is_template: bool | None = Field(
+        None, alias="prjIsTemplate", json_schema_extra={"sql_type": "bit"}
+    )
+    prj_description: str | None = Field(
+        None, alias="prjDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    id: str | None = Field(
+        None, alias="prjID", json_schema_extra={"sql_type": "varchar"}
+    )
+    project_type_key: int | None = Field(
+        None, alias="prjProjectType", json_schema_extra={"sql_type": "int"}
+    )
+    project_manager_key: int | None = Field(
+        None, alias="prjProjectManager", json_schema_extra={"sql_type": "int"}
+    )
+    principal_in_charge_key: int | None = Field(
+        None, alias="prjPrincipalInCharge", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact_key: int | None = Field(
+        None, alias="prjMarketingContact", json_schema_extra={"sql_type": "int"}
+    )
+    location: str | None = Field(
+        None, alias="prjLocation", json_schema_extra={"sql_type": "text"}
+    )
+    estimated_start_date: datetime | None = Field(
+        None,
+        alias="prjEstimatedStartDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
+    )
     estimated_completion_date: datetime | None = Field(
-        None, alias="prjEstimatedCompletionDate"
+        None,
+        alias="prjEstimatedCompletionDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
-    actual_start_date: datetime | None = Field(None, alias="prjActualStartDate")
+    actual_start_date: datetime | None = Field(
+        None,
+        alias="prjActualStartDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
+    )
     actual_completion_date: datetime | None = Field(
-        None, alias="prjActualCompletionDate"
+        None,
+        alias="prjActualCompletionDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
-    last_client_invoice: str | None = Field(None, alias="prjLastClientInvoice")
-    apply_sales_tax: bool | None = Field(None, alias="prjApplySalesTax")
-    sales_tax_code: str | None = Field(None, alias="prjSalesTaxCode")
-    sales_tax_rate: Decimal | None = Field(None, alias="prjSalesTaxRate")
-    hours_cost_budget: Decimal | None = Field(None, alias="prjHoursCostBudget")
-    labor_cost_budget: Decimal | None = Field(None, alias="prjLaborCostBudget")
-    expense_cost_budget: Decimal | None = Field(None, alias="prjExpenseCostBudget")
+    last_client_invoice: str | None = Field(
+        None, alias="prjLastClientInvoice", json_schema_extra={"sql_type": "varchar"}
+    )
+    apply_sales_tax: bool | None = Field(
+        None, alias="prjApplySalesTax", json_schema_extra={"sql_type": "bit"}
+    )
+    sales_tax_code: str | None = Field(
+        None, alias="prjSalesTaxCode", json_schema_extra={"sql_type": "varchar"}
+    )
+    sales_tax_rate: Decimal | None = Field(
+        None, alias="prjSalesTaxRate", json_schema_extra={"sql_type": "decimal"}
+    )
+    hours_cost_budget: Decimal | None = Field(
+        None, alias="prjHoursCostBudget", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_cost_budget: Decimal | None = Field(
+        None, alias="prjLaborCostBudget", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_cost_budget: Decimal | None = Field(
+        None, alias="prjExpenseCostBudget", json_schema_extra={"sql_type": "decimal"}
+    )
     consultant_cost_budget: Decimal | None = Field(
-        None, alias="prjConsultantCostBudget"
+        None, alias="prjConsultantCostBudget", json_schema_extra={"sql_type": "decimal"}
     )
     billing_type: ProjectBillingType | int | None = Field(
-        None, alias="prjBillingType", union_mode="left_to_right"
+        None,
+        alias="prjBillingType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    rate_table_key: int | None = Field(None, alias="prjRateTable")
-    total_contract_amount: Decimal | None = Field(None, alias="prjTotalContractAmount")
-    labor_contract_amount: Decimal | None = Field(None, alias="prjLaborContractAmount")
+    rate_table_key: int | None = Field(
+        None, alias="prjRateTable", json_schema_extra={"sql_type": "int"}
+    )
+    total_contract_amount: Decimal | None = Field(
+        None, alias="prjTotalContractAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_contract_amount: Decimal | None = Field(
+        None, alias="prjLaborContractAmount", json_schema_extra={"sql_type": "decimal"}
+    )
     expense_contract_amount: Decimal | None = Field(
-        None, alias="prjExpenseContractAmount"
+        None,
+        alias="prjExpenseContractAmount",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_contract_amount: Decimal | None = Field(
-        None, alias="prjConsultantContractAmount"
+        None,
+        alias="prjConsultantContractAmount",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    bill_labor_as_te: bool | None = Field(None, alias="prjBillLaborAsTE")
-    bill_expense_as_te: bool | None = Field(None, alias="prjBillExpenseAsTE")
-    bill_consultant_as_te: bool | None = Field(None, alias="prjBillConsultantAsTE")
-    units: Decimal | None = Field(None, alias="prjUnits")
-    unit_rate: Decimal | None = Field(None, alias="prjUnitRate")
-    unit_description: str | None = Field(None, alias="prjUnitDescription")
-    construction_cost: Decimal | None = Field(None, alias="prjConstructionCost")
+    bill_labor_as_te: bool | None = Field(
+        None, alias="prjBillLaborAsTE", json_schema_extra={"sql_type": "bit"}
+    )
+    bill_expense_as_te: bool | None = Field(
+        None, alias="prjBillExpenseAsTE", json_schema_extra={"sql_type": "bit"}
+    )
+    bill_consultant_as_te: bool | None = Field(
+        None, alias="prjBillConsultantAsTE", json_schema_extra={"sql_type": "bit"}
+    )
+    units: Decimal | None = Field(
+        None, alias="prjUnits", json_schema_extra={"sql_type": "decimal"}
+    )
+    unit_rate: Decimal | None = Field(
+        None, alias="prjUnitRate", json_schema_extra={"sql_type": "decimal"}
+    )
+    unit_description: str | None = Field(
+        None, alias="prjUnitDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    construction_cost: Decimal | None = Field(
+        None, alias="prjConstructionCost", json_schema_extra={"sql_type": "decimal"}
+    )
     percent_of_construction_cost: Decimal | None = Field(
-        None, alias="prjPercentOfConstructionCost"
+        None,
+        alias="prjPercentOfConstructionCost",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    billing_description: str | None = Field(None, alias="prjBillingDescription")
-    phase_invoice_text: str | None = Field(None, alias="prjPhaseInvoiceText")
-    labor_invoice_text: str | None = Field(None, alias="prjLaborInvoiceText")
-    expense_invoice_text: str | None = Field(None, alias="prjExpenseInvoiceText")
-    consultant_invoice_text: str | None = Field(None, alias="prjConsultantInvoiceText")
-    client_contact1_key: int | None = Field(None, alias="prjClientContact1")
-    client_contact1_text: str | None = Field(None, alias="prjClientContact1Text")
-    client_contact2_key: int | None = Field(None, alias="prjClientContact2")
-    client_contact2_text: str | None = Field(None, alias="prjClientContact2Text")
-    client_contact3_key: int | None = Field(None, alias="prjClientContact3")
-    client_contact3_text: str | None = Field(None, alias="prjClientContact3Text")
-    client_contact4_key: int | None = Field(None, alias="prjClientContact4")
-    client_contact4_text: str | None = Field(None, alias="prjClientContact4Text")
-    client_contact5_key: int | None = Field(None, alias="prjClientContact5")
-    client_contact5_text: str | None = Field(None, alias="prjClientContact5Text")
-    prj_notes: str | None = Field(None, alias="prjNotes")
-    entity_key: int | None = Field(None, alias="prjEntity")
-    is_certified: bool | None = Field(None, alias="prjIsCertified")
-    wage_table_key: int | None = Field(None, alias="prjWageTable")
-    parent_key: int | None = Field(None, alias="prjParent")
-    is_detail_phase: bool | None = Field(None, alias="prjIsDetailPhase")
-    prj_invoice_group: int | None = Field(None, alias="prjInvoiceGroup")
-    is_billing_group: bool | None = Field(None, alias="prjIsBillingGroup")
-    summarize_billing_group: bool | None = Field(None, alias="prjSummarizeBillingGroup")
-    percent_distribution: Decimal | None = Field(None, alias="prjPercentDistribution")
-    prj_project: int | None = Field(None, alias="prjProject")
-    phase_level1_key: int | None = Field(None, alias="prjPhaseLevel1")
-    phase_level2_key: int | None = Field(None, alias="prjPhaseLevel2")
-    phase_level3_key: int | None = Field(None, alias="prjPhaseLevel3")
-    phase_level4_key: int | None = Field(None, alias="prjPhaseLevel4")
-    phase_level5_key: int | None = Field(None, alias="prjPhaseLevel5")
-    phase_level6_key: int | None = Field(None, alias="prjPhaseLevel6")
-    final_budget: bool | None = Field(None, alias="prjFinalBudget")
-    lock_fee: bool | None = Field(None, alias="prjLockFee")
+    billing_description: str | None = Field(
+        None, alias="prjBillingDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_invoice_text: str | None = Field(
+        None, alias="prjPhaseInvoiceText", json_schema_extra={"sql_type": "text"}
+    )
+    labor_invoice_text: str | None = Field(
+        None, alias="prjLaborInvoiceText", json_schema_extra={"sql_type": "text"}
+    )
+    expense_invoice_text: str | None = Field(
+        None, alias="prjExpenseInvoiceText", json_schema_extra={"sql_type": "text"}
+    )
+    consultant_invoice_text: str | None = Field(
+        None, alias="prjConsultantInvoiceText", json_schema_extra={"sql_type": "text"}
+    )
+    client_contact1_key: int | None = Field(
+        None, alias="prjClientContact1", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact1_text: str | None = Field(
+        None, alias="prjClientContact1Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact2_key: int | None = Field(
+        None, alias="prjClientContact2", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact2_text: str | None = Field(
+        None, alias="prjClientContact2Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact3_key: int | None = Field(
+        None, alias="prjClientContact3", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact3_text: str | None = Field(
+        None, alias="prjClientContact3Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact4_key: int | None = Field(
+        None, alias="prjClientContact4", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact4_text: str | None = Field(
+        None, alias="prjClientContact4Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact5_key: int | None = Field(
+        None, alias="prjClientContact5", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact5_text: str | None = Field(
+        None, alias="prjClientContact5Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    prj_notes: str | None = Field(
+        None, alias="prjNotes", json_schema_extra={"sql_type": "text"}
+    )
+    entity_key: int | None = Field(
+        None, alias="prjEntity", json_schema_extra={"sql_type": "int"}
+    )
+    is_certified: bool | None = Field(
+        None, alias="prjIsCertified", json_schema_extra={"sql_type": "bit"}
+    )
+    wage_table_key: int | None = Field(
+        None, alias="prjWageTable", json_schema_extra={"sql_type": "int"}
+    )
+    parent_key: int | None = Field(
+        None, alias="prjParent", json_schema_extra={"sql_type": "int"}
+    )
+    is_detail_phase: bool | None = Field(
+        None, alias="prjIsDetailPhase", json_schema_extra={"sql_type": "bit"}
+    )
+    prj_invoice_group: int | None = Field(
+        None, alias="prjInvoiceGroup", json_schema_extra={"sql_type": "int"}
+    )
+    is_billing_group: bool | None = Field(
+        None, alias="prjIsBillingGroup", json_schema_extra={"sql_type": "bit"}
+    )
+    summarize_billing_group: bool | None = Field(
+        None, alias="prjSummarizeBillingGroup", json_schema_extra={"sql_type": "bit"}
+    )
+    percent_distribution: Decimal | None = Field(
+        None, alias="prjPercentDistribution", json_schema_extra={"sql_type": "decimal"}
+    )
+    prj_project: int | None = Field(
+        None, alias="prjProject", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level1_key: int | None = Field(
+        None, alias="prjPhaseLevel1", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level2_key: int | None = Field(
+        None, alias="prjPhaseLevel2", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level3_key: int | None = Field(
+        None, alias="prjPhaseLevel3", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level4_key: int | None = Field(
+        None, alias="prjPhaseLevel4", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level5_key: int | None = Field(
+        None, alias="prjPhaseLevel5", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level6_key: int | None = Field(
+        None, alias="prjPhaseLevel6", json_schema_extra={"sql_type": "int"}
+    )
+    final_budget: bool | None = Field(
+        None, alias="prjFinalBudget", json_schema_extra={"sql_type": "bit"}
+    )
+    lock_fee: bool | None = Field(
+        None, alias="prjLockFee", json_schema_extra={"sql_type": "bit"}
+    )
     pmp_change_wbs: ProjectPMPChangeWBS | int | None = Field(
-        None, alias="prjPMPChangeWBS", union_mode="left_to_right"
+        None,
+        alias="prjPMPChangeWBS",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     pmp_change_resources: ProjectPMPChangeResources | int | None = Field(
-        None, alias="prjPMPChangeResources", union_mode="left_to_right"
+        None,
+        alias="prjPMPChangeResources",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    labor_cost_rate: Decimal | None = Field(None, alias="prjLaborCostRate")
-    labor_fee_rate: Decimal | None = Field(None, alias="prjLaborFeeRate")
-    expense_markup_rate: Decimal | None = Field(None, alias="prjExpenseMarkupRate")
+    labor_cost_rate: Decimal | None = Field(
+        None, alias="prjLaborCostRate", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_fee_rate: Decimal | None = Field(
+        None, alias="prjLaborFeeRate", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_markup_rate: Decimal | None = Field(
+        None, alias="prjExpenseMarkupRate", json_schema_extra={"sql_type": "decimal"}
+    )
     consultant_markup_rate: Decimal | None = Field(
-        None, alias="prjConsultantMarkupRate"
+        None, alias="prjConsultantMarkupRate", json_schema_extra={"sql_type": "decimal"}
     )
-    marketing_phase_key: int | None = Field(None, alias="prjMarketingPhase")
-    marketing_description: str | None = Field(None, alias="prjMarketingDescription")
-    marketing_client_key: int | None = Field(None, alias="prjMarketingClient")
-    marketing_client_status: int | None = Field(None, alias="prjMarketingClientStatus")
-    marketing_owner_key: int | None = Field(None, alias="prjMarketingOwner")
-    marketing_owner_status: int | None = Field(None, alias="prjMarketingOwnerStatus")
-    marketing_ae_key: int | None = Field(None, alias="prjMarketingAE")
-    marketing_ae_status: int | None = Field(None, alias="prjMarketingAEStatus")
-    marketing_priority: int | None = Field(None, alias="prjMarketingPriority")
+    marketing_phase_key: int | None = Field(
+        None, alias="prjMarketingPhase", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_description: str | None = Field(
+        None, alias="prjMarketingDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_client_key: int | None = Field(
+        None, alias="prjMarketingClient", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_client_status: int | None = Field(
+        None,
+        alias="prjMarketingClientStatus",
+        json_schema_extra={"sql_type": "tinyint"},
+    )
+    marketing_owner_key: int | None = Field(
+        None, alias="prjMarketingOwner", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_owner_status: int | None = Field(
+        None, alias="prjMarketingOwnerStatus", json_schema_extra={"sql_type": "tinyint"}
+    )
+    marketing_ae_key: int | None = Field(
+        None, alias="prjMarketingAE", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_ae_status: int | None = Field(
+        None, alias="prjMarketingAEStatus", json_schema_extra={"sql_type": "tinyint"}
+    )
+    marketing_priority: int | None = Field(
+        None, alias="prjMarketingPriority", json_schema_extra={"sql_type": "tinyint"}
+    )
     marketing_chance_of_winning: int | None = Field(
-        None, alias="prjMarketingChanceOfWinning"
+        None, alias="prjMarketingChanceOfWinning", json_schema_extra={"sql_type": "int"}
     )
-    marketing_scope_of_work: str | None = Field(None, alias="prjMarketingScopeOfWork")
-    marketing_total_cost: Decimal | None = Field(None, alias="prjMarketingTotalCost")
+    marketing_scope_of_work: str | None = Field(
+        None, alias="prjMarketingScopeOfWork", json_schema_extra={"sql_type": "text"}
+    )
+    marketing_total_cost: Decimal | None = Field(
+        None, alias="prjMarketingTotalCost", json_schema_extra={"sql_type": "decimal"}
+    )
     marketing_construction_cost: Decimal | None = Field(
-        None, alias="prjMarketingConstructionCost"
+        None,
+        alias="prjMarketingConstructionCost",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    marketing_total_fee: Decimal | None = Field(None, alias="prjMarketingTotalFee")
-    marketing_firm_fee: Decimal | None = Field(None, alias="prjMarketingFirmFee")
+    marketing_total_fee: Decimal | None = Field(
+        None, alias="prjMarketingTotalFee", json_schema_extra={"sql_type": "decimal"}
+    )
+    marketing_firm_fee: Decimal | None = Field(
+        None, alias="prjMarketingFirmFee", json_schema_extra={"sql_type": "decimal"}
+    )
     marketing_consultant_fee: Decimal | None = Field(
-        None, alias="prjMarketingConsultantFee"
+        None,
+        alias="prjMarketingConsultantFee",
+        json_schema_extra={"sql_type": "decimal"},
     )
     marketing_final_disposition_key: int | None = Field(
-        None, alias="prjMarketingFinalDisposition"
+        None,
+        alias="prjMarketingFinalDisposition",
+        json_schema_extra={"sql_type": "int"},
     )
-    marketing_awarded_to_key: int | None = Field(None, alias="prjMarketingAwardedTo")
-    marketing_contact1_key: int | None = Field(None, alias="prjMarketingContact1")
-    marketing_contact1_text: str | None = Field(None, alias="prjMarketingContact1Text")
-    marketing_contact2_key: int | None = Field(None, alias="prjMarketingContact2")
-    marketing_contact2_text: str | None = Field(None, alias="prjMarketingContact2Text")
-    marketing_contact3_key: int | None = Field(None, alias="prjMarketingContact3")
-    marketing_contact3_text: str | None = Field(None, alias="prjMarketingContact3Text")
-    marketing_contact4_key: int | None = Field(None, alias="prjMarketingContact4")
-    marketing_contact4_text: str | None = Field(None, alias="prjMarketingContact4Text")
-    marketing_contact5_key: int | None = Field(None, alias="prjMarketingContact5")
-    marketing_contact5_text: str | None = Field(None, alias="prjMarketingContact5Text")
-    marketing_notes: str | None = Field(None, alias="prjMarketingNotes")
-    pmp_change_tasks: int | None = Field(None, alias="prjPMPChangeTasks")
-    prj_row_version: bytes | None = Field(None, alias="prjRowVersion")
-    prj_attachments: str | None = Field(None, alias="prjAttachments")
-    require_timesheet_notes: bool | None = Field(None, alias="prjRequireTimesheetNotes")
+    marketing_awarded_to_key: int | None = Field(
+        None, alias="prjMarketingAwardedTo", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact1_key: int | None = Field(
+        None, alias="prjMarketingContact1", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact1_text: str | None = Field(
+        None,
+        alias="prjMarketingContact1Text",
+        json_schema_extra={"sql_type": "varchar"},
+    )
+    marketing_contact2_key: int | None = Field(
+        None, alias="prjMarketingContact2", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact2_text: str | None = Field(
+        None,
+        alias="prjMarketingContact2Text",
+        json_schema_extra={"sql_type": "varchar"},
+    )
+    marketing_contact3_key: int | None = Field(
+        None, alias="prjMarketingContact3", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact3_text: str | None = Field(
+        None,
+        alias="prjMarketingContact3Text",
+        json_schema_extra={"sql_type": "varchar"},
+    )
+    marketing_contact4_key: int | None = Field(
+        None, alias="prjMarketingContact4", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact4_text: str | None = Field(
+        None,
+        alias="prjMarketingContact4Text",
+        json_schema_extra={"sql_type": "varchar"},
+    )
+    marketing_contact5_key: int | None = Field(
+        None, alias="prjMarketingContact5", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact5_text: str | None = Field(
+        None,
+        alias="prjMarketingContact5Text",
+        json_schema_extra={"sql_type": "varchar"},
+    )
+    marketing_notes: str | None = Field(
+        None, alias="prjMarketingNotes", json_schema_extra={"sql_type": "text"}
+    )
+    pmp_change_tasks: int | None = Field(
+        None, alias="prjPMPChangeTasks", json_schema_extra={"sql_type": "tinyint"}
+    )
+    prj_row_version: bytes | None = Field(
+        None, alias="prjRowVersion", json_schema_extra={"sql_type": "timestamp"}
+    )
+    prj_attachments: str | None = Field(
+        None, alias="prjAttachments", json_schema_extra={"sql_type": "varchar"}
+    )
+    require_timesheet_notes: bool | None = Field(
+        None, alias="prjRequireTimesheetNotes", json_schema_extra={"sql_type": "bit"}
+    )
     state: ProjectState | int | None = Field(
-        None, alias="prjState", union_mode="left_to_right"
+        None,
+        alias="prjState",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    local_tax_key: int | None = Field(None, alias="prjLocalTax")
-    created_date: datetime | None = Field(None, alias="prjCreatedDate")
-    company_key: int | None = Field(None, alias="prjCompany")
-    adjust_exclude_labor: bool | None = Field(None, alias="prjAdjustExcludeLabor")
-    adjust_exclude_expense: bool | None = Field(None, alias="prjAdjustExcludeExpense")
+    local_tax_key: int | None = Field(
+        None, alias="prjLocalTax", json_schema_extra={"sql_type": "int"}
+    )
+    created_date: datetime | None = Field(
+        None, alias="prjCreatedDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    company_key: int | None = Field(
+        None, alias="prjCompany", json_schema_extra={"sql_type": "int"}
+    )
+    adjust_exclude_labor: bool | None = Field(
+        None, alias="prjAdjustExcludeLabor", json_schema_extra={"sql_type": "bit"}
+    )
+    adjust_exclude_expense: bool | None = Field(
+        None, alias="prjAdjustExcludeExpense", json_schema_extra={"sql_type": "bit"}
+    )
     adjust_exclude_consultant: bool | None = Field(
-        None, alias="prjAdjustExcludeConsultant"
+        None, alias="prjAdjustExcludeConsultant", json_schema_extra={"sql_type": "bit"}
     )
     adjust_exclude_from_billed: bool | None = Field(
-        None, alias="prjAdjustExcludeFromBilled"
+        None, alias="prjAdjustExcludeFromBilled", json_schema_extra={"sql_type": "bit"}
     )
     adjust_activity_type: ProjectAdjustActivityType | int | None = Field(
-        None, alias="prjAdjustActivityType", union_mode="left_to_right"
+        None,
+        alias="prjAdjustActivityType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    adjust_type: int | None = Field(None, alias="prjAdjustType")
-    adjust_amount: Decimal | None = Field(None, alias="prjAdjustAmount")
-    adjust_account_key: int | None = Field(None, alias="prjAdjustAccount")
-    is_cosential_updated: bool | None = Field(None, alias="prjIsCosentialUpdated")
-    is_imported: bool | None = Field(None, alias="prjIsImported")
+    adjust_type: int | None = Field(
+        None, alias="prjAdjustType", json_schema_extra={"sql_type": "tinyint"}
+    )
+    adjust_amount: Decimal | None = Field(
+        None, alias="prjAdjustAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    adjust_account_key: int | None = Field(
+        None, alias="prjAdjustAccount", json_schema_extra={"sql_type": "int"}
+    )
+    is_cosential_updated: bool | None = Field(
+        None, alias="prjIsCosentialUpdated", json_schema_extra={"sql_type": "bit"}
+    )
+    is_imported: bool | None = Field(
+        None, alias="prjIsImported", json_schema_extra={"sql_type": "bit"}
+    )
     revenue_method_labor: ProjectRevenueMethodLabor | int | None = Field(
-        None, alias="prjRevenueMethodLabor", union_mode="left_to_right"
+        None,
+        alias="prjRevenueMethodLabor",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     revenue_method_expense: ProjectRevenueMethodExpense | int | None = Field(
-        None, alias="prjRevenueMethodExpense", union_mode="left_to_right"
+        None,
+        alias="prjRevenueMethodExpense",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     revenue_method_consultant: ProjectRevenueMethodConsultant | int | None = Field(
-        None, alias="prjRevenueMethodConsultant", union_mode="left_to_right"
+        None,
+        alias="prjRevenueMethodConsultant",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     cap_wip_labor: ProjectCapWIPLabor | int | None = Field(
-        None, alias="prjCapWIPLabor", union_mode="left_to_right"
+        None,
+        alias="prjCapWIPLabor",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     cap_wip_expense: ProjectCapWIPExpense | int | None = Field(
-        None, alias="prjCapWIPExpense", union_mode="left_to_right"
+        None,
+        alias="prjCapWIPExpense",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     cap_wip_consultant: ProjectCapWIPConsultant | int | None = Field(
-        None, alias="prjCapWIPConsultant", union_mode="left_to_right"
+        None,
+        alias="prjCapWIPConsultant",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    revenue_formula_labor_key: int | None = Field(None, alias="prjRevenueFormulaLabor")
+    revenue_formula_labor_key: int | None = Field(
+        None, alias="prjRevenueFormulaLabor", json_schema_extra={"sql_type": "int"}
+    )
     revenue_formula_expense_key: int | None = Field(
-        None, alias="prjRevenueFormulaExpense"
+        None, alias="prjRevenueFormulaExpense", json_schema_extra={"sql_type": "int"}
     )
     revenue_formula_consultant_key: int | None = Field(
-        None, alias="prjRevenueFormulaConsultant"
+        None, alias="prjRevenueFormulaConsultant", json_schema_extra={"sql_type": "int"}
     )
-    time_entry_restriction: bool | None = Field(None, alias="prjTimeEntryRestriction")
-    concurrency: int | None = Field(None, alias="prjConcurrency")
-    last_modified_date: datetime | None = Field(None, alias="prjLastModifiedDate")
-    sync_to_crm: bool | None = Field(None, alias="prjSyncToCRM")
-    is_crm_project: bool | None = Field(None, alias="prjIsCRMProject")
-    labor_entry: bool | None = Field(None, alias="prjLaborEntry")
+    time_entry_restriction: bool | None = Field(
+        None, alias="prjTimeEntryRestriction", json_schema_extra={"sql_type": "bit"}
+    )
+    concurrency: int | None = Field(
+        None, alias="prjConcurrency", json_schema_extra={"sql_type": "int"}
+    )
+    last_modified_date: datetime | None = Field(
+        None, alias="prjLastModifiedDate", json_schema_extra={"sql_type": "datetime"}
+    )
+    sync_to_crm: bool | None = Field(
+        None, alias="prjSyncToCRM", json_schema_extra={"sql_type": "bit"}
+    )
+    is_crm_project: bool | None = Field(
+        None, alias="prjIsCRMProject", json_schema_extra={"sql_type": "bit"}
+    )
+    labor_entry: bool | None = Field(
+        None, alias="prjLaborEntry", json_schema_extra={"sql_type": "bit"}
+    )
     expense_consultant_entry: bool | None = Field(
-        None, alias="prjExpenseConsultantEntry"
+        None, alias="prjExpenseConsultantEntry", json_schema_extra={"sql_type": "bit"}
     )
-    client_contact6_key: int | None = Field(None, alias="prjClientContact6")
-    client_contact6_text: str | None = Field(None, alias="prjClientContact6Text")
-    client_contact7_key: int | None = Field(None, alias="prjClientContact7")
-    client_contact7_text: str | None = Field(None, alias="prjClientContact7Text")
-    client_contact8_key: int | None = Field(None, alias="prjClientContact8")
-    client_contact8_text: str | None = Field(None, alias="prjClientContact8Text")
-    client_contact9_key: int | None = Field(None, alias="prjClientContact9")
-    client_contact9_text: str | None = Field(None, alias="prjClientContact9Text")
-    client_contact10_key: int | None = Field(None, alias="prjClientContact10")
-    client_contact10_text: str | None = Field(None, alias="prjClientContact10Text")
-    client_contact11_key: int | None = Field(None, alias="prjClientContact11")
-    client_contact11_text: str | None = Field(None, alias="prjClientContact11Text")
-    client_contact12_key: int | None = Field(None, alias="prjClientContact12")
-    client_contact12_text: str | None = Field(None, alias="prjClientContact12Text")
-    client_contact13_key: int | None = Field(None, alias="prjClientContact13")
-    client_contact13_text: str | None = Field(None, alias="prjClientContact13Text")
-    client_contact14_key: int | None = Field(None, alias="prjClientContact14")
-    client_contact14_text: str | None = Field(None, alias="prjClientContact14Text")
-    client_contact15_key: int | None = Field(None, alias="prjClientContact15")
-    client_contact15_text: str | None = Field(None, alias="prjClientContact15Text")
-    client_contact16_key: int | None = Field(None, alias="prjClientContact16")
-    client_contact16_text: str | None = Field(None, alias="prjClientContact16Text")
-    client_contact17_key: int | None = Field(None, alias="prjClientContact17")
-    client_contact17_text: str | None = Field(None, alias="prjClientContact17Text")
-    client_contact18_key: int | None = Field(None, alias="prjClientContact18")
-    client_contact18_text: str | None = Field(None, alias="prjClientContact18Text")
-    client_contact19_key: int | None = Field(None, alias="prjClientContact19")
-    client_contact19_text: str | None = Field(None, alias="prjClientContact19Text")
-    client_contact20_key: int | None = Field(None, alias="prjClientContact20")
-    client_contact20_text: str | None = Field(None, alias="prjClientContact20Text")
-    marketing_contact6_key: int | None = Field(None, alias="prjMarketingContact6")
-    marketing_contact6_text: str | None = Field(None, alias="prjMarketingContact6Text")
-    marketing_contact7_key: int | None = Field(None, alias="prjMarketingContact7")
-    marketing_contact7_text: str | None = Field(None, alias="prjMarketingContact7Text")
-    marketing_contact8_key: int | None = Field(None, alias="prjMarketingContact8")
-    marketing_contact8_text: str | None = Field(None, alias="prjMarketingContact8Text")
-    marketing_contact9_key: int | None = Field(None, alias="prjMarketingContact9")
-    marketing_contact9_text: str | None = Field(None, alias="prjMarketingContact9Text")
-    marketing_contact10_key: int | None = Field(None, alias="prjMarketingContact10")
+    client_contact6_key: int | None = Field(
+        None, alias="prjClientContact6", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact6_text: str | None = Field(
+        None, alias="prjClientContact6Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact7_key: int | None = Field(
+        None, alias="prjClientContact7", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact7_text: str | None = Field(
+        None, alias="prjClientContact7Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact8_key: int | None = Field(
+        None, alias="prjClientContact8", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact8_text: str | None = Field(
+        None, alias="prjClientContact8Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact9_key: int | None = Field(
+        None, alias="prjClientContact9", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact9_text: str | None = Field(
+        None, alias="prjClientContact9Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact10_key: int | None = Field(
+        None, alias="prjClientContact10", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact10_text: str | None = Field(
+        None, alias="prjClientContact10Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact11_key: int | None = Field(
+        None, alias="prjClientContact11", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact11_text: str | None = Field(
+        None, alias="prjClientContact11Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact12_key: int | None = Field(
+        None, alias="prjClientContact12", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact12_text: str | None = Field(
+        None, alias="prjClientContact12Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact13_key: int | None = Field(
+        None, alias="prjClientContact13", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact13_text: str | None = Field(
+        None, alias="prjClientContact13Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact14_key: int | None = Field(
+        None, alias="prjClientContact14", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact14_text: str | None = Field(
+        None, alias="prjClientContact14Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact15_key: int | None = Field(
+        None, alias="prjClientContact15", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact15_text: str | None = Field(
+        None, alias="prjClientContact15Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact16_key: int | None = Field(
+        None, alias="prjClientContact16", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact16_text: str | None = Field(
+        None, alias="prjClientContact16Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact17_key: int | None = Field(
+        None, alias="prjClientContact17", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact17_text: str | None = Field(
+        None, alias="prjClientContact17Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact18_key: int | None = Field(
+        None, alias="prjClientContact18", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact18_text: str | None = Field(
+        None, alias="prjClientContact18Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact19_key: int | None = Field(
+        None, alias="prjClientContact19", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact19_text: str | None = Field(
+        None, alias="prjClientContact19Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact20_key: int | None = Field(
+        None, alias="prjClientContact20", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact20_text: str | None = Field(
+        None, alias="prjClientContact20Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact6_key: int | None = Field(
+        None, alias="prjMarketingContact6", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact6_text: str | None = Field(
+        None,
+        alias="prjMarketingContact6Text",
+        json_schema_extra={"sql_type": "varchar"},
+    )
+    marketing_contact7_key: int | None = Field(
+        None, alias="prjMarketingContact7", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact7_text: str | None = Field(
+        None,
+        alias="prjMarketingContact7Text",
+        json_schema_extra={"sql_type": "varchar"},
+    )
+    marketing_contact8_key: int | None = Field(
+        None, alias="prjMarketingContact8", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact8_text: str | None = Field(
+        None,
+        alias="prjMarketingContact8Text",
+        json_schema_extra={"sql_type": "varchar"},
+    )
+    marketing_contact9_key: int | None = Field(
+        None, alias="prjMarketingContact9", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact9_text: str | None = Field(
+        None,
+        alias="prjMarketingContact9Text",
+        json_schema_extra={"sql_type": "varchar"},
+    )
+    marketing_contact10_key: int | None = Field(
+        None, alias="prjMarketingContact10", json_schema_extra={"sql_type": "int"}
+    )
     marketing_contact10_text: str | None = Field(
-        None, alias="prjMarketingContact10Text"
+        None,
+        alias="prjMarketingContact10Text",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    marketing_contact11_key: int | None = Field(None, alias="prjMarketingContact11")
+    marketing_contact11_key: int | None = Field(
+        None, alias="prjMarketingContact11", json_schema_extra={"sql_type": "int"}
+    )
     marketing_contact11_text: str | None = Field(
-        None, alias="prjMarketingContact11Text"
+        None,
+        alias="prjMarketingContact11Text",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    marketing_contact12_key: int | None = Field(None, alias="prjMarketingContact12")
+    marketing_contact12_key: int | None = Field(
+        None, alias="prjMarketingContact12", json_schema_extra={"sql_type": "int"}
+    )
     marketing_contact12_text: str | None = Field(
-        None, alias="prjMarketingContact12Text"
+        None,
+        alias="prjMarketingContact12Text",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    marketing_contact13_key: int | None = Field(None, alias="prjMarketingContact13")
+    marketing_contact13_key: int | None = Field(
+        None, alias="prjMarketingContact13", json_schema_extra={"sql_type": "int"}
+    )
     marketing_contact13_text: str | None = Field(
-        None, alias="prjMarketingContact13Text"
+        None,
+        alias="prjMarketingContact13Text",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    marketing_contact14_key: int | None = Field(None, alias="prjMarketingContact14")
+    marketing_contact14_key: int | None = Field(
+        None, alias="prjMarketingContact14", json_schema_extra={"sql_type": "int"}
+    )
     marketing_contact14_text: str | None = Field(
-        None, alias="prjMarketingContact14Text"
+        None,
+        alias="prjMarketingContact14Text",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    marketing_contact15_key: int | None = Field(None, alias="prjMarketingContact15")
+    marketing_contact15_key: int | None = Field(
+        None, alias="prjMarketingContact15", json_schema_extra={"sql_type": "int"}
+    )
     marketing_contact15_text: str | None = Field(
-        None, alias="prjMarketingContact15Text"
+        None,
+        alias="prjMarketingContact15Text",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    marketing_contact16_key: int | None = Field(None, alias="prjMarketingContact16")
+    marketing_contact16_key: int | None = Field(
+        None, alias="prjMarketingContact16", json_schema_extra={"sql_type": "int"}
+    )
     marketing_contact16_text: str | None = Field(
-        None, alias="prjMarketingContact16Text"
+        None,
+        alias="prjMarketingContact16Text",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    marketing_contact17_key: int | None = Field(None, alias="prjMarketingContact17")
+    marketing_contact17_key: int | None = Field(
+        None, alias="prjMarketingContact17", json_schema_extra={"sql_type": "int"}
+    )
     marketing_contact17_text: str | None = Field(
-        None, alias="prjMarketingContact17Text"
+        None,
+        alias="prjMarketingContact17Text",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    marketing_contact18_key: int | None = Field(None, alias="prjMarketingContact18")
+    marketing_contact18_key: int | None = Field(
+        None, alias="prjMarketingContact18", json_schema_extra={"sql_type": "int"}
+    )
     marketing_contact18_text: str | None = Field(
-        None, alias="prjMarketingContact18Text"
+        None,
+        alias="prjMarketingContact18Text",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    marketing_contact19_key: int | None = Field(None, alias="prjMarketingContact19")
+    marketing_contact19_key: int | None = Field(
+        None, alias="prjMarketingContact19", json_schema_extra={"sql_type": "int"}
+    )
     marketing_contact19_text: str | None = Field(
-        None, alias="prjMarketingContact19Text"
+        None,
+        alias="prjMarketingContact19Text",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    marketing_contact20_key: int | None = Field(None, alias="prjMarketingContact20")
+    marketing_contact20_key: int | None = Field(
+        None, alias="prjMarketingContact20", json_schema_extra={"sql_type": "int"}
+    )
     marketing_contact20_text: str | None = Field(
-        None, alias="prjMarketingContact20Text"
+        None,
+        alias="prjMarketingContact20Text",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    create_in_crm: bool | None = Field(None, alias="prjCreateInCRM")
-    crm_final_sync: bool | None = Field(None, alias="prjCRMFinalSync")
-    crm_sync_state: bool | None = Field(None, alias="prjCRMSyncState")
-    main_project_status: int | None = Field(None, alias="prjMainProjectStatus")
+    create_in_crm: bool | None = Field(
+        None, alias="prjCreateInCRM", json_schema_extra={"sql_type": "bit"}
+    )
+    crm_final_sync: bool | None = Field(
+        None, alias="prjCRMFinalSync", json_schema_extra={"sql_type": "bit"}
+    )
+    crm_sync_state: bool | None = Field(
+        None, alias="prjCRMSyncState", json_schema_extra={"sql_type": "bit"}
+    )
+    main_project_status: int | None = Field(
+        None, alias="prjMainProjectStatus", json_schema_extra={"sql_type": "tinyint"}
+    )
     main_project_status_description: str | None = Field(
-        None, alias="prjMainProjectStatusDescription"
+        None,
+        alias="prjMainProjectStatusDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    main_project_id: str | None = Field(None, alias="prjMainProjectID")
+    main_project_id: str | None = Field(
+        None, alias="prjMainProjectID", json_schema_extra={"sql_type": "varchar"}
+    )
     main_project_description: str | None = Field(
-        None, alias="prjMainProjectDescription"
+        None,
+        alias="prjMainProjectDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    phase_level1_id: str | None = Field(None, alias="prjPhaseLevel1ID")
-    phase_level1_is_detail: bool | None = Field(None, alias="prjPhaseLevel1IsDetail")
+    phase_level1_id: str | None = Field(
+        None, alias="prjPhaseLevel1ID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_level1_is_detail: bool | None = Field(
+        None, alias="prjPhaseLevel1IsDetail", json_schema_extra={"sql_type": "bit"}
+    )
     phase_level1_description: str | None = Field(
-        None, alias="prjPhaseLevel1Description"
+        None,
+        alias="prjPhaseLevel1Description",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    phase_level2_id: str | None = Field(None, alias="prjPhaseLevel2ID")
-    phase_level2_is_detail: bool | None = Field(None, alias="prjPhaseLevel2IsDetail")
+    phase_level2_id: str | None = Field(
+        None, alias="prjPhaseLevel2ID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_level2_is_detail: bool | None = Field(
+        None, alias="prjPhaseLevel2IsDetail", json_schema_extra={"sql_type": "bit"}
+    )
     phase_level2_description: str | None = Field(
-        None, alias="prjPhaseLevel2Description"
+        None,
+        alias="prjPhaseLevel2Description",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    phase_level3_id: str | None = Field(None, alias="prjPhaseLevel3ID")
-    phase_level3_is_detail: bool | None = Field(None, alias="prjPhaseLevel3IsDetail")
+    phase_level3_id: str | None = Field(
+        None, alias="prjPhaseLevel3ID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_level3_is_detail: bool | None = Field(
+        None, alias="prjPhaseLevel3IsDetail", json_schema_extra={"sql_type": "bit"}
+    )
     phase_level3_description: str | None = Field(
-        None, alias="prjPhaseLevel3Description"
+        None,
+        alias="prjPhaseLevel3Description",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    phase_level4_id: str | None = Field(None, alias="prjPhaseLevel4ID")
-    phase_level4_is_detail: bool | None = Field(None, alias="prjPhaseLevel4IsDetail")
+    phase_level4_id: str | None = Field(
+        None, alias="prjPhaseLevel4ID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_level4_is_detail: bool | None = Field(
+        None, alias="prjPhaseLevel4IsDetail", json_schema_extra={"sql_type": "bit"}
+    )
     phase_level4_description: str | None = Field(
-        None, alias="prjPhaseLevel4Description"
+        None,
+        alias="prjPhaseLevel4Description",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    phase_level5_id: str | None = Field(None, alias="prjPhaseLevel5ID")
-    phase_level5_is_detail: bool | None = Field(None, alias="prjPhaseLevel5IsDetail")
+    phase_level5_id: str | None = Field(
+        None, alias="prjPhaseLevel5ID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_level5_is_detail: bool | None = Field(
+        None, alias="prjPhaseLevel5IsDetail", json_schema_extra={"sql_type": "bit"}
+    )
     phase_level5_description: str | None = Field(
-        None, alias="prjPhaseLevel5Description"
+        None,
+        alias="prjPhaseLevel5Description",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    phase_level6_id: str | None = Field(None, alias="prjPhaseLevel6ID")
-    phase_level6_is_detail: bool | None = Field(None, alias="prjPhaseLevel6IsDetail")
+    phase_level6_id: str | None = Field(
+        None, alias="prjPhaseLevel6ID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_level6_is_detail: bool | None = Field(
+        None, alias="prjPhaseLevel6IsDetail", json_schema_extra={"sql_type": "bit"}
+    )
     phase_level6_description: str | None = Field(
-        None, alias="prjPhaseLevel6Description"
+        None,
+        alias="prjPhaseLevel6Description",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    project_start_date: datetime | None = Field(None, alias="prjProjectStartDate")
-    project_end_date: datetime | None = Field(None, alias="prjProjectEndDate")
+    project_start_date: datetime | None = Field(
+        None,
+        alias="prjProjectStartDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
+    )
+    project_end_date: datetime | None = Field(
+        None, alias="prjProjectEndDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
     project_type_description: str | None = Field(
-        None, alias="prjProjectTypeDescription"
+        None,
+        alias="prjProjectTypeDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    project_type_order: int | None = Field(None, alias="prjProjectTypeOrder")
-    phase_level: int | None = Field(None, alias="prjPhaseLevel")
-    billing_group: int | None = Field(None, alias="prjBillingGroup")
-    billing_group_order: int | None = Field(None, alias="prjBillingGroupOrder")
+    project_type_order: int | None = Field(
+        None, alias="prjProjectTypeOrder", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level: int | None = Field(
+        None, alias="prjPhaseLevel", json_schema_extra={"sql_type": "int"}
+    )
+    billing_group: int | None = Field(
+        None, alias="prjBillingGroup", json_schema_extra={"sql_type": "int"}
+    )
+    billing_group_order: int | None = Field(
+        None, alias="prjBillingGroupOrder", json_schema_extra={"sql_type": "int"}
+    )
     billing_group_description: str | None = Field(
-        None, alias="prjBillingGroupDescription"
+        None,
+        alias="prjBillingGroupDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
     billing_group_is_summarized: int | None = Field(
-        None, alias="prjBillingGroupIsSummarized"
+        None, alias="prjBillingGroupIsSummarized", json_schema_extra={"sql_type": "int"}
     )
-    invoice_group_order: int | None = Field(None, alias="prjInvoiceGroupOrder")
+    invoice_group_order: int | None = Field(
+        None, alias="prjInvoiceGroupOrder", json_schema_extra={"sql_type": "int"}
+    )
     invoice_group_description: str | None = Field(
-        None, alias="prjInvoiceGroupDescription"
+        None,
+        alias="prjInvoiceGroupDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    entity_description: str | None = Field(None, alias="prjEntityDescription")
-    entity_order: int | None = Field(None, alias="prjEntityOrder")
-    company_description: str | None = Field(None, alias="prjCompanyDescription")
-    company_order: int | None = Field(None, alias="prjCompanyOrder")
-    status_description: str | None = Field(None, alias="prjStatusDescription")
-    prj_client_key: int | None = Field(None, alias="prjClientKey")
-    client_name: str | None = Field(None, alias="prjClientName")
-    project_manager_name: str | None = Field(None, alias="prjProjectManagerName")
-    project_manager_title: str | None = Field(None, alias="prjProjectManagerTitle")
-    principal_in_charge_name: str | None = Field(None, alias="prjPrincipalInChargeName")
+    entity_description: str | None = Field(
+        None, alias="prjEntityDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    entity_order: int | None = Field(
+        None, alias="prjEntityOrder", json_schema_extra={"sql_type": "int"}
+    )
+    company_description: str | None = Field(
+        None, alias="prjCompanyDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    company_order: int | None = Field(
+        None, alias="prjCompanyOrder", json_schema_extra={"sql_type": "int"}
+    )
+    status_description: str | None = Field(
+        None, alias="prjStatusDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    prj_client_key: int | None = Field(
+        None, alias="prjClientKey", json_schema_extra={"sql_type": "int"}
+    )
+    client_name: str | None = Field(
+        None, alias="prjClientName", json_schema_extra={"sql_type": "varchar"}
+    )
+    project_manager_name: str | None = Field(
+        None, alias="prjProjectManagerName", json_schema_extra={"sql_type": "varchar"}
+    )
+    project_manager_title: str | None = Field(
+        None, alias="prjProjectManagerTitle", json_schema_extra={"sql_type": "varchar"}
+    )
+    principal_in_charge_name: str | None = Field(
+        None,
+        alias="prjPrincipalInChargeName",
+        json_schema_extra={"sql_type": "varchar"},
+    )
     principal_in_charge_title: str | None = Field(
-        None, alias="prjPrincipalInChargeTitle"
+        None,
+        alias="prjPrincipalInChargeTitle",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    marketing_contact_name: str | None = Field(None, alias="prjMarketingContactName")
-    marketing_contact_title: str | None = Field(None, alias="prjMarketingContactTitle")
-    billing_manager: int | None = Field(None, alias="prjBillingManager")
-    billing_manager_name: str | None = Field(None, alias="prjBillingManagerName")
-    billing_contact: int | None = Field(None, alias="prjBillingContact")
-    billing_contact_name: str | None = Field(None, alias="prjBillingContactName")
+    marketing_contact_name: str | None = Field(
+        None, alias="prjMarketingContactName", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact_title: str | None = Field(
+        None,
+        alias="prjMarketingContactTitle",
+        json_schema_extra={"sql_type": "varchar"},
+    )
+    billing_manager: int | None = Field(
+        None, alias="prjBillingManager", json_schema_extra={"sql_type": "int"}
+    )
+    billing_manager_name: str | None = Field(
+        None, alias="prjBillingManagerName", json_schema_extra={"sql_type": "varchar"}
+    )
+    billing_contact: int | None = Field(
+        None, alias="prjBillingContact", json_schema_extra={"sql_type": "int"}
+    )
+    billing_contact_name: str | None = Field(
+        None, alias="prjBillingContactName", json_schema_extra={"sql_type": "varchar"}
+    )
     project_manager_first_name: str | None = Field(
-        None, alias="prjProjectManagerFirstName"
+        None,
+        alias="prjProjectManagerFirstName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     project_manager_middle_name: str | None = Field(
-        None, alias="prjProjectManagerMiddleName"
+        None,
+        alias="prjProjectManagerMiddleName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     project_manager_last_name: str | None = Field(
-        None, alias="prjProjectManagerLastName"
+        None,
+        alias="prjProjectManagerLastName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     principal_in_charge_first_name: str | None = Field(
-        None, alias="prjPrincipalInChargeFirstName"
+        None,
+        alias="prjPrincipalInChargeFirstName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     principal_in_charge_middle_name: str | None = Field(
-        None, alias="prjPrincipalInChargeMiddleName"
+        None,
+        alias="prjPrincipalInChargeMiddleName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     principal_in_charge_last_name: str | None = Field(
-        None, alias="prjPrincipalInChargeLastName"
+        None,
+        alias="prjPrincipalInChargeLastName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     marketing_contact_first_name: str | None = Field(
-        None, alias="prjMarketingContactFirstName"
+        None,
+        alias="prjMarketingContactFirstName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     marketing_contact_middle_name: str | None = Field(
-        None, alias="prjMarketingContactMiddleName"
+        None,
+        alias="prjMarketingContactMiddleName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     marketing_contact_last_name: str | None = Field(
-        None, alias="prjMarketingContactLastName"
+        None,
+        alias="prjMarketingContactLastName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     billing_type_description: str | None = Field(
-        None, alias="prjBillingTypeDescription"
+        None,
+        alias="prjBillingTypeDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    rate_table_description: str | None = Field(None, alias="prjRateTableDescription")
+    rate_table_description: str | None = Field(
+        None, alias="prjRateTableDescription", json_schema_extra={"sql_type": "varchar"}
+    )
     invoice_format_description: str | None = Field(
-        None, alias="prjInvoiceFormatDescription"
+        None,
+        alias="prjInvoiceFormatDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
     reported_percent_complete: Decimal | None = Field(
-        None, alias="prjReportedPercentComplete"
+        None,
+        alias="prjReportedPercentComplete",
+        json_schema_extra={"sql_type": "decimal"},
     )
     reported_percent_complete_date: datetime | None = Field(
-        None, alias="prjReportedPercentCompleteDate"
+        None,
+        alias="prjReportedPercentCompleteDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
-    labor_billed_percent: Decimal | None = Field(None, alias="prjLaborBilledPercent")
+    labor_billed_percent: Decimal | None = Field(
+        None, alias="prjLaborBilledPercent", json_schema_extra={"sql_type": "decimal"}
+    )
     labor_wip_billed_percent: Decimal | None = Field(
-        None, alias="prjLaborWIPBilledPercent"
+        None,
+        alias="prjLaborWIPBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     labor_wip_to_bill_billed_percent: Decimal | None = Field(
-        None, alias="prjLaborWIPToBillBilledPercent"
+        None,
+        alias="prjLaborWIPToBillBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     labor_total_billed_percent: Decimal | None = Field(
-        None, alias="prjLaborTotalBilledPercent"
+        None,
+        alias="prjLaborTotalBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     expense_billed_percent: Decimal | None = Field(
-        None, alias="prjExpenseBilledPercent"
+        None, alias="prjExpenseBilledPercent", json_schema_extra={"sql_type": "decimal"}
     )
     expense_wip_billed_percent: Decimal | None = Field(
-        None, alias="prjExpenseWIPBilledPercent"
+        None,
+        alias="prjExpenseWIPBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     expense_wip_to_bill_billed_percent: Decimal | None = Field(
-        None, alias="prjExpenseWIPToBillBilledPercent"
+        None,
+        alias="prjExpenseWIPToBillBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     expense_total_billed_percent: Decimal | None = Field(
-        None, alias="prjExpenseTotalBilledPercent"
+        None,
+        alias="prjExpenseTotalBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_billed_percent: Decimal | None = Field(
-        None, alias="prjConsultantBilledPercent"
+        None,
+        alias="prjConsultantBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_wip_billed_percent: Decimal | None = Field(
-        None, alias="prjConsultantWIPBilledPercent"
+        None,
+        alias="prjConsultantWIPBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_wip_to_bill_billed_percent: Decimal | None = Field(
-        None, alias="prjConsultantWIPToBillBilledPercent"
+        None,
+        alias="prjConsultantWIPToBillBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_total_billed_percent: Decimal | None = Field(
-        None, alias="prjConsultantTotalBilledPercent"
+        None,
+        alias="prjConsultantTotalBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     marketing_weighted_fee: Decimal | None = Field(
-        None, alias="prjMarketingWeightedFee"
+        None, alias="prjMarketingWeightedFee", json_schema_extra={"sql_type": "decimal"}
     )
-    marketing_latest_stage: int | None = Field(None, alias="prjMarketingLatestStage")
+    marketing_latest_stage: int | None = Field(
+        None, alias="prjMarketingLatestStage", json_schema_extra={"sql_type": "int"}
+    )
     marketing_latest_stage_due_date: datetime | None = Field(
-        None, alias="prjMarketingLatestStageDueDate"
+        None,
+        alias="prjMarketingLatestStageDueDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     marketing_latest_stage_start_date: datetime | None = Field(
-        None, alias="prjMarketingLatestStageStartDate"
+        None,
+        alias="prjMarketingLatestStageStartDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     marketing_latest_stage_completion_date: datetime | None = Field(
-        None, alias="prjMarketingLatestStageCompletionDate"
+        None,
+        alias="prjMarketingLatestStageCompletionDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     marketing_latest_stage_notes: str | None = Field(
-        None, alias="prjMarketingLatestStageNotes"
+        None,
+        alias="prjMarketingLatestStageNotes",
+        json_schema_extra={"sql_type": "text"},
     )
-    internal_totals: int | None = Field(None, alias="prjInternalTotals")
-    total_cost: Decimal | None = Field(None, alias="prjTotalCost")
-    labor_cost: Decimal | None = Field(None, alias="prjLaborCost")
-    expense_cost: Decimal | None = Field(None, alias="prjExpenseCost")
-    consultant_cost: Decimal | None = Field(None, alias="prjConsultantCost")
+    internal_totals: int | None = Field(
+        None, alias="prjInternalTotals", json_schema_extra={"sql_type": "int"}
+    )
+    total_cost: Decimal | None = Field(
+        None, alias="prjTotalCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_cost: Decimal | None = Field(
+        None, alias="prjLaborCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_cost: Decimal | None = Field(
+        None, alias="prjExpenseCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_cost: Decimal | None = Field(
+        None, alias="prjConsultantCost", json_schema_extra={"sql_type": "decimal"}
+    )
     total_cost_with_premium: Decimal | None = Field(
-        None, alias="prjTotalCostWithPremium"
+        None, alias="prjTotalCostWithPremium", json_schema_extra={"sql_type": "decimal"}
     )
     labor_cost_with_premium: Decimal | None = Field(
-        None, alias="prjLaborCostWithPremium"
+        None, alias="prjLaborCostWithPremium", json_schema_extra={"sql_type": "decimal"}
     )
-    total_burdened_cost: Decimal | None = Field(None, alias="prjTotalBurdenedCost")
-    labor_burdened_cost: Decimal | None = Field(None, alias="prjLaborBurdenedCost")
-    expense_burdened_cost: Decimal | None = Field(None, alias="prjExpenseBurdenedCost")
+    total_burdened_cost: Decimal | None = Field(
+        None, alias="prjTotalBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_burdened_cost: Decimal | None = Field(
+        None, alias="prjLaborBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_burdened_cost: Decimal | None = Field(
+        None, alias="prjExpenseBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+    )
     consultant_burdened_cost: Decimal | None = Field(
-        None, alias="prjConsultantBurdenedCost"
+        None,
+        alias="prjConsultantBurdenedCost",
+        json_schema_extra={"sql_type": "decimal"},
     )
     total_burdened_cost_with_premium: Decimal | None = Field(
-        None, alias="prjTotalBurdenedCostWithPremium"
+        None,
+        alias="prjTotalBurdenedCostWithPremium",
+        json_schema_extra={"sql_type": "decimal"},
     )
     labor_burdened_cost_with_premium: Decimal | None = Field(
-        None, alias="prjLaborBurdenedCostWithPremium"
+        None,
+        alias="prjLaborBurdenedCostWithPremium",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    billed_hours: Decimal | None = Field(None, alias="prjBilledHours")
-    wip_hours: Decimal | None = Field(None, alias="prjWIPHours")
-    wip_to_bill_hours: Decimal | None = Field(None, alias="prjWIPToBillHours")
-    total_hours: Decimal | None = Field(None, alias="prjTotalHours")
+    billed_hours: Decimal | None = Field(
+        None, alias="prjBilledHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    wip_hours: Decimal | None = Field(
+        None, alias="prjWIPHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    wip_to_bill_hours: Decimal | None = Field(
+        None, alias="prjWIPToBillHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_hours: Decimal | None = Field(
+        None, alias="prjTotalHours", json_schema_extra={"sql_type": "decimal"}
+    )
     unit_price_billed_units: Decimal | None = Field(
-        None, alias="prjUnitPriceBilledUnits"
+        None, alias="prjUnitPriceBilledUnits", json_schema_extra={"sql_type": "decimal"}
     )
     unit_price_to_bill_units: Decimal | None = Field(
-        None, alias="prjUnitPriceToBillUnits"
+        None, alias="prjUnitPriceToBillUnits", json_schema_extra={"sql_type": "decimal"}
     )
-    expense_billed_units: Decimal | None = Field(None, alias="prjExpenseBilledUnits")
-    expense_wip_units: Decimal | None = Field(None, alias="prjExpenseWIPUnits")
+    expense_billed_units: Decimal | None = Field(
+        None, alias="prjExpenseBilledUnits", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_wip_units: Decimal | None = Field(
+        None, alias="prjExpenseWIPUnits", json_schema_extra={"sql_type": "decimal"}
+    )
     expense_wip_to_bill_units: Decimal | None = Field(
-        None, alias="prjExpenseWIPToBillUnits"
+        None,
+        alias="prjExpenseWIPToBillUnits",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_billed_units: Decimal | None = Field(
-        None, alias="prjConsultantBilledUnits"
+        None,
+        alias="prjConsultantBilledUnits",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    consultant_wip_units: Decimal | None = Field(None, alias="prjConsultantWIPUnits")
+    consultant_wip_units: Decimal | None = Field(
+        None, alias="prjConsultantWIPUnits", json_schema_extra={"sql_type": "decimal"}
+    )
     consultant_wip_to_bill_units: Decimal | None = Field(
-        None, alias="prjConsultantWIPToBillUnits"
+        None,
+        alias="prjConsultantWIPToBillUnits",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    total_earned: Decimal | None = Field(None, alias="prjTotalEarned")
-    labor_earned: Decimal | None = Field(None, alias="prjLaborEarned")
-    expense_earned: Decimal | None = Field(None, alias="prjExpenseEarned")
-    consultant_earned: Decimal | None = Field(None, alias="prjConsultantEarned")
-    total_billed: Decimal | None = Field(None, alias="prjTotalBilled")
-    labor_billed: Decimal | None = Field(None, alias="prjLaborBilled")
-    expense_billed: Decimal | None = Field(None, alias="prjExpenseBilled")
-    consultant_billed: Decimal | None = Field(None, alias="prjConsultantBilled")
-    total_adjust_excluded: Decimal | None = Field(None, alias="prjTotalAdjustExcluded")
-    labor_adjust_excluded: Decimal | None = Field(None, alias="prjLaborAdjustExcluded")
+    total_earned: Decimal | None = Field(
+        None, alias="prjTotalEarned", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_earned: Decimal | None = Field(
+        None, alias="prjLaborEarned", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_earned: Decimal | None = Field(
+        None, alias="prjExpenseEarned", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_earned: Decimal | None = Field(
+        None, alias="prjConsultantEarned", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_billed: Decimal | None = Field(
+        None, alias="prjTotalBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_billed: Decimal | None = Field(
+        None, alias="prjLaborBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_billed: Decimal | None = Field(
+        None, alias="prjExpenseBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_billed: Decimal | None = Field(
+        None, alias="prjConsultantBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_adjust_excluded: Decimal | None = Field(
+        None, alias="prjTotalAdjustExcluded", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_adjust_excluded: Decimal | None = Field(
+        None, alias="prjLaborAdjustExcluded", json_schema_extra={"sql_type": "decimal"}
+    )
     expense_adjust_excluded: Decimal | None = Field(
-        None, alias="prjExpenseAdjustExcluded"
+        None,
+        alias="prjExpenseAdjustExcluded",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_adjust_excluded: Decimal | None = Field(
-        None, alias="prjConsultantAdjustExcluded"
+        None,
+        alias="prjConsultantAdjustExcluded",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    total_wip: Decimal | None = Field(None, alias="prjTotalWIP")
-    labor_wip: Decimal | None = Field(None, alias="prjLaborWIP")
-    expense_wip: Decimal | None = Field(None, alias="prjExpenseWIP")
-    consultant_wip: Decimal | None = Field(None, alias="prjConsultantWIP")
-    total_wip_to_bill: Decimal | None = Field(None, alias="prjTotalWIPToBill")
-    labor_wip_to_bill: Decimal | None = Field(None, alias="prjLaborWIPToBill")
-    expense_wip_to_bill: Decimal | None = Field(None, alias="prjExpenseWIPToBill")
-    consultant_wip_to_bill: Decimal | None = Field(None, alias="prjConsultantWIPToBill")
-    total_writeoff: Decimal | None = Field(None, alias="prjTotalWriteoff")
-    labor_writeoff: Decimal | None = Field(None, alias="prjLaborWriteoff")
-    expense_writeoff: Decimal | None = Field(None, alias="prjExpenseWriteoff")
-    consultant_writeoff: Decimal | None = Field(None, alias="prjConsultantWriteoff")
-    total_billed_by_date: Decimal | None = Field(None, alias="prjTotalBilledByDate")
-    labor_billed_by_date: Decimal | None = Field(None, alias="prjLaborBilledByDate")
-    expense_billed_by_date: Decimal | None = Field(None, alias="prjExpenseBilledByDate")
+    total_wip: Decimal | None = Field(
+        None, alias="prjTotalWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_wip: Decimal | None = Field(
+        None, alias="prjLaborWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_wip: Decimal | None = Field(
+        None, alias="prjExpenseWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_wip: Decimal | None = Field(
+        None, alias="prjConsultantWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_wip_to_bill: Decimal | None = Field(
+        None, alias="prjTotalWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_wip_to_bill: Decimal | None = Field(
+        None, alias="prjLaborWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_wip_to_bill: Decimal | None = Field(
+        None, alias="prjExpenseWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_wip_to_bill: Decimal | None = Field(
+        None, alias="prjConsultantWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_writeoff: Decimal | None = Field(
+        None, alias="prjTotalWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_writeoff: Decimal | None = Field(
+        None, alias="prjLaborWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_writeoff: Decimal | None = Field(
+        None, alias="prjExpenseWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_writeoff: Decimal | None = Field(
+        None, alias="prjConsultantWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_billed_by_date: Decimal | None = Field(
+        None, alias="prjTotalBilledByDate", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_billed_by_date: Decimal | None = Field(
+        None, alias="prjLaborBilledByDate", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_billed_by_date: Decimal | None = Field(
+        None, alias="prjExpenseBilledByDate", json_schema_extra={"sql_type": "decimal"}
+    )
     consultant_billed_by_date: Decimal | None = Field(
-        None, alias="prjConsultantBilledByDate"
+        None,
+        alias="prjConsultantBilledByDate",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    total_receipts: Decimal | None = Field(None, alias="prjTotalReceipts")
-    labor_receipts: Decimal | None = Field(None, alias="prjLaborReceipts")
-    expense_receipts: Decimal | None = Field(None, alias="prjExpenseReceipts")
-    consultant_receipts: Decimal | None = Field(None, alias="prjConsultantReceipts")
+    total_receipts: Decimal | None = Field(
+        None, alias="prjTotalReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_receipts: Decimal | None = Field(
+        None, alias="prjLaborReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_receipts: Decimal | None = Field(
+        None, alias="prjExpenseReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_receipts: Decimal | None = Field(
+        None, alias="prjConsultantReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
     total_receivable_balance: Decimal | None = Field(
-        None, alias="prjTotalReceivableBalance"
+        None,
+        alias="prjTotalReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
     labor_receivable_balance: Decimal | None = Field(
-        None, alias="prjLaborReceivableBalance"
+        None,
+        alias="prjLaborReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
     expense_receivable_balance: Decimal | None = Field(
-        None, alias="prjExpenseReceivableBalance"
+        None,
+        alias="prjExpenseReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_receivable_balance: Decimal | None = Field(
-        None, alias="prjConsultantReceivableBalance"
+        None,
+        alias="prjConsultantReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    vendor_invoiced: Decimal | None = Field(None, alias="prjVendorInvoiced")
-    payments: Decimal | None = Field(None, alias="prjPayments")
-    labor_payments: Decimal | None = Field(None, alias="prjLaborPayments")
-    expense_payments: Decimal | None = Field(None, alias="prjExpensePayments")
-    consultant_payments: Decimal | None = Field(None, alias="prjConsultantPayments")
-    payable_balance: Decimal | None = Field(None, alias="prjPayableBalance")
-    labor_payable_balance: Decimal | None = Field(None, alias="prjLaborPayableBalance")
+    vendor_invoiced: Decimal | None = Field(
+        None, alias="prjVendorInvoiced", json_schema_extra={"sql_type": "decimal"}
+    )
+    payments: Decimal | None = Field(
+        None, alias="prjPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_payments: Decimal | None = Field(
+        None, alias="prjLaborPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_payments: Decimal | None = Field(
+        None, alias="prjExpensePayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_payments: Decimal | None = Field(
+        None, alias="prjConsultantPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    payable_balance: Decimal | None = Field(
+        None, alias="prjPayableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_payable_balance: Decimal | None = Field(
+        None, alias="prjLaborPayableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
     expense_payable_balance: Decimal | None = Field(
-        None, alias="prjExpensePayableBalance"
+        None,
+        alias="prjExpensePayableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_payable_balance: Decimal | None = Field(
-        None, alias="prjConsultantPayableBalance"
+        None,
+        alias="prjConsultantPayableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    prepayment_balance: Decimal | None = Field(None, alias="prjPrepaymentBalance")
-    ci_status_description: str | None = Field(None, alias="ciStatusDescription")
-    ci_billing_type: str | None = Field(None, alias="ciBillingType")
-    ci_client_description: str | None = Field(None, alias="ciClientDescription")
-    ci_labor_type: bool | None = Field(None, alias="ciLaborType")
-    ci_expense_type: bool | None = Field(None, alias="ciExpenseType")
-    ci_consultant_type: bool | None = Field(None, alias="ciConsultantType")
-    ci_time_and_expense_type: bool | None = Field(None, alias="ciTimeAndExpenseType")
-    ci_fixed_fee_type: bool | None = Field(None, alias="ciFixedFeeType")
-    ci_percent_complete_type: bool | None = Field(None, alias="ciPercentCompleteType")
-    ci_unit_price_type: bool | None = Field(None, alias="ciUnitPriceType")
+    prepayment_balance: Decimal | None = Field(
+        None, alias="prjPrepaymentBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_status_description: str | None = Field(
+        None, alias="ciStatusDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    ci_billing_type: str | None = Field(
+        None, alias="ciBillingType", json_schema_extra={"sql_type": "varchar"}
+    )
+    ci_client_description: str | None = Field(
+        None, alias="ciClientDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    ci_labor_type: bool | None = Field(
+        None, alias="ciLaborType", json_schema_extra={"sql_type": "bit"}
+    )
+    ci_expense_type: bool | None = Field(
+        None, alias="ciExpenseType", json_schema_extra={"sql_type": "bit"}
+    )
+    ci_consultant_type: bool | None = Field(
+        None, alias="ciConsultantType", json_schema_extra={"sql_type": "bit"}
+    )
+    ci_time_and_expense_type: bool | None = Field(
+        None, alias="ciTimeAndExpenseType", json_schema_extra={"sql_type": "bit"}
+    )
+    ci_fixed_fee_type: bool | None = Field(
+        None, alias="ciFixedFeeType", json_schema_extra={"sql_type": "bit"}
+    )
+    ci_percent_complete_type: bool | None = Field(
+        None, alias="ciPercentCompleteType", json_schema_extra={"sql_type": "bit"}
+    )
+    ci_unit_price_type: bool | None = Field(
+        None, alias="ciUnitPriceType", json_schema_extra={"sql_type": "bit"}
+    )
     ci_percent_of_construction_type: bool | None = Field(
-        None, alias="ciPercentOfConstructionType"
+        None, alias="ciPercentOfConstructionType", json_schema_extra={"sql_type": "bit"}
     )
-    ci_over_budget: bool | None = Field(None, alias="ciOverBudget")
-    ci_active_receipts: bool | None = Field(None, alias="ciActiveReceipts")
-    ci_total_payments: Decimal | None = Field(None, alias="ciTotalPayments")
-    ci_payments_exist: bool | None = Field(None, alias="ciPaymentsExist")
-    ci_missing_rates: bool | None = Field(None, alias="ciMissingRates")
-    ci_can_final_bill: bool | None = Field(None, alias="ciCanFinalBill")
-    ci_invoice_amount: Decimal | None = Field(None, alias="ciInvoiceAmount")
-    ci_labor_invoice_amount: Decimal | None = Field(None, alias="ciLaborInvoiceAmount")
+    ci_over_budget: bool | None = Field(
+        None, alias="ciOverBudget", json_schema_extra={"sql_type": "bit"}
+    )
+    ci_active_receipts: bool | None = Field(
+        None, alias="ciActiveReceipts", json_schema_extra={"sql_type": "bit"}
+    )
+    ci_total_payments: Decimal | None = Field(
+        None, alias="ciTotalPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_payments_exist: bool | None = Field(
+        None, alias="ciPaymentsExist", json_schema_extra={"sql_type": "bit"}
+    )
+    ci_missing_rates: bool | None = Field(
+        None, alias="ciMissingRates", json_schema_extra={"sql_type": "bit"}
+    )
+    ci_can_final_bill: bool | None = Field(
+        None, alias="ciCanFinalBill", json_schema_extra={"sql_type": "bit"}
+    )
+    ci_invoice_amount: Decimal | None = Field(
+        None, alias="ciInvoiceAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_labor_invoice_amount: Decimal | None = Field(
+        None, alias="ciLaborInvoiceAmount", json_schema_extra={"sql_type": "decimal"}
+    )
     ci_expense_invoice_amount: Decimal | None = Field(
-        None, alias="ciExpenseInvoiceAmount"
+        None, alias="ciExpenseInvoiceAmount", json_schema_extra={"sql_type": "decimal"}
     )
     ci_consultant_invoice_amount: Decimal | None = Field(
-        None, alias="ciConsultantInvoiceAmount"
+        None,
+        alias="ciConsultantInvoiceAmount",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    ci_total_sales_tax: Decimal | None = Field(None, alias="ciTotalSalesTax")
-    ci_labor_sales_tax: Decimal | None = Field(None, alias="ciLaborSalesTax")
-    ci_expense_sales_tax: Decimal | None = Field(None, alias="ciExpenseSalesTax")
-    ci_consultant_sales_tax: Decimal | None = Field(None, alias="ciConsultantSalesTax")
-    ci_internal3: int | None = Field(None, alias="ciInternal3")
-    ci_invoice_adjustment: Decimal | None = Field(None, alias="ciInvoiceAdjustment")
+    ci_total_sales_tax: Decimal | None = Field(
+        None, alias="ciTotalSalesTax", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_labor_sales_tax: Decimal | None = Field(
+        None, alias="ciLaborSalesTax", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_expense_sales_tax: Decimal | None = Field(
+        None, alias="ciExpenseSalesTax", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_consultant_sales_tax: Decimal | None = Field(
+        None, alias="ciConsultantSalesTax", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal3: int | None = Field(
+        None, alias="ciInternal3", json_schema_extra={"sql_type": "int"}
+    )
+    ci_invoice_adjustment: Decimal | None = Field(
+        None, alias="ciInvoiceAdjustment", json_schema_extra={"sql_type": "decimal"}
+    )
     ci_invoice_adjustment_notes: str | None = Field(
-        None, alias="ciInvoiceAdjustmentNotes"
+        None, alias="ciInvoiceAdjustmentNotes", json_schema_extra={"sql_type": "text"}
     )
-    ci_internal1: int | None = Field(None, alias="ciInternal1")
-    ci_internal_itt: Decimal | None = Field(None, alias="ciInternalITT")
-    ci_internal_itl: Decimal | None = Field(None, alias="ciInternalITL")
-    ci_internal_ite: Decimal | None = Field(None, alias="ciInternalITE")
-    ci_internal_itc: Decimal | None = Field(None, alias="ciInternalITC")
-    ci_internal_stt: Decimal | None = Field(None, alias="ciInternalSTT")
-    ci_internal_stl: Decimal | None = Field(None, alias="ciInternalSTL")
-    ci_internal_ste: Decimal | None = Field(None, alias="ciInternalSTE")
-    ci_internal_stc: Decimal | None = Field(None, alias="ciInternalSTC")
-    ci_total_writeoff: Decimal | None = Field(None, alias="ciTotalWriteoff")
-    ci_labor_writeoff: Decimal | None = Field(None, alias="ciLaborWriteoff")
-    ci_expense_writeoff: Decimal | None = Field(None, alias="ciExpenseWriteoff")
-    ci_consultant_writeoff: Decimal | None = Field(None, alias="ciConsultantWriteoff")
-    ci_internal2: int | None = Field(None, alias="ciInternal2")
-    ci_internal_igt: Decimal | None = Field(None, alias="ciInternalIGT")
-    ci_internal_igl: Decimal | None = Field(None, alias="ciInternalIGL")
-    ci_internal_ige: Decimal | None = Field(None, alias="ciInternalIGE")
-    ci_internal_igc: Decimal | None = Field(None, alias="ciInternalIGC")
-    ci_internal_sgt: Decimal | None = Field(None, alias="ciInternalSGT")
-    ci_internal_sgl: Decimal | None = Field(None, alias="ciInternalSGL")
-    ci_internal_sge: Decimal | None = Field(None, alias="ciInternalSGE")
-    ci_internal_sgc: Decimal | None = Field(None, alias="ciInternalSGC")
-    ci_total_receipts: Decimal | None = Field(None, alias="ciTotalReceipts")
-    ci_labor_receipts: Decimal | None = Field(None, alias="ciLaborReceipts")
-    ci_expense_receipts: Decimal | None = Field(None, alias="ciExpenseReceipts")
-    ci_consultant_receipts: Decimal | None = Field(None, alias="ciConsultantReceipts")
+    ci_internal1: int | None = Field(
+        None, alias="ciInternal1", json_schema_extra={"sql_type": "int"}
+    )
+    ci_internal_itt: Decimal | None = Field(
+        None, alias="ciInternalITT", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_itl: Decimal | None = Field(
+        None, alias="ciInternalITL", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_ite: Decimal | None = Field(
+        None, alias="ciInternalITE", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_itc: Decimal | None = Field(
+        None, alias="ciInternalITC", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_stt: Decimal | None = Field(
+        None, alias="ciInternalSTT", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_stl: Decimal | None = Field(
+        None, alias="ciInternalSTL", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_ste: Decimal | None = Field(
+        None, alias="ciInternalSTE", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_stc: Decimal | None = Field(
+        None, alias="ciInternalSTC", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_total_writeoff: Decimal | None = Field(
+        None, alias="ciTotalWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_labor_writeoff: Decimal | None = Field(
+        None, alias="ciLaborWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_expense_writeoff: Decimal | None = Field(
+        None, alias="ciExpenseWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_consultant_writeoff: Decimal | None = Field(
+        None, alias="ciConsultantWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal2: int | None = Field(
+        None, alias="ciInternal2", json_schema_extra={"sql_type": "int"}
+    )
+    ci_internal_igt: Decimal | None = Field(
+        None, alias="ciInternalIGT", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_igl: Decimal | None = Field(
+        None, alias="ciInternalIGL", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_ige: Decimal | None = Field(
+        None, alias="ciInternalIGE", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_igc: Decimal | None = Field(
+        None, alias="ciInternalIGC", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_sgt: Decimal | None = Field(
+        None, alias="ciInternalSGT", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_sgl: Decimal | None = Field(
+        None, alias="ciInternalSGL", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_sge: Decimal | None = Field(
+        None, alias="ciInternalSGE", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_internal_sgc: Decimal | None = Field(
+        None, alias="ciInternalSGC", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_total_receipts: Decimal | None = Field(
+        None, alias="ciTotalReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_labor_receipts: Decimal | None = Field(
+        None, alias="ciLaborReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_expense_receipts: Decimal | None = Field(
+        None, alias="ciExpenseReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    ci_consultant_receipts: Decimal | None = Field(
+        None, alias="ciConsultantReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
     ci_total_receivable_balance: Decimal | None = Field(
-        None, alias="ciTotalReceivableBalance"
+        None,
+        alias="ciTotalReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
     ci_labor_receivable_balance: Decimal | None = Field(
-        None, alias="ciLaborReceivableBalance"
+        None,
+        alias="ciLaborReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
     ci_expense_receivable_balance: Decimal | None = Field(
-        None, alias="ciExpenseReceivableBalance"
+        None,
+        alias="ciExpenseReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
     ci_consultant_receivable_balance: Decimal | None = Field(
-        None, alias="ciConsultantReceivableBalance"
+        None,
+        alias="ciConsultantReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
 
 
@@ -1275,91 +2789,201 @@ class ClientTotalsRow(DatabaseRecord):
         parameters=("TotalType", "StartDate", "EndDate"),
     )
 
-    key: int = Field(alias="cKey")
-    status: int = Field(alias="cStatus")
-    description: str = Field(alias="cDescription")
-    address1: str = Field(alias="cAddress1")
-    address2: str = Field(alias="cAddress2")
-    address3: str = Field(alias="cAddress3")
-    city: str = Field(alias="cCity")
-    state: str = Field(alias="cState")
-    zip: str = Field(alias="cZip")
-    country: str = Field(alias="cCountry")
-    phone1: str = Field(alias="cPhone1")
-    phone1_text: str = Field(alias="cPhone1Text")
-    phone2: str = Field(alias="cPhone2")
-    phone2_text: str = Field(alias="cPhone2Text")
-    phone3: str = Field(alias="cPhone3")
-    phone3_text: str = Field(alias="cPhone3Text")
-    fax: str = Field(alias="cFax")
-    fax_text: str = Field(alias="cFaxText")
-    email: str = Field(alias="cEmail")
-    website: str = Field(alias="cWebsite")
-    contact1: int | None = Field(None, alias="cContact1")
-    contact1_text: str = Field(alias="cContact1Text")
-    contact2: int | None = Field(None, alias="cContact2")
-    contact2_text: str = Field(alias="cContact2Text")
-    contact3: int | None = Field(None, alias="cContact3")
-    contact3_text: str = Field(alias="cContact3Text")
-    contact4: int | None = Field(None, alias="cContact4")
-    contact4_text: str = Field(alias="cContact4Text")
-    contact5: int | None = Field(None, alias="cContact5")
-    contact5_text: str = Field(alias="cContact5Text")
-    notes: str = Field(alias="cNotes")
-    client_type: int | None = Field(None, alias="cClientType")
-    send_statement: bool = Field(alias="cSendStatement")
-    last_client_invoice: str = Field(alias="cLastClientInvoice")
-    date_established: datetime | None = Field(None, alias="cDateEstablished")
-    mailing_address_same: bool = Field(alias="cMailingAddressSame")
-    mailing_address1: str = Field(alias="cMailingAddress1")
-    mailing_address2: str = Field(alias="cMailingAddress2")
-    mailing_address3: str = Field(alias="cMailingAddress3")
-    mailing_city: str = Field(alias="cMailingCity")
-    mailing_state: str = Field(alias="cMailingState")
-    mailing_zip: str = Field(alias="cMailingZip")
-    mailing_country: str = Field(alias="cMailingCountry")
-    client_type_description: str | None = Field(None, alias="cClientTypeDescription")
-    internal1: int | None = Field(None, alias="cInternal1")
-    total_billed: Decimal | None = Field(None, alias="cTotalBilled")
-    labor_billed: Decimal | None = Field(None, alias="cLaborBilled")
-    expense_billed: Decimal | None = Field(None, alias="cExpenseBilled")
-    consultant_billed: Decimal | None = Field(None, alias="cConsultantBilled")
-    total_wip: Decimal | None = Field(None, alias="cTotalWIP")
-    total_wip_to_bill: Decimal | None = Field(None, alias="cTotalWIPToBill")
-    labor_wip: Decimal | None = Field(None, alias="cLaborWIP")
-    labor_wip_to_bill: Decimal | None = Field(None, alias="cLaborWIPToBill")
-    expense_wip: Decimal | None = Field(None, alias="cExpenseWIP")
-    expense_wip_to_bill: Decimal | None = Field(None, alias="cExpenseWIPToBill")
-    consultant_wip: Decimal | None = Field(None, alias="cConsultantWIP")
-    consultant_wip_to_bill: Decimal | None = Field(None, alias="cConsultantWIPToBill")
-    total_writeoff: Decimal | None = Field(None, alias="cTotalWriteoff")
-    labor_writeoff: Decimal | None = Field(None, alias="cLaborWriteoff")
-    expense_writeoff: Decimal | None = Field(None, alias="cExpenseWriteoff")
-    consultant_writeoff: Decimal | None = Field(None, alias="cConsultantWriteoff")
-    internal2: int | None = Field(None, alias="cInternal2")
-    total_billed_by_date: Decimal | None = Field(None, alias="cTotalBilledByDate")
-    labor_billed_by_date: Decimal | None = Field(None, alias="cLaborBilledByDate")
-    expense_billed_by_date: Decimal | None = Field(None, alias="cExpenseBilledByDate")
-    consultant_billed_by_date: Decimal | None = Field(
-        None, alias="cConsultantBilledByDate"
+    key: int = Field(alias="cKey", json_schema_extra={"sql_type": "int"})
+    status: int = Field(alias="cStatus", json_schema_extra={"sql_type": "tinyint"})
+    description: str = Field(
+        alias="cDescription", json_schema_extra={"sql_type": "varchar"}
     )
-    total_receipts: Decimal | None = Field(None, alias="cTotalReceipts")
-    labor_receipts: Decimal | None = Field(None, alias="cLaborReceipts")
-    expense_receipts: Decimal | None = Field(None, alias="cExpenseReceipts")
-    consultant_receipts: Decimal | None = Field(None, alias="cConsultantReceipts")
+    address1: str = Field(alias="cAddress1", json_schema_extra={"sql_type": "varchar"})
+    address2: str = Field(alias="cAddress2", json_schema_extra={"sql_type": "varchar"})
+    address3: str = Field(alias="cAddress3", json_schema_extra={"sql_type": "varchar"})
+    city: str = Field(alias="cCity", json_schema_extra={"sql_type": "varchar"})
+    state: str = Field(alias="cState", json_schema_extra={"sql_type": "varchar"})
+    zip: str = Field(alias="cZip", json_schema_extra={"sql_type": "varchar"})
+    country: str = Field(alias="cCountry", json_schema_extra={"sql_type": "varchar"})
+    phone1: str = Field(alias="cPhone1", json_schema_extra={"sql_type": "varchar"})
+    phone1_text: str = Field(
+        alias="cPhone1Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    phone2: str = Field(alias="cPhone2", json_schema_extra={"sql_type": "varchar"})
+    phone2_text: str = Field(
+        alias="cPhone2Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    phone3: str = Field(alias="cPhone3", json_schema_extra={"sql_type": "varchar"})
+    phone3_text: str = Field(
+        alias="cPhone3Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    fax: str = Field(alias="cFax", json_schema_extra={"sql_type": "varchar"})
+    fax_text: str = Field(alias="cFaxText", json_schema_extra={"sql_type": "varchar"})
+    email: str = Field(alias="cEmail", json_schema_extra={"sql_type": "varchar"})
+    website: str = Field(alias="cWebsite", json_schema_extra={"sql_type": "varchar"})
+    contact1: int | None = Field(
+        None, alias="cContact1", json_schema_extra={"sql_type": "int"}
+    )
+    contact1_text: str = Field(
+        alias="cContact1Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    contact2: int | None = Field(
+        None, alias="cContact2", json_schema_extra={"sql_type": "int"}
+    )
+    contact2_text: str = Field(
+        alias="cContact2Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    contact3: int | None = Field(
+        None, alias="cContact3", json_schema_extra={"sql_type": "int"}
+    )
+    contact3_text: str = Field(
+        alias="cContact3Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    contact4: int | None = Field(
+        None, alias="cContact4", json_schema_extra={"sql_type": "int"}
+    )
+    contact4_text: str = Field(
+        alias="cContact4Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    contact5: int | None = Field(
+        None, alias="cContact5", json_schema_extra={"sql_type": "int"}
+    )
+    contact5_text: str = Field(
+        alias="cContact5Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    notes: str = Field(alias="cNotes", json_schema_extra={"sql_type": "text"})
+    client_type: int | None = Field(
+        None, alias="cClientType", json_schema_extra={"sql_type": "int"}
+    )
+    send_statement: bool = Field(
+        alias="cSendStatement", json_schema_extra={"sql_type": "bit"}
+    )
+    last_client_invoice: str = Field(
+        alias="cLastClientInvoice", json_schema_extra={"sql_type": "varchar"}
+    )
+    date_established: datetime | None = Field(
+        None, alias="cDateEstablished", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    mailing_address_same: bool = Field(
+        alias="cMailingAddressSame", json_schema_extra={"sql_type": "bit"}
+    )
+    mailing_address1: str = Field(
+        alias="cMailingAddress1", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_address2: str = Field(
+        alias="cMailingAddress2", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_address3: str = Field(
+        alias="cMailingAddress3", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_city: str = Field(
+        alias="cMailingCity", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_state: str = Field(
+        alias="cMailingState", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_zip: str = Field(
+        alias="cMailingZip", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_country: str = Field(
+        alias="cMailingCountry", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_type_description: str | None = Field(
+        None, alias="cClientTypeDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    internal1: int | None = Field(
+        None, alias="cInternal1", json_schema_extra={"sql_type": "int"}
+    )
+    total_billed: Decimal | None = Field(
+        None, alias="cTotalBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_billed: Decimal | None = Field(
+        None, alias="cLaborBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_billed: Decimal | None = Field(
+        None, alias="cExpenseBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_billed: Decimal | None = Field(
+        None, alias="cConsultantBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_wip: Decimal | None = Field(
+        None, alias="cTotalWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_wip_to_bill: Decimal | None = Field(
+        None, alias="cTotalWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_wip: Decimal | None = Field(
+        None, alias="cLaborWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_wip_to_bill: Decimal | None = Field(
+        None, alias="cLaborWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_wip: Decimal | None = Field(
+        None, alias="cExpenseWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_wip_to_bill: Decimal | None = Field(
+        None, alias="cExpenseWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_wip: Decimal | None = Field(
+        None, alias="cConsultantWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_wip_to_bill: Decimal | None = Field(
+        None, alias="cConsultantWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_writeoff: Decimal | None = Field(
+        None, alias="cTotalWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_writeoff: Decimal | None = Field(
+        None, alias="cLaborWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_writeoff: Decimal | None = Field(
+        None, alias="cExpenseWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_writeoff: Decimal | None = Field(
+        None, alias="cConsultantWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    internal2: int | None = Field(
+        None, alias="cInternal2", json_schema_extra={"sql_type": "int"}
+    )
+    total_billed_by_date: Decimal | None = Field(
+        None, alias="cTotalBilledByDate", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_billed_by_date: Decimal | None = Field(
+        None, alias="cLaborBilledByDate", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_billed_by_date: Decimal | None = Field(
+        None, alias="cExpenseBilledByDate", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_billed_by_date: Decimal | None = Field(
+        None, alias="cConsultantBilledByDate", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_receipts: Decimal | None = Field(
+        None, alias="cTotalReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_receipts: Decimal | None = Field(
+        None, alias="cLaborReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_receipts: Decimal | None = Field(
+        None, alias="cExpenseReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_receipts: Decimal | None = Field(
+        None, alias="cConsultantReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
     total_receivable_balance: Decimal | None = Field(
-        None, alias="cTotalReceivableBalance"
+        None, alias="cTotalReceivableBalance", json_schema_extra={"sql_type": "decimal"}
     )
     labor_receivable_balance: Decimal | None = Field(
-        None, alias="cLaborReceivableBalance"
+        None, alias="cLaborReceivableBalance", json_schema_extra={"sql_type": "decimal"}
     )
     expense_receivable_balance: Decimal | None = Field(
-        None, alias="cExpenseReceivableBalance"
+        None,
+        alias="cExpenseReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_receivable_balance: Decimal | None = Field(
-        None, alias="cConsultantReceivableBalance"
+        None,
+        alias="cConsultantReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    prepayment_balance: Decimal | None = Field(None, alias="cPrepaymentBalance")
+    prepayment_balance: Decimal | None = Field(
+        None, alias="cPrepaymentBalance", json_schema_extra={"sql_type": "decimal"}
+    )
 
 
 class EmployeeTotalsRow(DatabaseRecord):
@@ -1369,186 +2993,458 @@ class EmployeeTotalsRow(DatabaseRecord):
         kind="function",
         name="EmployeeTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
+        sensitive=("empDateBorn", "empSocialSecurityNumber"),
     )
 
-    key: int = Field(alias="empKey")
-    status: int = Field(alias="empStatus")
-    first_name: str = Field(alias="empFirstName")
-    middle_name: str = Field(alias="empMiddleName")
-    last_name: str = Field(alias="empLastName")
-    title: str = Field(alias="empTitle")
-    address1: str = Field(alias="empAddress1")
-    address2: str = Field(alias="empAddress2")
-    address3: str = Field(alias="empAddress3")
-    city: str = Field(alias="empCity")
-    state: str = Field(alias="empState")
-    zip: str = Field(alias="empZip")
-    country: str = Field(alias="empCountry")
-    mailing_address_same: bool = Field(alias="empMailingAddressSame")
-    mailing_address1: str = Field(alias="empMailingAddress1")
-    mailing_address2: str = Field(alias="empMailingAddress2")
-    mailing_address3: str = Field(alias="empMailingAddress3")
-    mailing_city: str = Field(alias="empMailingCity")
-    mailing_state: str = Field(alias="empMailingState")
-    mailing_zip: str = Field(alias="empMailingZip")
-    mailing_country: str = Field(alias="empMailingCountry")
-    phone1: str = Field(alias="empPhone1")
-    phone1_text: str = Field(alias="empPhone1Text")
-    phone2: str = Field(alias="empPhone2")
-    phone2_text: str = Field(alias="empPhone2Text")
-    phone3: str = Field(alias="empPhone3")
-    phone3_text: str = Field(alias="empPhone3Text")
-    fax: str = Field(alias="empFax")
-    fax_text: str = Field(alias="empFaxText")
-    email: str = Field(alias="empEmail")
-    website: str = Field(alias="empWebsite")
-    contact1: int | None = Field(None, alias="empContact1")
-    contact1_text: str = Field(alias="empContact1Text")
-    contact2: int | None = Field(None, alias="empContact2")
-    contact2_text: str = Field(alias="empContact2Text")
-    contact3: int | None = Field(None, alias="empContact3")
-    contact3_text: str = Field(alias="empContact3Text")
-    contact4: int | None = Field(None, alias="empContact4")
-    contact4_text: str = Field(alias="empContact4Text")
-    contact5: int | None = Field(None, alias="empContact5")
-    contact5_text: str = Field(alias="empContact5Text")
-    notes: str = Field(alias="empNotes")
-    username: str = Field(alias="empUsername")
-    security_group: int | None = Field(None, alias="empSecurityGroup")
-    is_principal: bool = Field(alias="empIsPrincipal")
-    is_supervisor: bool = Field(alias="empIsSupervisor")
-    is_project_manager: bool = Field(alias="empIsProjectManager")
-    is_accounting: bool = Field(alias="empIsAccounting")
-    supervisor: int | None = Field(None, alias="empSupervisor")
-    supervisor_name: str | None = Field(None, alias="empSupervisorName")
-    supervisor_first_name: str | None = Field(None, alias="empSupervisorFirstName")
-    supervisor_middle_name: str | None = Field(None, alias="empSupervisorMiddleName")
-    supervisor_last_name: str | None = Field(None, alias="empSupervisorLastName")
-    gender: int = Field(alias="empGender")
-    date_born: datetime | None = Field(None, alias="empDateBorn", repr=False)
-    date_hired: datetime | None = Field(None, alias="empDateHired")
-    date_rehired: datetime | None = Field(None, alias="empDateRehired")
-    date_terminated: datetime | None = Field(None, alias="empDateTerminated")
-    entity: int = Field(alias="empEntity")
-    employee_type: int | None = Field(None, alias="empEmployeeType")
-    billable_percent: Decimal = Field(alias="empBillablePercent")
-    social_security_number: str = Field(alias="empSocialSecurityNumber", repr=False)
-    payroll_service_id: str = Field(alias="empPayrollServiceID")
-    pay_period: int | None = Field(None, alias="empPayPeriod")
-    is_hourly: bool | None = Field(None, alias="empIsHourly")
-    salary: Decimal | None = Field(None, alias="empSalary")
-    regular_pay_rate: Decimal | None = Field(None, alias="empRegularPayRate")
-    premium1_multiplier: Decimal | None = Field(None, alias="empPremium1Multiplier")
-    premium2_multiplier: Decimal | None = Field(None, alias="empPremium2Multiplier")
-    premium3_multiplier: Decimal | None = Field(None, alias="empPremium3Multiplier")
+    key: int = Field(alias="empKey", json_schema_extra={"sql_type": "int"})
+    status: int = Field(alias="empStatus", json_schema_extra={"sql_type": "tinyint"})
+    first_name: str = Field(
+        alias="empFirstName", json_schema_extra={"sql_type": "varchar"}
+    )
+    middle_name: str = Field(
+        alias="empMiddleName", json_schema_extra={"sql_type": "varchar"}
+    )
+    last_name: str = Field(
+        alias="empLastName", json_schema_extra={"sql_type": "varchar"}
+    )
+    title: str = Field(alias="empTitle", json_schema_extra={"sql_type": "varchar"})
+    address1: str = Field(
+        alias="empAddress1", json_schema_extra={"sql_type": "varchar"}
+    )
+    address2: str = Field(
+        alias="empAddress2", json_schema_extra={"sql_type": "varchar"}
+    )
+    address3: str = Field(
+        alias="empAddress3", json_schema_extra={"sql_type": "varchar"}
+    )
+    city: str = Field(alias="empCity", json_schema_extra={"sql_type": "varchar"})
+    state: str = Field(alias="empState", json_schema_extra={"sql_type": "varchar"})
+    zip: str = Field(alias="empZip", json_schema_extra={"sql_type": "varchar"})
+    country: str = Field(alias="empCountry", json_schema_extra={"sql_type": "varchar"})
+    mailing_address_same: bool = Field(
+        alias="empMailingAddressSame", json_schema_extra={"sql_type": "bit"}
+    )
+    mailing_address1: str = Field(
+        alias="empMailingAddress1", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_address2: str = Field(
+        alias="empMailingAddress2", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_address3: str = Field(
+        alias="empMailingAddress3", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_city: str = Field(
+        alias="empMailingCity", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_state: str = Field(
+        alias="empMailingState", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_zip: str = Field(
+        alias="empMailingZip", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_country: str = Field(
+        alias="empMailingCountry", json_schema_extra={"sql_type": "varchar"}
+    )
+    phone1: str = Field(alias="empPhone1", json_schema_extra={"sql_type": "varchar"})
+    phone1_text: str = Field(
+        alias="empPhone1Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    phone2: str = Field(alias="empPhone2", json_schema_extra={"sql_type": "varchar"})
+    phone2_text: str = Field(
+        alias="empPhone2Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    phone3: str = Field(alias="empPhone3", json_schema_extra={"sql_type": "varchar"})
+    phone3_text: str = Field(
+        alias="empPhone3Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    fax: str = Field(alias="empFax", json_schema_extra={"sql_type": "varchar"})
+    fax_text: str = Field(alias="empFaxText", json_schema_extra={"sql_type": "varchar"})
+    email: str = Field(alias="empEmail", json_schema_extra={"sql_type": "varchar"})
+    website: str = Field(alias="empWebsite", json_schema_extra={"sql_type": "varchar"})
+    contact1: int | None = Field(
+        None, alias="empContact1", json_schema_extra={"sql_type": "int"}
+    )
+    contact1_text: str = Field(
+        alias="empContact1Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    contact2: int | None = Field(
+        None, alias="empContact2", json_schema_extra={"sql_type": "int"}
+    )
+    contact2_text: str = Field(
+        alias="empContact2Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    contact3: int | None = Field(
+        None, alias="empContact3", json_schema_extra={"sql_type": "int"}
+    )
+    contact3_text: str = Field(
+        alias="empContact3Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    contact4: int | None = Field(
+        None, alias="empContact4", json_schema_extra={"sql_type": "int"}
+    )
+    contact4_text: str = Field(
+        alias="empContact4Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    contact5: int | None = Field(
+        None, alias="empContact5", json_schema_extra={"sql_type": "int"}
+    )
+    contact5_text: str = Field(
+        alias="empContact5Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    notes: str = Field(alias="empNotes", json_schema_extra={"sql_type": "text"})
+    username: str = Field(
+        alias="empUsername", json_schema_extra={"sql_type": "varchar"}
+    )
+    security_group: int | None = Field(
+        None, alias="empSecurityGroup", json_schema_extra={"sql_type": "int"}
+    )
+    is_principal: bool = Field(
+        alias="empIsPrincipal", json_schema_extra={"sql_type": "bit"}
+    )
+    is_supervisor: bool = Field(
+        alias="empIsSupervisor", json_schema_extra={"sql_type": "bit"}
+    )
+    is_project_manager: bool = Field(
+        alias="empIsProjectManager", json_schema_extra={"sql_type": "bit"}
+    )
+    is_accounting: bool = Field(
+        alias="empIsAccounting", json_schema_extra={"sql_type": "bit"}
+    )
+    supervisor: int | None = Field(
+        None, alias="empSupervisor", json_schema_extra={"sql_type": "int"}
+    )
+    supervisor_name: str | None = Field(
+        None, alias="empSupervisorName", json_schema_extra={"sql_type": "varchar"}
+    )
+    supervisor_first_name: str | None = Field(
+        None, alias="empSupervisorFirstName", json_schema_extra={"sql_type": "varchar"}
+    )
+    supervisor_middle_name: str | None = Field(
+        None, alias="empSupervisorMiddleName", json_schema_extra={"sql_type": "varchar"}
+    )
+    supervisor_last_name: str | None = Field(
+        None, alias="empSupervisorLastName", json_schema_extra={"sql_type": "varchar"}
+    )
+    gender: int = Field(alias="empGender", json_schema_extra={"sql_type": "tinyint"})
+    date_born: datetime | None = Field(
+        None,
+        alias="empDateBorn",
+        repr=False,
+        json_schema_extra={"sql_type": "smalldatetime", "sensitive": True},
+    )
+    date_hired: datetime | None = Field(
+        None, alias="empDateHired", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    date_rehired: datetime | None = Field(
+        None, alias="empDateRehired", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    date_terminated: datetime | None = Field(
+        None, alias="empDateTerminated", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    entity: int = Field(alias="empEntity", json_schema_extra={"sql_type": "int"})
+    employee_type: int | None = Field(
+        None, alias="empEmployeeType", json_schema_extra={"sql_type": "int"}
+    )
+    billable_percent: Decimal = Field(
+        alias="empBillablePercent", json_schema_extra={"sql_type": "decimal"}
+    )
+    social_security_number: str = Field(
+        alias="empSocialSecurityNumber",
+        repr=False,
+        json_schema_extra={"sql_type": "varchar", "sensitive": True},
+    )
+    payroll_service_id: str = Field(
+        alias="empPayrollServiceID", json_schema_extra={"sql_type": "varchar"}
+    )
+    pay_period: int | None = Field(
+        None, alias="empPayPeriod", json_schema_extra={"sql_type": "tinyint"}
+    )
+    is_hourly: bool | None = Field(
+        None, alias="empIsHourly", json_schema_extra={"sql_type": "bit"}
+    )
+    salary: Decimal | None = Field(
+        None, alias="empSalary", json_schema_extra={"sql_type": "decimal"}
+    )
+    regular_pay_rate: Decimal | None = Field(
+        None, alias="empRegularPayRate", json_schema_extra={"sql_type": "decimal"}
+    )
+    premium1_multiplier: Decimal | None = Field(
+        None, alias="empPremium1Multiplier", json_schema_extra={"sql_type": "decimal"}
+    )
+    premium2_multiplier: Decimal | None = Field(
+        None, alias="empPremium2Multiplier", json_schema_extra={"sql_type": "decimal"}
+    )
+    premium3_multiplier: Decimal | None = Field(
+        None, alias="empPremium3Multiplier", json_schema_extra={"sql_type": "decimal"}
+    )
     include_premium1_in_salary: bool | None = Field(
-        None, alias="empIncludePremium1InSalary"
+        None, alias="empIncludePremium1InSalary", json_schema_extra={"sql_type": "bit"}
     )
     include_premium2_in_salary: bool | None = Field(
-        None, alias="empIncludePremium2InSalary"
+        None, alias="empIncludePremium2InSalary", json_schema_extra={"sql_type": "bit"}
     )
     include_premium3_in_salary: bool | None = Field(
-        None, alias="empIncludePremium3InSalary"
+        None, alias="empIncludePremium3InSalary", json_schema_extra={"sql_type": "bit"}
     )
-    name: str | None = Field(None, alias="empName")
-    name_lfm: str | None = Field(None, alias="empNameLFM")
-    overhead_group: str | None = Field(None, alias="empOverheadGroup")
-    entity_description: str | None = Field(None, alias="empEntityDescription")
+    name: str | None = Field(
+        None, alias="empName", json_schema_extra={"sql_type": "varchar"}
+    )
+    name_lfm: str | None = Field(
+        None, alias="empNameLFM", json_schema_extra={"sql_type": "varchar"}
+    )
+    overhead_group: str | None = Field(
+        None, alias="empOverheadGroup", json_schema_extra={"sql_type": "varchar"}
+    )
+    entity_description: str | None = Field(
+        None, alias="empEntityDescription", json_schema_extra={"sql_type": "varchar"}
+    )
     employee_type_description: str | None = Field(
-        None, alias="empEmployeeTypeDescription"
+        None,
+        alias="empEmployeeTypeDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
     security_group_description: str | None = Field(
-        None, alias="empSecurityGroupDescription"
+        None,
+        alias="empSecurityGroupDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    pay_period_description: str | None = Field(None, alias="empPayPeriodDescription")
-    retirement_plan: bool = Field(alias="empRetirementPlan")
-    federal_filing_status: int = Field(alias="empFederalFilingStatus")
+    pay_period_description: str | None = Field(
+        None, alias="empPayPeriodDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    retirement_plan: bool = Field(
+        alias="empRetirementPlan", json_schema_extra={"sql_type": "bit"}
+    )
+    federal_filing_status: int = Field(
+        alias="empFederalFilingStatus", json_schema_extra={"sql_type": "tinyint"}
+    )
     federal_filing_status_text: str | None = Field(
-        None, alias="empFederalFilingStatusText"
+        None,
+        alias="empFederalFilingStatusText",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    federal_exemptions: int = Field(alias="empFederalExemptions")
-    additional_fwh: Decimal = Field(alias="empAdditionalFwh")
-    federal_misc_bool1: bool = Field(alias="empFederalMiscBool1")
-    emp2020_w4: bool = Field(alias="emp2020W4")
-    w4_two_jobs: bool = Field(alias="empW4TwoJobs")
-    w4_dependents: Decimal = Field(alias="empW4Dependents")
-    w4_other_income: Decimal = Field(alias="empW4OtherIncome")
-    w4_deductions: Decimal = Field(alias="empW4Deductions")
-    home_state: int = Field(alias="empHomeState")
-    home_state_name: str | None = Field(None, alias="empHomeStateName")
-    work_state: int = Field(alias="empWorkState")
-    work_state_name: str | None = Field(None, alias="empWorkStateName")
-    swh_state: int | None = Field(None, alias="empSwhState")
-    sdi_state: int | None = Field(None, alias="empSdiState")
-    sui_state: int | None = Field(None, alias="empSuiState")
-    home_is_swh: bool = Field(alias="empHomeIsSwh")
-    home_is_sdi: bool = Field(alias="empHomeIsSdi")
-    home_is_sui: bool = Field(alias="empHomeIsSui")
-    work_is_swh: bool = Field(alias="empWorkIsSwh")
-    work_is_sdi: bool = Field(alias="empWorkIsSdi")
-    work_is_sui: bool = Field(alias="empWorkIsSui")
-    state_filing_status: int | None = Field(None, alias="empStateFilingStatus")
-    state_filing_status_text: str | None = Field(None, alias="empStateFilingStatusText")
-    state_exemptions: int | None = Field(None, alias="empStateExemptions")
-    additional_swh: Decimal | None = Field(None, alias="empAdditionalSwh")
-    state_misc_code1: int | None = Field(None, alias="empStateMiscCode1")
-    state_misc_amount1: Decimal | None = Field(None, alias="empStateMiscAmount1")
-    state_misc_bool1: int | None = Field(None, alias="empStateMiscBool1")
-    w2_box14_line1_description: str = Field(alias="empW2Box14Line1Description")
-    w2_box14_line2_description: str = Field(alias="empW2Box14Line2Description")
-    w2_box14_line3_description: str = Field(alias="empW2Box14Line3Description")
-    w2_local1_description: str = Field(alias="empW2Local1Description")
-    w2_local2_description: str = Field(alias="empW2Local2Description")
-    eic_status: int = Field(alias="empEicStatus")
-    eic_status_description: str | None = Field(None, alias="empEicStatusDescription")
-    allow_expense_entry: bool = Field(alias="empAllowExpenseEntry")
-    allow_changes_after_processed: bool = Field(alias="empAllowChangesAfterProcessed")
-    company_credit_card1: int | None = Field(None, alias="empCompanyCreditCard1")
-    company_credit_card1_name: str = Field(alias="empCompanyCreditCard1Name")
+    federal_exemptions: int = Field(
+        alias="empFederalExemptions", json_schema_extra={"sql_type": "tinyint"}
+    )
+    additional_fwh: Decimal = Field(
+        alias="empAdditionalFwh", json_schema_extra={"sql_type": "decimal"}
+    )
+    federal_misc_bool1: bool = Field(
+        alias="empFederalMiscBool1", json_schema_extra={"sql_type": "bit"}
+    )
+    emp2020_w4: bool = Field(alias="emp2020W4", json_schema_extra={"sql_type": "bit"})
+    w4_two_jobs: bool = Field(
+        alias="empW4TwoJobs", json_schema_extra={"sql_type": "bit"}
+    )
+    w4_dependents: Decimal = Field(
+        alias="empW4Dependents", json_schema_extra={"sql_type": "decimal"}
+    )
+    w4_other_income: Decimal = Field(
+        alias="empW4OtherIncome", json_schema_extra={"sql_type": "decimal"}
+    )
+    w4_deductions: Decimal = Field(
+        alias="empW4Deductions", json_schema_extra={"sql_type": "decimal"}
+    )
+    home_state: int = Field(
+        alias="empHomeState", json_schema_extra={"sql_type": "tinyint"}
+    )
+    home_state_name: str | None = Field(
+        None, alias="empHomeStateName", json_schema_extra={"sql_type": "varchar"}
+    )
+    work_state: int = Field(
+        alias="empWorkState", json_schema_extra={"sql_type": "tinyint"}
+    )
+    work_state_name: str | None = Field(
+        None, alias="empWorkStateName", json_schema_extra={"sql_type": "varchar"}
+    )
+    swh_state: int | None = Field(
+        None, alias="empSwhState", json_schema_extra={"sql_type": "tinyint"}
+    )
+    sdi_state: int | None = Field(
+        None, alias="empSdiState", json_schema_extra={"sql_type": "tinyint"}
+    )
+    sui_state: int | None = Field(
+        None, alias="empSuiState", json_schema_extra={"sql_type": "tinyint"}
+    )
+    home_is_swh: bool = Field(
+        alias="empHomeIsSwh", json_schema_extra={"sql_type": "bit"}
+    )
+    home_is_sdi: bool = Field(
+        alias="empHomeIsSdi", json_schema_extra={"sql_type": "bit"}
+    )
+    home_is_sui: bool = Field(
+        alias="empHomeIsSui", json_schema_extra={"sql_type": "bit"}
+    )
+    work_is_swh: bool = Field(
+        alias="empWorkIsSwh", json_schema_extra={"sql_type": "bit"}
+    )
+    work_is_sdi: bool = Field(
+        alias="empWorkIsSdi", json_schema_extra={"sql_type": "bit"}
+    )
+    work_is_sui: bool = Field(
+        alias="empWorkIsSui", json_schema_extra={"sql_type": "bit"}
+    )
+    state_filing_status: int | None = Field(
+        None, alias="empStateFilingStatus", json_schema_extra={"sql_type": "tinyint"}
+    )
+    state_filing_status_text: str | None = Field(
+        None,
+        alias="empStateFilingStatusText",
+        json_schema_extra={"sql_type": "varchar"},
+    )
+    state_exemptions: int | None = Field(
+        None, alias="empStateExemptions", json_schema_extra={"sql_type": "int"}
+    )
+    additional_swh: Decimal | None = Field(
+        None, alias="empAdditionalSwh", json_schema_extra={"sql_type": "decimal"}
+    )
+    state_misc_code1: int | None = Field(
+        None, alias="empStateMiscCode1", json_schema_extra={"sql_type": "int"}
+    )
+    state_misc_amount1: Decimal | None = Field(
+        None, alias="empStateMiscAmount1", json_schema_extra={"sql_type": "decimal"}
+    )
+    state_misc_bool1: int | None = Field(
+        None, alias="empStateMiscBool1", json_schema_extra={"sql_type": "int"}
+    )
+    w2_box14_line1_description: str = Field(
+        alias="empW2Box14Line1Description", json_schema_extra={"sql_type": "varchar"}
+    )
+    w2_box14_line2_description: str = Field(
+        alias="empW2Box14Line2Description", json_schema_extra={"sql_type": "varchar"}
+    )
+    w2_box14_line3_description: str = Field(
+        alias="empW2Box14Line3Description", json_schema_extra={"sql_type": "varchar"}
+    )
+    w2_local1_description: str = Field(
+        alias="empW2Local1Description", json_schema_extra={"sql_type": "varchar"}
+    )
+    w2_local2_description: str = Field(
+        alias="empW2Local2Description", json_schema_extra={"sql_type": "varchar"}
+    )
+    eic_status: int = Field(
+        alias="empEicStatus", json_schema_extra={"sql_type": "tinyint"}
+    )
+    eic_status_description: str | None = Field(
+        None, alias="empEicStatusDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    allow_expense_entry: bool = Field(
+        alias="empAllowExpenseEntry", json_schema_extra={"sql_type": "bit"}
+    )
+    allow_changes_after_processed: bool = Field(
+        alias="empAllowChangesAfterProcessed", json_schema_extra={"sql_type": "bit"}
+    )
+    company_credit_card1: int | None = Field(
+        None, alias="empCompanyCreditCard1", json_schema_extra={"sql_type": "int"}
+    )
+    company_credit_card1_name: str = Field(
+        alias="empCompanyCreditCard1Name", json_schema_extra={"sql_type": "varchar"}
+    )
     company_credit_card1_desc: str | None = Field(
-        None, alias="empCompanyCreditCard1Desc"
+        None,
+        alias="empCompanyCreditCard1Desc",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    company_credit_card2: int | None = Field(None, alias="empCompanyCreditCard2")
-    company_credit_card2_name: str = Field(alias="empCompanyCreditCard2Name")
+    company_credit_card2: int | None = Field(
+        None, alias="empCompanyCreditCard2", json_schema_extra={"sql_type": "int"}
+    )
+    company_credit_card2_name: str = Field(
+        alias="empCompanyCreditCard2Name", json_schema_extra={"sql_type": "varchar"}
+    )
     company_credit_card2_desc: str | None = Field(
-        None, alias="empCompanyCreditCard2Desc"
+        None,
+        alias="empCompanyCreditCard2Desc",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    company_credit_card3: int | None = Field(None, alias="empCompanyCreditCard3")
-    company_credit_card3_name: str = Field(alias="empCompanyCreditCard3Name")
+    company_credit_card3: int | None = Field(
+        None, alias="empCompanyCreditCard3", json_schema_extra={"sql_type": "int"}
+    )
+    company_credit_card3_name: str = Field(
+        alias="empCompanyCreditCard3Name", json_schema_extra={"sql_type": "varchar"}
+    )
     company_credit_card3_desc: str | None = Field(
-        None, alias="empCompanyCreditCard3Desc"
+        None,
+        alias="empCompanyCreditCard3Desc",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    company_credit_card4: int | None = Field(None, alias="empCompanyCreditCard4")
-    company_credit_card4_name: str = Field(alias="empCompanyCreditCard4Name")
+    company_credit_card4: int | None = Field(
+        None, alias="empCompanyCreditCard4", json_schema_extra={"sql_type": "int"}
+    )
+    company_credit_card4_name: str = Field(
+        alias="empCompanyCreditCard4Name", json_schema_extra={"sql_type": "varchar"}
+    )
     company_credit_card4_desc: str | None = Field(
-        None, alias="empCompanyCreditCard4Desc"
+        None,
+        alias="empCompanyCreditCard4Desc",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    company_credit_card5: int | None = Field(None, alias="empCompanyCreditCard5")
-    company_credit_card5_name: str = Field(alias="empCompanyCreditCard5Name")
+    company_credit_card5: int | None = Field(
+        None, alias="empCompanyCreditCard5", json_schema_extra={"sql_type": "int"}
+    )
+    company_credit_card5_name: str = Field(
+        alias="empCompanyCreditCard5Name", json_schema_extra={"sql_type": "varchar"}
+    )
     company_credit_card5_desc: str | None = Field(
-        None, alias="empCompanyCreditCard5Desc"
+        None,
+        alias="empCompanyCreditCard5Desc",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    company_credit_card6: int | None = Field(None, alias="empCompanyCreditCard6")
-    company_credit_card6_name: str = Field(alias="empCompanyCreditCard6Name")
+    company_credit_card6: int | None = Field(
+        None, alias="empCompanyCreditCard6", json_schema_extra={"sql_type": "int"}
+    )
+    company_credit_card6_name: str = Field(
+        alias="empCompanyCreditCard6Name", json_schema_extra={"sql_type": "varchar"}
+    )
     company_credit_card6_desc: str | None = Field(
-        None, alias="empCompanyCreditCard6Desc"
+        None,
+        alias="empCompanyCreditCard6Desc",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    vendor_type: int | None = Field(None, alias="empVendorType")
-    vendor_type_description: str | None = Field(None, alias="empVendorTypeDescription")
+    vendor_type: int | None = Field(
+        None, alias="empVendorType", json_schema_extra={"sql_type": "int"}
+    )
+    vendor_type_description: str | None = Field(
+        None,
+        alias="empVendorTypeDescription",
+        json_schema_extra={"sql_type": "varchar"},
+    )
     calculate_payment_date_by: str | None = Field(
-        None, alias="empCalculatePaymentDateBy"
+        None,
+        alias="empCalculatePaymentDateBy",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    number_of_days_from_invoice: int = Field(alias="empNumberOfDaysFromInvoice")
-    day_of_month_to_pay: int = Field(alias="empDayOfMonthToPay")
-    company: int | None = Field(None, alias="empCompany")
-    third_party_sick_pay: bool = Field(alias="empThirdPartySickPay")
-    employee_soc_sec_exempt: bool = Field(alias="empEmployeeSocSecExempt")
-    employer_soc_sec_exempt: bool = Field(alias="empEmployerSocSecExempt")
-    defer_soc_security: bool = Field(alias="empDeferSocSecurity")
-    internal: int | None = Field(None, alias="empInternal")
-    billed_hours: Decimal | None = Field(None, alias="empBilledHours")
-    wip_hours: Decimal | None = Field(None, alias="empWIPHours")
-    wip_to_bill_hours: Decimal | None = Field(None, alias="empWIPToBillHours")
+    number_of_days_from_invoice: int = Field(
+        alias="empNumberOfDaysFromInvoice", json_schema_extra={"sql_type": "int"}
+    )
+    day_of_month_to_pay: int = Field(
+        alias="empDayOfMonthToPay", json_schema_extra={"sql_type": "int"}
+    )
+    company: int | None = Field(
+        None, alias="empCompany", json_schema_extra={"sql_type": "int"}
+    )
+    third_party_sick_pay: bool = Field(
+        alias="empThirdPartySickPay", json_schema_extra={"sql_type": "bit"}
+    )
+    employee_soc_sec_exempt: bool = Field(
+        alias="empEmployeeSocSecExempt", json_schema_extra={"sql_type": "bit"}
+    )
+    employer_soc_sec_exempt: bool = Field(
+        alias="empEmployerSocSecExempt", json_schema_extra={"sql_type": "bit"}
+    )
+    defer_soc_security: bool = Field(
+        alias="empDeferSocSecurity", json_schema_extra={"sql_type": "bit"}
+    )
+    internal: int | None = Field(
+        None, alias="empInternal", json_schema_extra={"sql_type": "int"}
+    )
+    billed_hours: Decimal | None = Field(
+        None, alias="empBilledHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    wip_hours: Decimal | None = Field(
+        None, alias="empWIPHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    wip_to_bill_hours: Decimal | None = Field(
+        None, alias="empWIPToBillHours", json_schema_extra={"sql_type": "decimal"}
+    )
 
 
 class GLFullAccountWithCutoffRow(DatabaseRecord):
@@ -1558,40 +3454,90 @@ class GLFullAccountWithCutoffRow(DatabaseRecord):
         kind="function", name="GLFullAccountWithCutoff", parameters=("CutoffDate",)
     )
 
-    entity_key: int = Field(alias="eKey")
-    e_status: EntityStatus | int = Field(alias="eStatus", union_mode="left_to_right")
-    e_order: int = Field(alias="eOrder")
-    parent_entity_key: int | None = Field(None, alias="eParentEntity")
-    e_description: str = Field(alias="eDescription")
-    dpe_percent: Decimal = Field(alias="eDPEPercent")
-    overhead_percent: Decimal = Field(alias="eOverheadPercent")
-    e_notes: str = Field(alias="eNotes")
-    e_row_version: bytes = Field(alias="eRowVersion")
-    e_attachments: str | None = Field(None, alias="eAttachments")
-    gl_account_key: int = Field(alias="glaKey")
+    entity_key: int = Field(alias="eKey", json_schema_extra={"sql_type": "int"})
+    e_status: EntityStatus | int = Field(
+        alias="eStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
+    )
+    e_order: int = Field(alias="eOrder", json_schema_extra={"sql_type": "int"})
+    parent_entity_key: int | None = Field(
+        None, alias="eParentEntity", json_schema_extra={"sql_type": "int"}
+    )
+    e_description: str = Field(
+        alias="eDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    dpe_percent: Decimal = Field(
+        alias="eDPEPercent", json_schema_extra={"sql_type": "decimal"}
+    )
+    overhead_percent: Decimal = Field(
+        alias="eOverheadPercent", json_schema_extra={"sql_type": "decimal"}
+    )
+    e_notes: str = Field(alias="eNotes", json_schema_extra={"sql_type": "text"})
+    e_row_version: bytes = Field(
+        alias="eRowVersion", json_schema_extra={"sql_type": "timestamp"}
+    )
+    e_attachments: str | None = Field(
+        None, alias="eAttachments", json_schema_extra={"sql_type": "varchar"}
+    )
+    gl_account_key: int = Field(alias="glaKey", json_schema_extra={"sql_type": "int"})
     gla_status: GLAccountStatus | int = Field(
-        alias="glaStatus", union_mode="left_to_right"
+        alias="glaStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    gla_order: int = Field(alias="glaOrder")
-    id: str = Field(alias="glaID")
-    gla_description: str = Field(alias="glaDescription")
-    type: GLAccountType | int = Field(alias="glaType", union_mode="left_to_right")
-    allow_journal_entries: bool = Field(alias="glaAllowJournalEntries")
-    is_normal_debit_balance: bool = Field(alias="glaIsNormalDebitBalance")
-    gla_notes: str = Field(alias="glaNotes")
-    account_group_key: int | None = Field(None, alias="glaAccountGroup")
-    automatic_dpe_distribution: bool = Field(alias="glaAutomaticDpeDistribution")
-    automatic_oh_distribution: bool = Field(alias="glaAutomaticOhDistribution")
-    gla_row_version: bytes = Field(alias="glaRowVersion")
-    gla_attachments: str | None = Field(None, alias="glaAttachments")
+    gla_order: int = Field(alias="glaOrder", json_schema_extra={"sql_type": "int"})
+    id: str = Field(alias="glaID", json_schema_extra={"sql_type": "varchar"})
+    gla_description: str = Field(
+        alias="glaDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    type: GLAccountType | int = Field(
+        alias="glaType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
+    )
+    allow_journal_entries: bool = Field(
+        alias="glaAllowJournalEntries", json_schema_extra={"sql_type": "bit"}
+    )
+    is_normal_debit_balance: bool = Field(
+        alias="glaIsNormalDebitBalance", json_schema_extra={"sql_type": "bit"}
+    )
+    gla_notes: str = Field(alias="glaNotes", json_schema_extra={"sql_type": "text"})
+    account_group_key: int | None = Field(
+        None, alias="glaAccountGroup", json_schema_extra={"sql_type": "int"}
+    )
+    automatic_dpe_distribution: bool = Field(
+        alias="glaAutomaticDpeDistribution", json_schema_extra={"sql_type": "bit"}
+    )
+    automatic_oh_distribution: bool = Field(
+        alias="glaAutomaticOhDistribution", json_schema_extra={"sql_type": "bit"}
+    )
+    gla_row_version: bytes = Field(
+        alias="glaRowVersion", json_schema_extra={"sql_type": "timestamp"}
+    )
+    gla_attachments: str | None = Field(
+        None, alias="glaAttachments", json_schema_extra={"sql_type": "varchar"}
+    )
     inter_company_type: GLAccountInterCompanyType | int = Field(
-        alias="glaInterCompanyType", union_mode="left_to_right"
+        alias="glaInterCompanyType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    type_description: str | None = Field(None, alias="glaTypeDescription")
-    glfa_internal1: int = Field(alias="glfaInternal1")
-    glfa_internal2: int = Field(alias="glfaInternal2")
-    glfa_balance: Decimal | None = Field(None, alias="glfaBalance")
-    glfa_cash_basis_balance: Decimal | None = Field(None, alias="glfaCashBasisBalance")
+    type_description: str | None = Field(
+        None, alias="glaTypeDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    glfa_internal1: int = Field(
+        alias="glfaInternal1", json_schema_extra={"sql_type": "int"}
+    )
+    glfa_internal2: int = Field(
+        alias="glfaInternal2", json_schema_extra={"sql_type": "int"}
+    )
+    glfa_balance: Decimal | None = Field(
+        None, alias="glfaBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    glfa_cash_basis_balance: Decimal | None = Field(
+        None, alias="glfaCashBasisBalance", json_schema_extra={"sql_type": "decimal"}
+    )
 
 
 class ProjectTotalsRow(DatabaseRecord):
@@ -1601,505 +3547,1279 @@ class ProjectTotalsRow(DatabaseRecord):
         kind="function", name="ProjectTotals", parameters=("StartDate", "EndDate")
     )
 
-    project_key: int = Field(alias="prjKey")
-    status: ProjectStatus | int = Field(alias="prjStatus", union_mode="left_to_right")
-    order: int = Field(alias="prjOrder")
-    is_template: bool = Field(alias="prjIsTemplate")
-    description: str = Field(alias="prjDescription")
-    id: str = Field(alias="prjID")
-    project_type_key: int | None = Field(None, alias="prjProjectType")
-    project_manager_key: int | None = Field(None, alias="prjProjectManager")
-    principal_in_charge_key: int | None = Field(None, alias="prjPrincipalInCharge")
-    marketing_contact_key: int | None = Field(None, alias="prjMarketingContact")
-    location: str = Field(alias="prjLocation")
-    estimated_start_date: datetime | None = Field(None, alias="prjEstimatedStartDate")
+    project_key: int = Field(alias="prjKey", json_schema_extra={"sql_type": "int"})
+    status: ProjectStatus | int = Field(
+        alias="prjStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
+    )
+    order: int = Field(alias="prjOrder", json_schema_extra={"sql_type": "int"})
+    is_template: bool = Field(
+        alias="prjIsTemplate", json_schema_extra={"sql_type": "bit"}
+    )
+    description: str = Field(
+        alias="prjDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    id: str = Field(alias="prjID", json_schema_extra={"sql_type": "varchar"})
+    project_type_key: int | None = Field(
+        None, alias="prjProjectType", json_schema_extra={"sql_type": "int"}
+    )
+    project_manager_key: int | None = Field(
+        None, alias="prjProjectManager", json_schema_extra={"sql_type": "int"}
+    )
+    principal_in_charge_key: int | None = Field(
+        None, alias="prjPrincipalInCharge", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact_key: int | None = Field(
+        None, alias="prjMarketingContact", json_schema_extra={"sql_type": "int"}
+    )
+    location: str = Field(alias="prjLocation", json_schema_extra={"sql_type": "text"})
+    estimated_start_date: datetime | None = Field(
+        None,
+        alias="prjEstimatedStartDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
+    )
     estimated_completion_date: datetime | None = Field(
-        None, alias="prjEstimatedCompletionDate"
+        None,
+        alias="prjEstimatedCompletionDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
-    actual_start_date: datetime | None = Field(None, alias="prjActualStartDate")
+    actual_start_date: datetime | None = Field(
+        None,
+        alias="prjActualStartDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
+    )
     actual_completion_date: datetime | None = Field(
-        None, alias="prjActualCompletionDate"
+        None,
+        alias="prjActualCompletionDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
-    last_client_invoice: str = Field(alias="prjLastClientInvoice")
-    apply_sales_tax: bool = Field(alias="prjApplySalesTax")
-    sales_tax_code: str = Field(alias="prjSalesTaxCode")
-    sales_tax_rate: Decimal = Field(alias="prjSalesTaxRate")
-    hours_cost_budget: Decimal = Field(alias="prjHoursCostBudget")
-    labor_cost_budget: Decimal = Field(alias="prjLaborCostBudget")
-    expense_cost_budget: Decimal = Field(alias="prjExpenseCostBudget")
-    consultant_cost_budget: Decimal = Field(alias="prjConsultantCostBudget")
+    last_client_invoice: str = Field(
+        alias="prjLastClientInvoice", json_schema_extra={"sql_type": "varchar"}
+    )
+    apply_sales_tax: bool = Field(
+        alias="prjApplySalesTax", json_schema_extra={"sql_type": "bit"}
+    )
+    sales_tax_code: str = Field(
+        alias="prjSalesTaxCode", json_schema_extra={"sql_type": "varchar"}
+    )
+    sales_tax_rate: Decimal = Field(
+        alias="prjSalesTaxRate", json_schema_extra={"sql_type": "decimal"}
+    )
+    hours_cost_budget: Decimal = Field(
+        alias="prjHoursCostBudget", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_cost_budget: Decimal = Field(
+        alias="prjLaborCostBudget", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_cost_budget: Decimal = Field(
+        alias="prjExpenseCostBudget", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_cost_budget: Decimal = Field(
+        alias="prjConsultantCostBudget", json_schema_extra={"sql_type": "decimal"}
+    )
     billing_type: ProjectBillingType | int = Field(
-        alias="prjBillingType", union_mode="left_to_right"
+        alias="prjBillingType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    rate_table_key: int | None = Field(None, alias="prjRateTable")
-    total_contract_amount: Decimal = Field(alias="prjTotalContractAmount")
-    labor_contract_amount: Decimal = Field(alias="prjLaborContractAmount")
-    expense_contract_amount: Decimal = Field(alias="prjExpenseContractAmount")
-    consultant_contract_amount: Decimal = Field(alias="prjConsultantContractAmount")
-    bill_labor_as_te: bool = Field(alias="prjBillLaborAsTE")
-    bill_expense_as_te: bool = Field(alias="prjBillExpenseAsTE")
-    bill_consultant_as_te: bool = Field(alias="prjBillConsultantAsTE")
-    units: Decimal = Field(alias="prjUnits")
-    unit_rate: Decimal = Field(alias="prjUnitRate")
-    unit_description: str = Field(alias="prjUnitDescription")
-    construction_cost: Decimal = Field(alias="prjConstructionCost")
-    percent_of_construction_cost: Decimal = Field(alias="prjPercentOfConstructionCost")
-    billing_description: str = Field(alias="prjBillingDescription")
-    phase_invoice_text: str = Field(alias="prjPhaseInvoiceText")
-    labor_invoice_text: str = Field(alias="prjLaborInvoiceText")
-    expense_invoice_text: str = Field(alias="prjExpenseInvoiceText")
-    consultant_invoice_text: str = Field(alias="prjConsultantInvoiceText")
-    client_contact1_key: int | None = Field(None, alias="prjClientContact1")
-    client_contact1_text: str = Field(alias="prjClientContact1Text")
-    client_contact2_key: int | None = Field(None, alias="prjClientContact2")
-    client_contact2_text: str = Field(alias="prjClientContact2Text")
-    client_contact3_key: int | None = Field(None, alias="prjClientContact3")
-    client_contact3_text: str = Field(alias="prjClientContact3Text")
-    client_contact4_key: int | None = Field(None, alias="prjClientContact4")
-    client_contact4_text: str = Field(alias="prjClientContact4Text")
-    client_contact5_key: int | None = Field(None, alias="prjClientContact5")
-    client_contact5_text: str = Field(alias="prjClientContact5Text")
-    notes: str = Field(alias="prjNotes")
-    entity_key: int = Field(alias="prjEntity")
-    is_certified: bool = Field(alias="prjIsCertified")
-    wage_table_key: int | None = Field(None, alias="prjWageTable")
-    parent_key: int | None = Field(None, alias="prjParent")
-    is_detail_phase: bool = Field(alias="prjIsDetailPhase")
-    invoice_group_key: int | None = Field(None, alias="prjInvoiceGroup")
-    is_billing_group: bool = Field(alias="prjIsBillingGroup")
-    summarize_billing_group: bool = Field(alias="prjSummarizeBillingGroup")
-    percent_distribution: Decimal = Field(alias="prjPercentDistribution")
-    prj_project: int | None = Field(None, alias="prjProject")
-    phase_level1_key: int | None = Field(None, alias="prjPhaseLevel1")
-    phase_level2_key: int | None = Field(None, alias="prjPhaseLevel2")
-    phase_level3_key: int | None = Field(None, alias="prjPhaseLevel3")
-    phase_level4_key: int | None = Field(None, alias="prjPhaseLevel4")
-    phase_level5_key: int | None = Field(None, alias="prjPhaseLevel5")
-    phase_level6_key: int | None = Field(None, alias="prjPhaseLevel6")
-    final_budget: bool = Field(alias="prjFinalBudget")
-    lock_fee: bool = Field(alias="prjLockFee")
+    rate_table_key: int | None = Field(
+        None, alias="prjRateTable", json_schema_extra={"sql_type": "int"}
+    )
+    total_contract_amount: Decimal = Field(
+        alias="prjTotalContractAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_contract_amount: Decimal = Field(
+        alias="prjLaborContractAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_contract_amount: Decimal = Field(
+        alias="prjExpenseContractAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_contract_amount: Decimal = Field(
+        alias="prjConsultantContractAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    bill_labor_as_te: bool = Field(
+        alias="prjBillLaborAsTE", json_schema_extra={"sql_type": "bit"}
+    )
+    bill_expense_as_te: bool = Field(
+        alias="prjBillExpenseAsTE", json_schema_extra={"sql_type": "bit"}
+    )
+    bill_consultant_as_te: bool = Field(
+        alias="prjBillConsultantAsTE", json_schema_extra={"sql_type": "bit"}
+    )
+    units: Decimal = Field(alias="prjUnits", json_schema_extra={"sql_type": "decimal"})
+    unit_rate: Decimal = Field(
+        alias="prjUnitRate", json_schema_extra={"sql_type": "decimal"}
+    )
+    unit_description: str = Field(
+        alias="prjUnitDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    construction_cost: Decimal = Field(
+        alias="prjConstructionCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    percent_of_construction_cost: Decimal = Field(
+        alias="prjPercentOfConstructionCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    billing_description: str = Field(
+        alias="prjBillingDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_invoice_text: str = Field(
+        alias="prjPhaseInvoiceText", json_schema_extra={"sql_type": "text"}
+    )
+    labor_invoice_text: str = Field(
+        alias="prjLaborInvoiceText", json_schema_extra={"sql_type": "text"}
+    )
+    expense_invoice_text: str = Field(
+        alias="prjExpenseInvoiceText", json_schema_extra={"sql_type": "text"}
+    )
+    consultant_invoice_text: str = Field(
+        alias="prjConsultantInvoiceText", json_schema_extra={"sql_type": "text"}
+    )
+    client_contact1_key: int | None = Field(
+        None, alias="prjClientContact1", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact1_text: str = Field(
+        alias="prjClientContact1Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact2_key: int | None = Field(
+        None, alias="prjClientContact2", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact2_text: str = Field(
+        alias="prjClientContact2Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact3_key: int | None = Field(
+        None, alias="prjClientContact3", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact3_text: str = Field(
+        alias="prjClientContact3Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact4_key: int | None = Field(
+        None, alias="prjClientContact4", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact4_text: str = Field(
+        alias="prjClientContact4Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact5_key: int | None = Field(
+        None, alias="prjClientContact5", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact5_text: str = Field(
+        alias="prjClientContact5Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    notes: str = Field(alias="prjNotes", json_schema_extra={"sql_type": "text"})
+    entity_key: int = Field(alias="prjEntity", json_schema_extra={"sql_type": "int"})
+    is_certified: bool = Field(
+        alias="prjIsCertified", json_schema_extra={"sql_type": "bit"}
+    )
+    wage_table_key: int | None = Field(
+        None, alias="prjWageTable", json_schema_extra={"sql_type": "int"}
+    )
+    parent_key: int | None = Field(
+        None, alias="prjParent", json_schema_extra={"sql_type": "int"}
+    )
+    is_detail_phase: bool = Field(
+        alias="prjIsDetailPhase", json_schema_extra={"sql_type": "bit"}
+    )
+    invoice_group_key: int | None = Field(
+        None, alias="prjInvoiceGroup", json_schema_extra={"sql_type": "int"}
+    )
+    is_billing_group: bool = Field(
+        alias="prjIsBillingGroup", json_schema_extra={"sql_type": "bit"}
+    )
+    summarize_billing_group: bool = Field(
+        alias="prjSummarizeBillingGroup", json_schema_extra={"sql_type": "bit"}
+    )
+    percent_distribution: Decimal = Field(
+        alias="prjPercentDistribution", json_schema_extra={"sql_type": "decimal"}
+    )
+    prj_project: int | None = Field(
+        None, alias="prjProject", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level1_key: int | None = Field(
+        None, alias="prjPhaseLevel1", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level2_key: int | None = Field(
+        None, alias="prjPhaseLevel2", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level3_key: int | None = Field(
+        None, alias="prjPhaseLevel3", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level4_key: int | None = Field(
+        None, alias="prjPhaseLevel4", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level5_key: int | None = Field(
+        None, alias="prjPhaseLevel5", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level6_key: int | None = Field(
+        None, alias="prjPhaseLevel6", json_schema_extra={"sql_type": "int"}
+    )
+    final_budget: bool = Field(
+        alias="prjFinalBudget", json_schema_extra={"sql_type": "bit"}
+    )
+    lock_fee: bool = Field(alias="prjLockFee", json_schema_extra={"sql_type": "bit"})
     pmp_change_wbs: ProjectPMPChangeWBS | int = Field(
-        alias="prjPMPChangeWBS", union_mode="left_to_right"
+        alias="prjPMPChangeWBS",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     pmp_change_resources: ProjectPMPChangeResources | int = Field(
-        alias="prjPMPChangeResources", union_mode="left_to_right"
+        alias="prjPMPChangeResources",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    labor_cost_rate: Decimal = Field(alias="prjLaborCostRate")
-    labor_fee_rate: Decimal = Field(alias="prjLaborFeeRate")
-    expense_markup_rate: Decimal = Field(alias="prjExpenseMarkupRate")
-    consultant_markup_rate: Decimal = Field(alias="prjConsultantMarkupRate")
-    marketing_phase_key: int | None = Field(None, alias="prjMarketingPhase")
-    marketing_description: str = Field(alias="prjMarketingDescription")
-    marketing_client_key: int | None = Field(None, alias="prjMarketingClient")
-    marketing_client_status: int = Field(alias="prjMarketingClientStatus")
-    marketing_owner_key: int | None = Field(None, alias="prjMarketingOwner")
-    marketing_owner_status: int = Field(alias="prjMarketingOwnerStatus")
-    marketing_ae_key: int | None = Field(None, alias="prjMarketingAE")
-    marketing_ae_status: int = Field(alias="prjMarketingAEStatus")
-    marketing_priority: int = Field(alias="prjMarketingPriority")
-    marketing_chance_of_winning: int = Field(alias="prjMarketingChanceOfWinning")
-    marketing_scope_of_work: str = Field(alias="prjMarketingScopeOfWork")
-    marketing_total_cost: Decimal = Field(alias="prjMarketingTotalCost")
-    marketing_construction_cost: Decimal = Field(alias="prjMarketingConstructionCost")
-    marketing_total_fee: Decimal = Field(alias="prjMarketingTotalFee")
-    marketing_firm_fee: Decimal = Field(alias="prjMarketingFirmFee")
-    marketing_consultant_fee: Decimal = Field(alias="prjMarketingConsultantFee")
+    labor_cost_rate: Decimal = Field(
+        alias="prjLaborCostRate", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_fee_rate: Decimal = Field(
+        alias="prjLaborFeeRate", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_markup_rate: Decimal = Field(
+        alias="prjExpenseMarkupRate", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_markup_rate: Decimal = Field(
+        alias="prjConsultantMarkupRate", json_schema_extra={"sql_type": "decimal"}
+    )
+    marketing_phase_key: int | None = Field(
+        None, alias="prjMarketingPhase", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_description: str = Field(
+        alias="prjMarketingDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_client_key: int | None = Field(
+        None, alias="prjMarketingClient", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_client_status: int = Field(
+        alias="prjMarketingClientStatus", json_schema_extra={"sql_type": "tinyint"}
+    )
+    marketing_owner_key: int | None = Field(
+        None, alias="prjMarketingOwner", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_owner_status: int = Field(
+        alias="prjMarketingOwnerStatus", json_schema_extra={"sql_type": "tinyint"}
+    )
+    marketing_ae_key: int | None = Field(
+        None, alias="prjMarketingAE", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_ae_status: int = Field(
+        alias="prjMarketingAEStatus", json_schema_extra={"sql_type": "tinyint"}
+    )
+    marketing_priority: int = Field(
+        alias="prjMarketingPriority", json_schema_extra={"sql_type": "tinyint"}
+    )
+    marketing_chance_of_winning: int = Field(
+        alias="prjMarketingChanceOfWinning", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_scope_of_work: str = Field(
+        alias="prjMarketingScopeOfWork", json_schema_extra={"sql_type": "text"}
+    )
+    marketing_total_cost: Decimal = Field(
+        alias="prjMarketingTotalCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    marketing_construction_cost: Decimal = Field(
+        alias="prjMarketingConstructionCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    marketing_total_fee: Decimal = Field(
+        alias="prjMarketingTotalFee", json_schema_extra={"sql_type": "decimal"}
+    )
+    marketing_firm_fee: Decimal = Field(
+        alias="prjMarketingFirmFee", json_schema_extra={"sql_type": "decimal"}
+    )
+    marketing_consultant_fee: Decimal = Field(
+        alias="prjMarketingConsultantFee", json_schema_extra={"sql_type": "decimal"}
+    )
     marketing_final_disposition_key: int | None = Field(
-        None, alias="prjMarketingFinalDisposition"
+        None,
+        alias="prjMarketingFinalDisposition",
+        json_schema_extra={"sql_type": "int"},
     )
-    marketing_awarded_to_key: int | None = Field(None, alias="prjMarketingAwardedTo")
-    marketing_contact1_key: int | None = Field(None, alias="prjMarketingContact1")
-    marketing_contact1_text: str = Field(alias="prjMarketingContact1Text")
-    marketing_contact2_key: int | None = Field(None, alias="prjMarketingContact2")
-    marketing_contact2_text: str = Field(alias="prjMarketingContact2Text")
-    marketing_contact3_key: int | None = Field(None, alias="prjMarketingContact3")
-    marketing_contact3_text: str = Field(alias="prjMarketingContact3Text")
-    marketing_contact4_key: int | None = Field(None, alias="prjMarketingContact4")
-    marketing_contact4_text: str = Field(alias="prjMarketingContact4Text")
-    marketing_contact5_key: int | None = Field(None, alias="prjMarketingContact5")
-    marketing_contact5_text: str = Field(alias="prjMarketingContact5Text")
-    marketing_notes: str = Field(alias="prjMarketingNotes")
-    pmp_change_tasks: int = Field(alias="prjPMPChangeTasks")
-    row_version: bytes = Field(alias="prjRowVersion")
-    attachments: str | None = Field(None, alias="prjAttachments")
-    require_timesheet_notes: bool = Field(alias="prjRequireTimesheetNotes")
-    state: ProjectState | int = Field(alias="prjState", union_mode="left_to_right")
-    local_tax_key: int | None = Field(None, alias="prjLocalTax")
-    created_date: datetime = Field(alias="prjCreatedDate")
-    company_key: int | None = Field(None, alias="prjCompany")
-    adjust_exclude_labor: bool = Field(alias="prjAdjustExcludeLabor")
-    adjust_exclude_expense: bool = Field(alias="prjAdjustExcludeExpense")
-    adjust_exclude_consultant: bool = Field(alias="prjAdjustExcludeConsultant")
-    adjust_exclude_from_billed: bool = Field(alias="prjAdjustExcludeFromBilled")
+    marketing_awarded_to_key: int | None = Field(
+        None, alias="prjMarketingAwardedTo", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact1_key: int | None = Field(
+        None, alias="prjMarketingContact1", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact1_text: str = Field(
+        alias="prjMarketingContact1Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact2_key: int | None = Field(
+        None, alias="prjMarketingContact2", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact2_text: str = Field(
+        alias="prjMarketingContact2Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact3_key: int | None = Field(
+        None, alias="prjMarketingContact3", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact3_text: str = Field(
+        alias="prjMarketingContact3Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact4_key: int | None = Field(
+        None, alias="prjMarketingContact4", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact4_text: str = Field(
+        alias="prjMarketingContact4Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact5_key: int | None = Field(
+        None, alias="prjMarketingContact5", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact5_text: str = Field(
+        alias="prjMarketingContact5Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_notes: str = Field(
+        alias="prjMarketingNotes", json_schema_extra={"sql_type": "text"}
+    )
+    pmp_change_tasks: int = Field(
+        alias="prjPMPChangeTasks", json_schema_extra={"sql_type": "tinyint"}
+    )
+    row_version: bytes = Field(
+        alias="prjRowVersion", json_schema_extra={"sql_type": "timestamp"}
+    )
+    attachments: str | None = Field(
+        None, alias="prjAttachments", json_schema_extra={"sql_type": "varchar"}
+    )
+    require_timesheet_notes: bool = Field(
+        alias="prjRequireTimesheetNotes", json_schema_extra={"sql_type": "bit"}
+    )
+    state: ProjectState | int = Field(
+        alias="prjState",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
+    )
+    local_tax_key: int | None = Field(
+        None, alias="prjLocalTax", json_schema_extra={"sql_type": "int"}
+    )
+    created_date: datetime = Field(
+        alias="prjCreatedDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    company_key: int | None = Field(
+        None, alias="prjCompany", json_schema_extra={"sql_type": "int"}
+    )
+    adjust_exclude_labor: bool = Field(
+        alias="prjAdjustExcludeLabor", json_schema_extra={"sql_type": "bit"}
+    )
+    adjust_exclude_expense: bool = Field(
+        alias="prjAdjustExcludeExpense", json_schema_extra={"sql_type": "bit"}
+    )
+    adjust_exclude_consultant: bool = Field(
+        alias="prjAdjustExcludeConsultant", json_schema_extra={"sql_type": "bit"}
+    )
+    adjust_exclude_from_billed: bool = Field(
+        alias="prjAdjustExcludeFromBilled", json_schema_extra={"sql_type": "bit"}
+    )
     adjust_activity_type: ProjectAdjustActivityType | int = Field(
-        alias="prjAdjustActivityType", union_mode="left_to_right"
+        alias="prjAdjustActivityType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    adjust_type: int = Field(alias="prjAdjustType")
-    adjust_amount: Decimal = Field(alias="prjAdjustAmount")
-    adjust_account_key: int | None = Field(None, alias="prjAdjustAccount")
-    is_cosential_updated: bool = Field(alias="prjIsCosentialUpdated")
-    is_imported: bool = Field(alias="prjIsImported")
+    adjust_type: int = Field(
+        alias="prjAdjustType", json_schema_extra={"sql_type": "tinyint"}
+    )
+    adjust_amount: Decimal = Field(
+        alias="prjAdjustAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    adjust_account_key: int | None = Field(
+        None, alias="prjAdjustAccount", json_schema_extra={"sql_type": "int"}
+    )
+    is_cosential_updated: bool = Field(
+        alias="prjIsCosentialUpdated", json_schema_extra={"sql_type": "bit"}
+    )
+    is_imported: bool = Field(
+        alias="prjIsImported", json_schema_extra={"sql_type": "bit"}
+    )
     revenue_method_labor: ProjectRevenueMethodLabor | int = Field(
-        alias="prjRevenueMethodLabor", union_mode="left_to_right"
+        alias="prjRevenueMethodLabor",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     revenue_method_expense: ProjectRevenueMethodExpense | int = Field(
-        alias="prjRevenueMethodExpense", union_mode="left_to_right"
+        alias="prjRevenueMethodExpense",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     revenue_method_consultant: ProjectRevenueMethodConsultant | int = Field(
-        alias="prjRevenueMethodConsultant", union_mode="left_to_right"
+        alias="prjRevenueMethodConsultant",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     cap_wip_labor: ProjectCapWIPLabor | int = Field(
-        alias="prjCapWIPLabor", union_mode="left_to_right"
+        alias="prjCapWIPLabor",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     cap_wip_expense: ProjectCapWIPExpense | int = Field(
-        alias="prjCapWIPExpense", union_mode="left_to_right"
+        alias="prjCapWIPExpense",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     cap_wip_consultant: ProjectCapWIPConsultant | int = Field(
-        alias="prjCapWIPConsultant", union_mode="left_to_right"
+        alias="prjCapWIPConsultant",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    revenue_formula_labor_key: int | None = Field(None, alias="prjRevenueFormulaLabor")
+    revenue_formula_labor_key: int | None = Field(
+        None, alias="prjRevenueFormulaLabor", json_schema_extra={"sql_type": "int"}
+    )
     revenue_formula_expense_key: int | None = Field(
-        None, alias="prjRevenueFormulaExpense"
+        None, alias="prjRevenueFormulaExpense", json_schema_extra={"sql_type": "int"}
     )
     revenue_formula_consultant_key: int | None = Field(
-        None, alias="prjRevenueFormulaConsultant"
+        None, alias="prjRevenueFormulaConsultant", json_schema_extra={"sql_type": "int"}
     )
-    time_entry_restriction: bool = Field(alias="prjTimeEntryRestriction")
-    concurrency: int = Field(alias="prjConcurrency")
-    last_modified_date: datetime = Field(alias="prjLastModifiedDate")
-    sync_to_crm: bool = Field(alias="prjSyncToCRM")
-    is_crm_project: bool = Field(alias="prjIsCRMProject")
-    labor_entry: bool = Field(alias="prjLaborEntry")
-    expense_consultant_entry: bool = Field(alias="prjExpenseConsultantEntry")
-    client_contact6_key: int | None = Field(None, alias="prjClientContact6")
-    client_contact6_text: str = Field(alias="prjClientContact6Text")
-    client_contact7_key: int | None = Field(None, alias="prjClientContact7")
-    client_contact7_text: str = Field(alias="prjClientContact7Text")
-    client_contact8_key: int | None = Field(None, alias="prjClientContact8")
-    client_contact8_text: str = Field(alias="prjClientContact8Text")
-    client_contact9_key: int | None = Field(None, alias="prjClientContact9")
-    client_contact9_text: str = Field(alias="prjClientContact9Text")
-    client_contact10_key: int | None = Field(None, alias="prjClientContact10")
-    client_contact10_text: str = Field(alias="prjClientContact10Text")
-    client_contact11_key: int | None = Field(None, alias="prjClientContact11")
-    client_contact11_text: str = Field(alias="prjClientContact11Text")
-    client_contact12_key: int | None = Field(None, alias="prjClientContact12")
-    client_contact12_text: str = Field(alias="prjClientContact12Text")
-    client_contact13_key: int | None = Field(None, alias="prjClientContact13")
-    client_contact13_text: str = Field(alias="prjClientContact13Text")
-    client_contact14_key: int | None = Field(None, alias="prjClientContact14")
-    client_contact14_text: str = Field(alias="prjClientContact14Text")
-    client_contact15_key: int | None = Field(None, alias="prjClientContact15")
-    client_contact15_text: str = Field(alias="prjClientContact15Text")
-    client_contact16_key: int | None = Field(None, alias="prjClientContact16")
-    client_contact16_text: str = Field(alias="prjClientContact16Text")
-    client_contact17_key: int | None = Field(None, alias="prjClientContact17")
-    client_contact17_text: str = Field(alias="prjClientContact17Text")
-    client_contact18_key: int | None = Field(None, alias="prjClientContact18")
-    client_contact18_text: str = Field(alias="prjClientContact18Text")
-    client_contact19_key: int | None = Field(None, alias="prjClientContact19")
-    client_contact19_text: str = Field(alias="prjClientContact19Text")
-    client_contact20_key: int | None = Field(None, alias="prjClientContact20")
-    client_contact20_text: str = Field(alias="prjClientContact20Text")
-    marketing_contact6_key: int | None = Field(None, alias="prjMarketingContact6")
-    marketing_contact6_text: str = Field(alias="prjMarketingContact6Text")
-    marketing_contact7_key: int | None = Field(None, alias="prjMarketingContact7")
-    marketing_contact7_text: str = Field(alias="prjMarketingContact7Text")
-    marketing_contact8_key: int | None = Field(None, alias="prjMarketingContact8")
-    marketing_contact8_text: str = Field(alias="prjMarketingContact8Text")
-    marketing_contact9_key: int | None = Field(None, alias="prjMarketingContact9")
-    marketing_contact9_text: str = Field(alias="prjMarketingContact9Text")
-    marketing_contact10_key: int | None = Field(None, alias="prjMarketingContact10")
-    marketing_contact10_text: str = Field(alias="prjMarketingContact10Text")
-    marketing_contact11_key: int | None = Field(None, alias="prjMarketingContact11")
-    marketing_contact11_text: str = Field(alias="prjMarketingContact11Text")
-    marketing_contact12_key: int | None = Field(None, alias="prjMarketingContact12")
-    marketing_contact12_text: str = Field(alias="prjMarketingContact12Text")
-    marketing_contact13_key: int | None = Field(None, alias="prjMarketingContact13")
-    marketing_contact13_text: str = Field(alias="prjMarketingContact13Text")
-    marketing_contact14_key: int | None = Field(None, alias="prjMarketingContact14")
-    marketing_contact14_text: str = Field(alias="prjMarketingContact14Text")
-    marketing_contact15_key: int | None = Field(None, alias="prjMarketingContact15")
-    marketing_contact15_text: str = Field(alias="prjMarketingContact15Text")
-    marketing_contact16_key: int | None = Field(None, alias="prjMarketingContact16")
-    marketing_contact16_text: str = Field(alias="prjMarketingContact16Text")
-    marketing_contact17_key: int | None = Field(None, alias="prjMarketingContact17")
-    marketing_contact17_text: str = Field(alias="prjMarketingContact17Text")
-    marketing_contact18_key: int | None = Field(None, alias="prjMarketingContact18")
-    marketing_contact18_text: str = Field(alias="prjMarketingContact18Text")
-    marketing_contact19_key: int | None = Field(None, alias="prjMarketingContact19")
-    marketing_contact19_text: str = Field(alias="prjMarketingContact19Text")
-    marketing_contact20_key: int | None = Field(None, alias="prjMarketingContact20")
-    marketing_contact20_text: str = Field(alias="prjMarketingContact20Text")
-    create_in_crm: bool = Field(alias="prjCreateInCRM")
-    crm_final_sync: bool = Field(alias="prjCRMFinalSync")
-    crm_sync_state: bool = Field(alias="prjCRMSyncState")
-    main_project_status: int | None = Field(None, alias="prjMainProjectStatus")
+    time_entry_restriction: bool = Field(
+        alias="prjTimeEntryRestriction", json_schema_extra={"sql_type": "bit"}
+    )
+    concurrency: int = Field(
+        alias="prjConcurrency", json_schema_extra={"sql_type": "int"}
+    )
+    last_modified_date: datetime = Field(
+        alias="prjLastModifiedDate", json_schema_extra={"sql_type": "datetime"}
+    )
+    sync_to_crm: bool = Field(
+        alias="prjSyncToCRM", json_schema_extra={"sql_type": "bit"}
+    )
+    is_crm_project: bool = Field(
+        alias="prjIsCRMProject", json_schema_extra={"sql_type": "bit"}
+    )
+    labor_entry: bool = Field(
+        alias="prjLaborEntry", json_schema_extra={"sql_type": "bit"}
+    )
+    expense_consultant_entry: bool = Field(
+        alias="prjExpenseConsultantEntry", json_schema_extra={"sql_type": "bit"}
+    )
+    client_contact6_key: int | None = Field(
+        None, alias="prjClientContact6", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact6_text: str = Field(
+        alias="prjClientContact6Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact7_key: int | None = Field(
+        None, alias="prjClientContact7", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact7_text: str = Field(
+        alias="prjClientContact7Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact8_key: int | None = Field(
+        None, alias="prjClientContact8", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact8_text: str = Field(
+        alias="prjClientContact8Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact9_key: int | None = Field(
+        None, alias="prjClientContact9", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact9_text: str = Field(
+        alias="prjClientContact9Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact10_key: int | None = Field(
+        None, alias="prjClientContact10", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact10_text: str = Field(
+        alias="prjClientContact10Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact11_key: int | None = Field(
+        None, alias="prjClientContact11", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact11_text: str = Field(
+        alias="prjClientContact11Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact12_key: int | None = Field(
+        None, alias="prjClientContact12", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact12_text: str = Field(
+        alias="prjClientContact12Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact13_key: int | None = Field(
+        None, alias="prjClientContact13", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact13_text: str = Field(
+        alias="prjClientContact13Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact14_key: int | None = Field(
+        None, alias="prjClientContact14", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact14_text: str = Field(
+        alias="prjClientContact14Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact15_key: int | None = Field(
+        None, alias="prjClientContact15", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact15_text: str = Field(
+        alias="prjClientContact15Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact16_key: int | None = Field(
+        None, alias="prjClientContact16", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact16_text: str = Field(
+        alias="prjClientContact16Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact17_key: int | None = Field(
+        None, alias="prjClientContact17", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact17_text: str = Field(
+        alias="prjClientContact17Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact18_key: int | None = Field(
+        None, alias="prjClientContact18", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact18_text: str = Field(
+        alias="prjClientContact18Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact19_key: int | None = Field(
+        None, alias="prjClientContact19", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact19_text: str = Field(
+        alias="prjClientContact19Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    client_contact20_key: int | None = Field(
+        None, alias="prjClientContact20", json_schema_extra={"sql_type": "int"}
+    )
+    client_contact20_text: str = Field(
+        alias="prjClientContact20Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact6_key: int | None = Field(
+        None, alias="prjMarketingContact6", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact6_text: str = Field(
+        alias="prjMarketingContact6Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact7_key: int | None = Field(
+        None, alias="prjMarketingContact7", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact7_text: str = Field(
+        alias="prjMarketingContact7Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact8_key: int | None = Field(
+        None, alias="prjMarketingContact8", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact8_text: str = Field(
+        alias="prjMarketingContact8Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact9_key: int | None = Field(
+        None, alias="prjMarketingContact9", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact9_text: str = Field(
+        alias="prjMarketingContact9Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact10_key: int | None = Field(
+        None, alias="prjMarketingContact10", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact10_text: str = Field(
+        alias="prjMarketingContact10Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact11_key: int | None = Field(
+        None, alias="prjMarketingContact11", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact11_text: str = Field(
+        alias="prjMarketingContact11Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact12_key: int | None = Field(
+        None, alias="prjMarketingContact12", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact12_text: str = Field(
+        alias="prjMarketingContact12Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact13_key: int | None = Field(
+        None, alias="prjMarketingContact13", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact13_text: str = Field(
+        alias="prjMarketingContact13Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact14_key: int | None = Field(
+        None, alias="prjMarketingContact14", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact14_text: str = Field(
+        alias="prjMarketingContact14Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact15_key: int | None = Field(
+        None, alias="prjMarketingContact15", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact15_text: str = Field(
+        alias="prjMarketingContact15Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact16_key: int | None = Field(
+        None, alias="prjMarketingContact16", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact16_text: str = Field(
+        alias="prjMarketingContact16Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact17_key: int | None = Field(
+        None, alias="prjMarketingContact17", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact17_text: str = Field(
+        alias="prjMarketingContact17Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact18_key: int | None = Field(
+        None, alias="prjMarketingContact18", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact18_text: str = Field(
+        alias="prjMarketingContact18Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact19_key: int | None = Field(
+        None, alias="prjMarketingContact19", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact19_text: str = Field(
+        alias="prjMarketingContact19Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact20_key: int | None = Field(
+        None, alias="prjMarketingContact20", json_schema_extra={"sql_type": "int"}
+    )
+    marketing_contact20_text: str = Field(
+        alias="prjMarketingContact20Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    create_in_crm: bool = Field(
+        alias="prjCreateInCRM", json_schema_extra={"sql_type": "bit"}
+    )
+    crm_final_sync: bool = Field(
+        alias="prjCRMFinalSync", json_schema_extra={"sql_type": "bit"}
+    )
+    crm_sync_state: bool = Field(
+        alias="prjCRMSyncState", json_schema_extra={"sql_type": "bit"}
+    )
+    main_project_status: int | None = Field(
+        None, alias="prjMainProjectStatus", json_schema_extra={"sql_type": "tinyint"}
+    )
     main_project_status_description: str | None = Field(
-        None, alias="prjMainProjectStatusDescription"
+        None,
+        alias="prjMainProjectStatusDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    main_project_id: str | None = Field(None, alias="prjMainProjectID")
+    main_project_id: str | None = Field(
+        None, alias="prjMainProjectID", json_schema_extra={"sql_type": "varchar"}
+    )
     main_project_description: str | None = Field(
-        None, alias="prjMainProjectDescription"
+        None,
+        alias="prjMainProjectDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    phase_level1_id: str | None = Field(None, alias="prjPhaseLevel1ID")
-    phase_level1_is_detail: bool | None = Field(None, alias="prjPhaseLevel1IsDetail")
+    phase_level1_id: str | None = Field(
+        None, alias="prjPhaseLevel1ID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_level1_is_detail: bool | None = Field(
+        None, alias="prjPhaseLevel1IsDetail", json_schema_extra={"sql_type": "bit"}
+    )
     phase_level1_description: str | None = Field(
-        None, alias="prjPhaseLevel1Description"
+        None,
+        alias="prjPhaseLevel1Description",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    phase_level2_id: str | None = Field(None, alias="prjPhaseLevel2ID")
-    phase_level2_is_detail: bool | None = Field(None, alias="prjPhaseLevel2IsDetail")
+    phase_level2_id: str | None = Field(
+        None, alias="prjPhaseLevel2ID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_level2_is_detail: bool | None = Field(
+        None, alias="prjPhaseLevel2IsDetail", json_schema_extra={"sql_type": "bit"}
+    )
     phase_level2_description: str | None = Field(
-        None, alias="prjPhaseLevel2Description"
+        None,
+        alias="prjPhaseLevel2Description",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    phase_level3_id: str | None = Field(None, alias="prjPhaseLevel3ID")
-    phase_level3_is_detail: bool | None = Field(None, alias="prjPhaseLevel3IsDetail")
+    phase_level3_id: str | None = Field(
+        None, alias="prjPhaseLevel3ID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_level3_is_detail: bool | None = Field(
+        None, alias="prjPhaseLevel3IsDetail", json_schema_extra={"sql_type": "bit"}
+    )
     phase_level3_description: str | None = Field(
-        None, alias="prjPhaseLevel3Description"
+        None,
+        alias="prjPhaseLevel3Description",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    phase_level4_id: str | None = Field(None, alias="prjPhaseLevel4ID")
-    phase_level4_is_detail: bool | None = Field(None, alias="prjPhaseLevel4IsDetail")
+    phase_level4_id: str | None = Field(
+        None, alias="prjPhaseLevel4ID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_level4_is_detail: bool | None = Field(
+        None, alias="prjPhaseLevel4IsDetail", json_schema_extra={"sql_type": "bit"}
+    )
     phase_level4_description: str | None = Field(
-        None, alias="prjPhaseLevel4Description"
+        None,
+        alias="prjPhaseLevel4Description",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    phase_level5_id: str | None = Field(None, alias="prjPhaseLevel5ID")
-    phase_level5_is_detail: bool | None = Field(None, alias="prjPhaseLevel5IsDetail")
+    phase_level5_id: str | None = Field(
+        None, alias="prjPhaseLevel5ID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_level5_is_detail: bool | None = Field(
+        None, alias="prjPhaseLevel5IsDetail", json_schema_extra={"sql_type": "bit"}
+    )
     phase_level5_description: str | None = Field(
-        None, alias="prjPhaseLevel5Description"
+        None,
+        alias="prjPhaseLevel5Description",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    phase_level6_id: str | None = Field(None, alias="prjPhaseLevel6ID")
-    phase_level6_is_detail: bool | None = Field(None, alias="prjPhaseLevel6IsDetail")
+    phase_level6_id: str | None = Field(
+        None, alias="prjPhaseLevel6ID", json_schema_extra={"sql_type": "varchar"}
+    )
+    phase_level6_is_detail: bool | None = Field(
+        None, alias="prjPhaseLevel6IsDetail", json_schema_extra={"sql_type": "bit"}
+    )
     phase_level6_description: str | None = Field(
-        None, alias="prjPhaseLevel6Description"
+        None,
+        alias="prjPhaseLevel6Description",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    project_start_date: datetime | None = Field(None, alias="prjProjectStartDate")
-    project_end_date: datetime | None = Field(None, alias="prjProjectEndDate")
+    project_start_date: datetime | None = Field(
+        None,
+        alias="prjProjectStartDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
+    )
+    project_end_date: datetime | None = Field(
+        None, alias="prjProjectEndDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
     project_type_description: str | None = Field(
-        None, alias="prjProjectTypeDescription"
+        None,
+        alias="prjProjectTypeDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    project_type_order: int | None = Field(None, alias="prjProjectTypeOrder")
-    phase_level: int = Field(alias="prjPhaseLevel")
-    billing_group: int | None = Field(None, alias="prjBillingGroup")
-    billing_group_order: int = Field(alias="prjBillingGroupOrder")
-    billing_group_description: str = Field(alias="prjBillingGroupDescription")
-    invoice_group_order: int | None = Field(None, alias="prjInvoiceGroupOrder")
+    project_type_order: int | None = Field(
+        None, alias="prjProjectTypeOrder", json_schema_extra={"sql_type": "int"}
+    )
+    phase_level: int = Field(
+        alias="prjPhaseLevel", json_schema_extra={"sql_type": "int"}
+    )
+    billing_group: int | None = Field(
+        None, alias="prjBillingGroup", json_schema_extra={"sql_type": "int"}
+    )
+    billing_group_order: int = Field(
+        alias="prjBillingGroupOrder", json_schema_extra={"sql_type": "int"}
+    )
+    billing_group_description: str = Field(
+        alias="prjBillingGroupDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    invoice_group_order: int | None = Field(
+        None, alias="prjInvoiceGroupOrder", json_schema_extra={"sql_type": "int"}
+    )
     invoice_group_description: str | None = Field(
-        None, alias="prjInvoiceGroupDescription"
+        None,
+        alias="prjInvoiceGroupDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    entity_description: str | None = Field(None, alias="prjEntityDescription")
-    entity_order: int | None = Field(None, alias="prjEntityOrder")
-    company_description: str | None = Field(None, alias="prjCompanyDescription")
-    company_order: int | None = Field(None, alias="prjCompanyOrder")
-    status_description: str | None = Field(None, alias="prjStatusDescription")
-    first_invoice_date: datetime | None = Field(None, alias="prjFirstInvoiceDate")
-    client_key: int | None = Field(None, alias="prjClientKey")
-    client_name: str | None = Field(None, alias="prjClientName")
-    project_manager_name: str | None = Field(None, alias="prjProjectManagerName")
-    project_manager_title: str | None = Field(None, alias="prjProjectManagerTitle")
-    principal_in_charge_name: str | None = Field(None, alias="prjPrincipalInChargeName")
+    entity_description: str | None = Field(
+        None, alias="prjEntityDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    entity_order: int | None = Field(
+        None, alias="prjEntityOrder", json_schema_extra={"sql_type": "int"}
+    )
+    company_description: str | None = Field(
+        None, alias="prjCompanyDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    company_order: int | None = Field(
+        None, alias="prjCompanyOrder", json_schema_extra={"sql_type": "int"}
+    )
+    status_description: str | None = Field(
+        None, alias="prjStatusDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    first_invoice_date: datetime | None = Field(
+        None,
+        alias="prjFirstInvoiceDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
+    )
+    client_key: int | None = Field(
+        None, alias="prjClientKey", json_schema_extra={"sql_type": "int"}
+    )
+    client_name: str | None = Field(
+        None, alias="prjClientName", json_schema_extra={"sql_type": "varchar"}
+    )
+    project_manager_name: str | None = Field(
+        None, alias="prjProjectManagerName", json_schema_extra={"sql_type": "varchar"}
+    )
+    project_manager_title: str | None = Field(
+        None, alias="prjProjectManagerTitle", json_schema_extra={"sql_type": "varchar"}
+    )
+    principal_in_charge_name: str | None = Field(
+        None,
+        alias="prjPrincipalInChargeName",
+        json_schema_extra={"sql_type": "varchar"},
+    )
     principal_in_charge_title: str | None = Field(
-        None, alias="prjPrincipalInChargeTitle"
+        None,
+        alias="prjPrincipalInChargeTitle",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    marketing_contact_name: str | None = Field(None, alias="prjMarketingContactName")
-    marketing_contact_title: str | None = Field(None, alias="prjMarketingContactTitle")
-    billing_manager: int | None = Field(None, alias="prjBillingManager")
-    billing_manager_name: str | None = Field(None, alias="prjBillingManagerName")
+    marketing_contact_name: str | None = Field(
+        None, alias="prjMarketingContactName", json_schema_extra={"sql_type": "varchar"}
+    )
+    marketing_contact_title: str | None = Field(
+        None,
+        alias="prjMarketingContactTitle",
+        json_schema_extra={"sql_type": "varchar"},
+    )
+    billing_manager: int | None = Field(
+        None, alias="prjBillingManager", json_schema_extra={"sql_type": "int"}
+    )
+    billing_manager_name: str | None = Field(
+        None, alias="prjBillingManagerName", json_schema_extra={"sql_type": "varchar"}
+    )
     project_manager_first_name: str | None = Field(
-        None, alias="prjProjectManagerFirstName"
+        None,
+        alias="prjProjectManagerFirstName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     project_manager_middle_name: str | None = Field(
-        None, alias="prjProjectManagerMiddleName"
+        None,
+        alias="prjProjectManagerMiddleName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     project_manager_last_name: str | None = Field(
-        None, alias="prjProjectManagerLastName"
+        None,
+        alias="prjProjectManagerLastName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     principal_in_charge_first_name: str | None = Field(
-        None, alias="prjPrincipalInChargeFirstName"
+        None,
+        alias="prjPrincipalInChargeFirstName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     principal_in_charge_middle_name: str | None = Field(
-        None, alias="prjPrincipalInChargeMiddleName"
+        None,
+        alias="prjPrincipalInChargeMiddleName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     principal_in_charge_last_name: str | None = Field(
-        None, alias="prjPrincipalInChargeLastName"
+        None,
+        alias="prjPrincipalInChargeLastName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     marketing_contact_first_name: str | None = Field(
-        None, alias="prjMarketingContactFirstName"
+        None,
+        alias="prjMarketingContactFirstName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     marketing_contact_middle_name: str | None = Field(
-        None, alias="prjMarketingContactMiddleName"
+        None,
+        alias="prjMarketingContactMiddleName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     marketing_contact_last_name: str | None = Field(
-        None, alias="prjMarketingContactLastName"
+        None,
+        alias="prjMarketingContactLastName",
+        json_schema_extra={"sql_type": "varchar"},
     )
     billing_type_description: str | None = Field(
-        None, alias="prjBillingTypeDescription"
+        None,
+        alias="prjBillingTypeDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    rate_table_description: str | None = Field(None, alias="prjRateTableDescription")
-    labor_billed_percent: Decimal | None = Field(None, alias="prjLaborBilledPercent")
+    rate_table_description: str | None = Field(
+        None, alias="prjRateTableDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    labor_billed_percent: Decimal | None = Field(
+        None, alias="prjLaborBilledPercent", json_schema_extra={"sql_type": "decimal"}
+    )
     labor_wip_billed_percent: Decimal | None = Field(
-        None, alias="prjLaborWIPBilledPercent"
+        None,
+        alias="prjLaborWIPBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     labor_wip_to_bill_billed_percent: Decimal | None = Field(
-        None, alias="prjLaborWIPToBillBilledPercent"
+        None,
+        alias="prjLaborWIPToBillBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     labor_total_billed_percent: Decimal | None = Field(
-        None, alias="prjLaborTotalBilledPercent"
+        None,
+        alias="prjLaborTotalBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     expense_billed_percent: Decimal | None = Field(
-        None, alias="prjExpenseBilledPercent"
+        None, alias="prjExpenseBilledPercent", json_schema_extra={"sql_type": "decimal"}
     )
     expense_wip_billed_percent: Decimal | None = Field(
-        None, alias="prjExpenseWIPBilledPercent"
+        None,
+        alias="prjExpenseWIPBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     expense_wip_to_bill_billed_percent: Decimal | None = Field(
-        None, alias="prjExpenseWIPToBillBilledPercent"
+        None,
+        alias="prjExpenseWIPToBillBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     expense_total_billed_percent: Decimal | None = Field(
-        None, alias="prjExpenseTotalBilledPercent"
+        None,
+        alias="prjExpenseTotalBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_billed_percent: Decimal | None = Field(
-        None, alias="prjConsultantBilledPercent"
+        None,
+        alias="prjConsultantBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_wip_billed_percent: Decimal | None = Field(
-        None, alias="prjConsultantWIPBilledPercent"
+        None,
+        alias="prjConsultantWIPBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_wip_to_bill_billed_percent: Decimal | None = Field(
-        None, alias="prjConsultantWIPToBillBilledPercent"
+        None,
+        alias="prjConsultantWIPToBillBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
     consultant_total_billed_percent: Decimal | None = Field(
-        None, alias="prjConsultantTotalBilledPercent"
+        None,
+        alias="prjConsultantTotalBilledPercent",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    billed_outstanding: Decimal = Field(alias="prjBilledOutstanding")
-    billed_aging_current: Decimal = Field(alias="prjBilledAgingCurrent")
-    billed_aging30: Decimal = Field(alias="prjBilledAging30")
-    billed_aging60: Decimal = Field(alias="prjBilledAging60")
-    billed_aging90: Decimal = Field(alias="prjBilledAging90")
-    billed_aging120: Decimal = Field(alias="prjBilledAging120")
-    billed_labor_outstanding: Decimal = Field(alias="prjBilledLaborOutstanding")
-    billed_labor_aging_current: Decimal = Field(alias="prjBilledLaborAgingCurrent")
-    billed_labor_aging30: Decimal = Field(alias="prjBilledLaborAging30")
-    billed_labor_aging60: Decimal = Field(alias="prjBilledLaborAging60")
-    billed_labor_aging90: Decimal = Field(alias="prjBilledLaborAging90")
-    billed_labor_aging120: Decimal = Field(alias="prjBilledLaborAging120")
-    billed_expense_outstanding: Decimal = Field(alias="prjBilledExpenseOutstanding")
-    billed_expense_aging_current: Decimal = Field(alias="prjBilledExpenseAgingCurrent")
-    billed_expense_aging30: Decimal = Field(alias="prjBilledExpenseAging30")
-    billed_expense_aging60: Decimal = Field(alias="prjBilledExpenseAging60")
-    billed_expense_aging90: Decimal = Field(alias="prjBilledExpenseAging90")
-    billed_expense_aging120: Decimal = Field(alias="prjBilledExpenseAging120")
+    billed_outstanding: Decimal = Field(
+        alias="prjBilledOutstanding", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_aging_current: Decimal = Field(
+        alias="prjBilledAgingCurrent", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_aging30: Decimal = Field(
+        alias="prjBilledAging30", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_aging60: Decimal = Field(
+        alias="prjBilledAging60", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_aging90: Decimal = Field(
+        alias="prjBilledAging90", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_aging120: Decimal = Field(
+        alias="prjBilledAging120", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_labor_outstanding: Decimal = Field(
+        alias="prjBilledLaborOutstanding", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_labor_aging_current: Decimal = Field(
+        alias="prjBilledLaborAgingCurrent", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_labor_aging30: Decimal = Field(
+        alias="prjBilledLaborAging30", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_labor_aging60: Decimal = Field(
+        alias="prjBilledLaborAging60", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_labor_aging90: Decimal = Field(
+        alias="prjBilledLaborAging90", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_labor_aging120: Decimal = Field(
+        alias="prjBilledLaborAging120", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_expense_outstanding: Decimal = Field(
+        alias="prjBilledExpenseOutstanding", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_expense_aging_current: Decimal = Field(
+        alias="prjBilledExpenseAgingCurrent", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_expense_aging30: Decimal = Field(
+        alias="prjBilledExpenseAging30", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_expense_aging60: Decimal = Field(
+        alias="prjBilledExpenseAging60", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_expense_aging90: Decimal = Field(
+        alias="prjBilledExpenseAging90", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_expense_aging120: Decimal = Field(
+        alias="prjBilledExpenseAging120", json_schema_extra={"sql_type": "decimal"}
+    )
     billed_consultant_outstanding: Decimal = Field(
-        alias="prjBilledConsultantOutstanding"
+        alias="prjBilledConsultantOutstanding",
+        json_schema_extra={"sql_type": "decimal"},
     )
     billed_consultant_aging_current: Decimal = Field(
-        alias="prjBilledConsultantAgingCurrent"
+        alias="prjBilledConsultantAgingCurrent",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    billed_consultant_aging30: Decimal = Field(alias="prjBilledConsultantAging30")
-    billed_consultant_aging60: Decimal = Field(alias="prjBilledConsultantAging60")
-    billed_consultant_aging90: Decimal = Field(alias="prjBilledConsultantAging90")
-    billed_consultant_aging120: Decimal = Field(alias="prjBilledConsultantAging120")
-    spent_outstanding: Decimal = Field(alias="prjSpentOutstanding")
-    spent_aging_current: Decimal = Field(alias="prjSpentAgingCurrent")
-    spent_aging30: Decimal = Field(alias="prjSpentAging30")
-    spent_aging60: Decimal = Field(alias="prjSpentAging60")
-    spent_aging90: Decimal = Field(alias="prjSpentAging90")
-    spent_aging120: Decimal = Field(alias="prjSpentAging120")
-    spent_labor_outstanding: Decimal = Field(alias="prjSpentLaborOutstanding")
-    spent_labor_aging_current: Decimal = Field(alias="prjSpentLaborAgingCurrent")
-    spent_labor_aging30: Decimal = Field(alias="prjSpentLaborAging30")
-    spent_labor_aging60: Decimal = Field(alias="prjSpentLaborAging60")
-    spent_labor_aging90: Decimal = Field(alias="prjSpentLaborAging90")
-    spent_labor_aging120: Decimal = Field(alias="prjSpentLaborAging120")
-    spent_expense_outstanding: Decimal = Field(alias="prjSpentExpenseOutstanding")
-    spent_expense_aging_current: Decimal = Field(alias="prjSpentExpenseAgingCurrent")
-    spent_expense_aging30: Decimal = Field(alias="prjSpentExpenseAging30")
-    spent_expense_aging60: Decimal = Field(alias="prjSpentExpenseAging60")
-    spent_expense_aging90: Decimal = Field(alias="prjSpentExpenseAging90")
-    spent_expense_aging120: Decimal = Field(alias="prjSpentExpenseAging120")
-    spent_consultant_outstanding: Decimal = Field(alias="prjSpentConsultantOutstanding")
+    billed_consultant_aging30: Decimal = Field(
+        alias="prjBilledConsultantAging30", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_consultant_aging60: Decimal = Field(
+        alias="prjBilledConsultantAging60", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_consultant_aging90: Decimal = Field(
+        alias="prjBilledConsultantAging90", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed_consultant_aging120: Decimal = Field(
+        alias="prjBilledConsultantAging120", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_outstanding: Decimal = Field(
+        alias="prjSpentOutstanding", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_aging_current: Decimal = Field(
+        alias="prjSpentAgingCurrent", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_aging30: Decimal = Field(
+        alias="prjSpentAging30", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_aging60: Decimal = Field(
+        alias="prjSpentAging60", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_aging90: Decimal = Field(
+        alias="prjSpentAging90", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_aging120: Decimal = Field(
+        alias="prjSpentAging120", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_labor_outstanding: Decimal = Field(
+        alias="prjSpentLaborOutstanding", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_labor_aging_current: Decimal = Field(
+        alias="prjSpentLaborAgingCurrent", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_labor_aging30: Decimal = Field(
+        alias="prjSpentLaborAging30", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_labor_aging60: Decimal = Field(
+        alias="prjSpentLaborAging60", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_labor_aging90: Decimal = Field(
+        alias="prjSpentLaborAging90", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_labor_aging120: Decimal = Field(
+        alias="prjSpentLaborAging120", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_expense_outstanding: Decimal = Field(
+        alias="prjSpentExpenseOutstanding", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_expense_aging_current: Decimal = Field(
+        alias="prjSpentExpenseAgingCurrent", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_expense_aging30: Decimal = Field(
+        alias="prjSpentExpenseAging30", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_expense_aging60: Decimal = Field(
+        alias="prjSpentExpenseAging60", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_expense_aging90: Decimal = Field(
+        alias="prjSpentExpenseAging90", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_expense_aging120: Decimal = Field(
+        alias="prjSpentExpenseAging120", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_consultant_outstanding: Decimal = Field(
+        alias="prjSpentConsultantOutstanding", json_schema_extra={"sql_type": "decimal"}
+    )
     spent_consultant_aging_current: Decimal = Field(
-        alias="prjSpentConsultantAgingCurrent"
+        alias="prjSpentConsultantAgingCurrent",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    spent_consultant_aging30: Decimal = Field(alias="prjSpentConsultantAging30")
-    spent_consultant_aging60: Decimal = Field(alias="prjSpentConsultantAging60")
-    spent_consultant_aging90: Decimal = Field(alias="prjSpentConsultantAging90")
-    spent_consultant_aging120: Decimal = Field(alias="prjSpentConsultantAging120")
-    internal_totals: int = Field(alias="prjInternalTotals")
-    total_cost: Decimal = Field(alias="prjTotalCost")
-    labor_cost: Decimal = Field(alias="prjLaborCost")
-    expense_cost: Decimal = Field(alias="prjExpenseCost")
-    consultant_cost: Decimal = Field(alias="prjConsultantCost")
-    total_cost_with_premium: Decimal = Field(alias="prjTotalCostWithPremium")
-    labor_cost_with_premium: Decimal = Field(alias="prjLaborCostWithPremium")
-    total_burdened_cost: Decimal = Field(alias="prjTotalBurdenedCost")
-    labor_burdened_cost: Decimal = Field(alias="prjLaborBurdenedCost")
-    expense_burdened_cost: Decimal = Field(alias="prjExpenseBurdenedCost")
-    consultant_burdened_cost: Decimal = Field(alias="prjConsultantBurdenedCost")
+    spent_consultant_aging30: Decimal = Field(
+        alias="prjSpentConsultantAging30", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_consultant_aging60: Decimal = Field(
+        alias="prjSpentConsultantAging60", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_consultant_aging90: Decimal = Field(
+        alias="prjSpentConsultantAging90", json_schema_extra={"sql_type": "decimal"}
+    )
+    spent_consultant_aging120: Decimal = Field(
+        alias="prjSpentConsultantAging120", json_schema_extra={"sql_type": "decimal"}
+    )
+    internal_totals: int = Field(
+        alias="prjInternalTotals", json_schema_extra={"sql_type": "int"}
+    )
+    total_cost: Decimal = Field(
+        alias="prjTotalCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_cost: Decimal = Field(
+        alias="prjLaborCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_cost: Decimal = Field(
+        alias="prjExpenseCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_cost: Decimal = Field(
+        alias="prjConsultantCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_cost_with_premium: Decimal = Field(
+        alias="prjTotalCostWithPremium", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_cost_with_premium: Decimal = Field(
+        alias="prjLaborCostWithPremium", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_burdened_cost: Decimal = Field(
+        alias="prjTotalBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_burdened_cost: Decimal = Field(
+        alias="prjLaborBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_burdened_cost: Decimal = Field(
+        alias="prjExpenseBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_burdened_cost: Decimal = Field(
+        alias="prjConsultantBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+    )
     total_burdened_cost_with_premium: Decimal = Field(
-        alias="prjTotalBurdenedCostWithPremium"
+        alias="prjTotalBurdenedCostWithPremium",
+        json_schema_extra={"sql_type": "decimal"},
     )
     labor_burdened_cost_with_premium: Decimal = Field(
-        alias="prjLaborBurdenedCostWithPremium"
+        alias="prjLaborBurdenedCostWithPremium",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    billed_hours: Decimal = Field(alias="prjBilledHours")
-    unit_price_billed_units: Decimal = Field(alias="prjUnitPriceBilledUnits")
-    unit_price_to_bill_units: Decimal = Field(alias="prjUnitPriceToBillUnits")
-    wip_hours: Decimal = Field(alias="prjWIPHours")
-    wip_to_bill_hours: Decimal = Field(alias="prjWIPToBillHours")
-    total_hours: Decimal = Field(alias="prjTotalHours")
-    expense_billed_units: Decimal = Field(alias="prjExpenseBilledUnits")
-    expense_wip_units: Decimal = Field(alias="prjExpenseWIPUnits")
-    expense_wip_to_bill_units: Decimal = Field(alias="prjExpenseWIPToBillUnits")
-    consultant_billed_units: Decimal = Field(alias="prjConsultantBilledUnits")
-    consultant_wip_units: Decimal = Field(alias="prjConsultantWIPUnits")
-    consultant_wip_to_bill_units: Decimal = Field(alias="prjConsultantWIPToBillUnits")
-    total_earned: Decimal = Field(alias="prjTotalEarned")
-    labor_earned: Decimal = Field(alias="prjLaborEarned")
-    expense_earned: Decimal = Field(alias="prjExpenseEarned")
-    consultant_earned: Decimal = Field(alias="prjConsultantEarned")
-    total_billed: Decimal = Field(alias="prjTotalBilled")
-    labor_billed: Decimal = Field(alias="prjLaborBilled")
-    expense_billed: Decimal = Field(alias="prjExpenseBilled")
-    consultant_billed: Decimal = Field(alias="prjConsultantBilled")
-    total_adjust_excluded: Decimal = Field(alias="prjTotalAdjustExcluded")
-    labor_adjust_excluded: Decimal = Field(alias="prjLaborAdjustExcluded")
-    expense_adjust_excluded: Decimal = Field(alias="prjExpenseAdjustExcluded")
-    consultant_adjust_excluded: Decimal = Field(alias="prjConsultantAdjustExcluded")
-    total_wip: Decimal = Field(alias="prjTotalWIP")
-    labor_wip: Decimal = Field(alias="prjLaborWIP")
-    expense_wip: Decimal = Field(alias="prjExpenseWIP")
-    consultant_wip: Decimal = Field(alias="prjConsultantWIP")
-    total_wip_to_bill: Decimal = Field(alias="prjTotalWIPToBill")
-    labor_wip_to_bill: Decimal = Field(alias="prjLaborWIPToBill")
-    expense_wip_to_bill: Decimal = Field(alias="prjExpenseWIPToBill")
-    consultant_wip_to_bill: Decimal = Field(alias="prjConsultantWIPToBill")
-    total_writeoff: Decimal = Field(alias="prjTotalWriteoff")
-    labor_writeoff: Decimal = Field(alias="prjLaborWriteoff")
-    expense_writeoff: Decimal = Field(alias="prjExpenseWriteoff")
-    consultant_writeoff: Decimal = Field(alias="prjConsultantWriteoff")
-    total_billed_by_date: Decimal = Field(alias="prjTotalBilledByDate")
-    labor_billed_by_date: Decimal = Field(alias="prjLaborBilledByDate")
-    expense_billed_by_date: Decimal = Field(alias="prjExpenseBilledByDate")
-    consultant_billed_by_date: Decimal = Field(alias="prjConsultantBilledByDate")
-    total_receipts: Decimal = Field(alias="prjTotalReceipts")
-    labor_receipts: Decimal = Field(alias="prjLaborReceipts")
-    expense_receipts: Decimal = Field(alias="prjExpenseReceipts")
-    consultant_receipts: Decimal = Field(alias="prjConsultantReceipts")
-    total_receivable_balance: Decimal = Field(alias="prjTotalReceivableBalance")
-    labor_receivable_balance: Decimal = Field(alias="prjLaborReceivableBalance")
-    expense_receivable_balance: Decimal = Field(alias="prjExpenseReceivableBalance")
+    billed_hours: Decimal = Field(
+        alias="prjBilledHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    unit_price_billed_units: Decimal = Field(
+        alias="prjUnitPriceBilledUnits", json_schema_extra={"sql_type": "decimal"}
+    )
+    unit_price_to_bill_units: Decimal = Field(
+        alias="prjUnitPriceToBillUnits", json_schema_extra={"sql_type": "decimal"}
+    )
+    wip_hours: Decimal = Field(
+        alias="prjWIPHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    wip_to_bill_hours: Decimal = Field(
+        alias="prjWIPToBillHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_hours: Decimal = Field(
+        alias="prjTotalHours", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_billed_units: Decimal = Field(
+        alias="prjExpenseBilledUnits", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_wip_units: Decimal = Field(
+        alias="prjExpenseWIPUnits", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_wip_to_bill_units: Decimal = Field(
+        alias="prjExpenseWIPToBillUnits", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_billed_units: Decimal = Field(
+        alias="prjConsultantBilledUnits", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_wip_units: Decimal = Field(
+        alias="prjConsultantWIPUnits", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_wip_to_bill_units: Decimal = Field(
+        alias="prjConsultantWIPToBillUnits", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_earned: Decimal = Field(
+        alias="prjTotalEarned", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_earned: Decimal = Field(
+        alias="prjLaborEarned", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_earned: Decimal = Field(
+        alias="prjExpenseEarned", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_earned: Decimal = Field(
+        alias="prjConsultantEarned", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_billed: Decimal = Field(
+        alias="prjTotalBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_billed: Decimal = Field(
+        alias="prjLaborBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_billed: Decimal = Field(
+        alias="prjExpenseBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_billed: Decimal = Field(
+        alias="prjConsultantBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_adjust_excluded: Decimal = Field(
+        alias="prjTotalAdjustExcluded", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_adjust_excluded: Decimal = Field(
+        alias="prjLaborAdjustExcluded", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_adjust_excluded: Decimal = Field(
+        alias="prjExpenseAdjustExcluded", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_adjust_excluded: Decimal = Field(
+        alias="prjConsultantAdjustExcluded", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_wip: Decimal = Field(
+        alias="prjTotalWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_wip: Decimal = Field(
+        alias="prjLaborWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_wip: Decimal = Field(
+        alias="prjExpenseWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_wip: Decimal = Field(
+        alias="prjConsultantWIP", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_wip_to_bill: Decimal = Field(
+        alias="prjTotalWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_wip_to_bill: Decimal = Field(
+        alias="prjLaborWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_wip_to_bill: Decimal = Field(
+        alias="prjExpenseWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_wip_to_bill: Decimal = Field(
+        alias="prjConsultantWIPToBill", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_writeoff: Decimal = Field(
+        alias="prjTotalWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_writeoff: Decimal = Field(
+        alias="prjLaborWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_writeoff: Decimal = Field(
+        alias="prjExpenseWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_writeoff: Decimal = Field(
+        alias="prjConsultantWriteoff", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_billed_by_date: Decimal = Field(
+        alias="prjTotalBilledByDate", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_billed_by_date: Decimal = Field(
+        alias="prjLaborBilledByDate", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_billed_by_date: Decimal = Field(
+        alias="prjExpenseBilledByDate", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_billed_by_date: Decimal = Field(
+        alias="prjConsultantBilledByDate", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_receipts: Decimal = Field(
+        alias="prjTotalReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_receipts: Decimal = Field(
+        alias="prjLaborReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_receipts: Decimal = Field(
+        alias="prjExpenseReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_receipts: Decimal = Field(
+        alias="prjConsultantReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    total_receivable_balance: Decimal = Field(
+        alias="prjTotalReceivableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_receivable_balance: Decimal = Field(
+        alias="prjLaborReceivableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_receivable_balance: Decimal = Field(
+        alias="prjExpenseReceivableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
     consultant_receivable_balance: Decimal = Field(
-        alias="prjConsultantReceivableBalance"
+        alias="prjConsultantReceivableBalance",
+        json_schema_extra={"sql_type": "decimal"},
     )
-    vendor_invoiced: Decimal = Field(alias="prjVendorInvoiced")
-    payments: Decimal = Field(alias="prjPayments")
-    labor_payments: Decimal = Field(alias="prjLaborPayments")
-    expense_payments: Decimal = Field(alias="prjExpensePayments")
-    consultant_payments: Decimal = Field(alias="prjConsultantPayments")
-    payable_balance: Decimal = Field(alias="prjPayableBalance")
-    labor_payable_balance: Decimal = Field(alias="prjLaborPayableBalance")
-    expense_payable_balance: Decimal = Field(alias="prjExpensePayableBalance")
-    consultant_payable_balance: Decimal = Field(alias="prjConsultantPayableBalance")
-    prepayment_balance: Decimal = Field(alias="prjPrepaymentBalance")
+    vendor_invoiced: Decimal = Field(
+        alias="prjVendorInvoiced", json_schema_extra={"sql_type": "decimal"}
+    )
+    payments: Decimal = Field(
+        alias="prjPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_payments: Decimal = Field(
+        alias="prjLaborPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_payments: Decimal = Field(
+        alias="prjExpensePayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_payments: Decimal = Field(
+        alias="prjConsultantPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    payable_balance: Decimal = Field(
+        alias="prjPayableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    labor_payable_balance: Decimal = Field(
+        alias="prjLaborPayableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    expense_payable_balance: Decimal = Field(
+        alias="prjExpensePayableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    consultant_payable_balance: Decimal = Field(
+        alias="prjConsultantPayableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    prepayment_balance: Decimal = Field(
+        alias="prjPrepaymentBalance", json_schema_extra={"sql_type": "decimal"}
+    )
 
 
 class ReceiptTotalsRow(DatabaseRecord):
@@ -2111,41 +4831,100 @@ class ReceiptTotalsRow(DatabaseRecord):
         parameters=("StartDate", "EndDate", "Client", "Project", "IncludeVoidedNSF"),
     )
 
-    receipt_key: int = Field(alias="rKey")
-    deposit_key: int | None = Field(None, alias="rDeposit")
-    r_type: ReceiptType | int = Field(alias="rType", union_mode="left_to_right")
-    method: ReceiptMethod | int = Field(alias="rMethod", union_mode="left_to_right")
-    method_id: str = Field(alias="rMethodID")
-    client_key: int | None = Field(None, alias="rClient")
-    payee: str = Field(alias="rPayee")
-    notes: str = Field(alias="rNotes")
-    r_status: ReceiptStatus | int = Field(alias="rStatus", union_mode="left_to_right")
-    is_begin_balance: bool = Field(alias="rIsBeginBalance")
-    reduce_billed_amount: bool = Field(alias="rReduceBilledAmount")
-    r_date: datetime | None = Field(None, alias="rDate")
-    method_aba: str = Field(alias="rMethodABA")
-    attachments: str | None = Field(None, alias="rAttachments")
-    company_key: int | None = Field(None, alias="rCompany")
-    writeoff_bad_debt: bool = Field(alias="rWriteoffBadDebt")
-    from_external: bool = Field(alias="rFromExternal")
-    external_id: str | None = Field(None, alias="rExternalId")
-    external_type: ReceiptExternalType | int | None = Field(
-        None, alias="rExternalType", union_mode="left_to_right"
+    receipt_key: int = Field(alias="rKey", json_schema_extra={"sql_type": "int"})
+    deposit_key: int | None = Field(
+        None, alias="rDeposit", json_schema_extra={"sql_type": "int"}
     )
-    bank_entry_key: int | None = Field(None, alias="beKey")
-    bank_account_key: int | None = Field(None, alias="beBankAccount")
-    be_is_reconciled: bool | None = Field(None, alias="beIsReconciled")
-    amount: Decimal | None = Field(None, alias="rAmount")
-    be_date: datetime | None = Field(None, alias="beDate")
-    is_cleared: bool | None = Field(None, alias="beIsCleared")
-    bank_statement_key: int | None = Field(None, alias="beBankStatement")
+    r_type: ReceiptType | int = Field(
+        alias="rType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
+    )
+    method: ReceiptMethod | int = Field(
+        alias="rMethod",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
+    )
+    method_id: str = Field(alias="rMethodID", json_schema_extra={"sql_type": "varchar"})
+    client_key: int | None = Field(
+        None, alias="rClient", json_schema_extra={"sql_type": "int"}
+    )
+    payee: str = Field(alias="rPayee", json_schema_extra={"sql_type": "varchar"})
+    notes: str = Field(alias="rNotes", json_schema_extra={"sql_type": "text"})
+    r_status: ReceiptStatus | int = Field(
+        alias="rStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
+    )
+    is_begin_balance: bool = Field(
+        alias="rIsBeginBalance", json_schema_extra={"sql_type": "bit"}
+    )
+    reduce_billed_amount: bool = Field(
+        alias="rReduceBilledAmount", json_schema_extra={"sql_type": "bit"}
+    )
+    r_date: datetime | None = Field(
+        None, alias="rDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    method_aba: str = Field(
+        alias="rMethodABA", json_schema_extra={"sql_type": "varchar"}
+    )
+    attachments: str | None = Field(
+        None, alias="rAttachments", json_schema_extra={"sql_type": "varchar"}
+    )
+    company_key: int | None = Field(
+        None, alias="rCompany", json_schema_extra={"sql_type": "int"}
+    )
+    writeoff_bad_debt: bool = Field(
+        alias="rWriteoffBadDebt", json_schema_extra={"sql_type": "bit"}
+    )
+    from_external: bool = Field(
+        alias="rFromExternal", json_schema_extra={"sql_type": "bit"}
+    )
+    external_id: str | None = Field(
+        None, alias="rExternalId", json_schema_extra={"sql_type": "varchar"}
+    )
+    external_type: ReceiptExternalType | int | None = Field(
+        None,
+        alias="rExternalType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
+    )
+    bank_entry_key: int | None = Field(
+        None, alias="beKey", json_schema_extra={"sql_type": "int"}
+    )
+    bank_account_key: int | None = Field(
+        None, alias="beBankAccount", json_schema_extra={"sql_type": "int"}
+    )
+    be_is_reconciled: bool | None = Field(
+        None, alias="beIsReconciled", json_schema_extra={"sql_type": "bit"}
+    )
+    amount: Decimal | None = Field(
+        None, alias="rAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    be_date: datetime | None = Field(
+        None, alias="beDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    is_cleared: bool | None = Field(
+        None, alias="beIsCleared", json_schema_extra={"sql_type": "bit"}
+    )
+    bank_statement_key: int | None = Field(
+        None, alias="beBankStatement", json_schema_extra={"sql_type": "int"}
+    )
     be_status: BankEntryStatus | int | None = Field(
-        None, alias="beStatus", union_mode="left_to_right"
+        None,
+        alias="beStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     be_type: BankEntryType | int | None = Field(
-        None, alias="beType", union_mode="left_to_right"
+        None,
+        alias="beType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    client_payee: str | None = Field(None, alias="rClientPayee")
+    client_payee: str | None = Field(
+        None, alias="rClientPayee", json_schema_extra={"sql_type": "varchar"}
+    )
 
 
 class RefundTotalsRow(DatabaseRecord):
@@ -2157,17 +4936,31 @@ class RefundTotalsRow(DatabaseRecord):
         parameters=("StartDate", "EndDate", "Client", "Project"),
     )
 
-    vendor_invoice_key: int = Field(alias="viKey")
-    vendor_key: int = Field(alias="viVendor")
-    invoice_date: datetime | None = Field(None, alias="viInvoiceDate")
-    status: VendorInvoiceStatus | int = Field(
-        alias="viStatus", union_mode="left_to_right"
+    vendor_invoice_key: int = Field(
+        alias="viKey", json_schema_extra={"sql_type": "int"}
     )
-    client: int | None = Field(None, alias="viClient")
-    description: str | None = Field(None, alias="vecDescription")
-    amount: Decimal = Field(alias="viAmount")
-    amount_paid: Decimal = Field(alias="viAmountPaid")
-    notes: str | None = Field(None, alias="viNotes")
+    vendor_key: int = Field(alias="viVendor", json_schema_extra={"sql_type": "int"})
+    invoice_date: datetime | None = Field(
+        None, alias="viInvoiceDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    status: VendorInvoiceStatus | int = Field(
+        alias="viStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
+    )
+    client: int | None = Field(
+        None, alias="viClient", json_schema_extra={"sql_type": "int"}
+    )
+    description: str | None = Field(
+        None, alias="vecDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    amount: Decimal = Field(alias="viAmount", json_schema_extra={"sql_type": "decimal"})
+    amount_paid: Decimal = Field(
+        alias="viAmountPaid", json_schema_extra={"sql_type": "decimal"}
+    )
+    notes: str | None = Field(
+        None, alias="viNotes", json_schema_extra={"sql_type": "nvarchar"}
+    )
 
 
 class VendorInvoiceTotalsRow(DatabaseRecord):
@@ -2179,50 +4972,122 @@ class VendorInvoiceTotalsRow(DatabaseRecord):
         parameters=("TotalType", "StartDate", "EndDate"),
     )
 
-    vendor_invoice_key: int = Field(alias="viKey")
-    vendor_key: int = Field(alias="viVendor")
+    vendor_invoice_key: int = Field(
+        alias="viKey", json_schema_extra={"sql_type": "int"}
+    )
+    vendor_key: int = Field(alias="viVendor", json_schema_extra={"sql_type": "int"})
     status: VendorInvoiceStatus | int = Field(
-        alias="viStatus", union_mode="left_to_right"
+        alias="viStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
     invoice_type: VendorInvoiceInvoiceType | int = Field(
-        alias="viInvoiceType", union_mode="left_to_right"
+        alias="viInvoiceType",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
     )
-    invoice_number: str = Field(alias="viInvoiceNumber")
-    description: str = Field(alias="viDescription")
-    invoice_date: datetime | None = Field(None, alias="viInvoiceDate")
-    date_to_pay: datetime | None = Field(None, alias="viDateToPay")
-    accounting_date: datetime | None = Field(None, alias="viAccountingDate")
-    notes: str | None = Field(None, alias="viNotes")
-    expense_report_key: int | None = Field(None, alias="viExpenseReport")
-    credit_card_statement_key: int | None = Field(None, alias="viCreditCardStatement")
-    attachments: str | None = Field(None, alias="viAttachments")
-    company_key: int | None = Field(None, alias="viCompany")
-    is_inter_company: bool = Field(alias="viIsInterCompany")
+    invoice_number: str = Field(
+        alias="viInvoiceNumber", json_schema_extra={"sql_type": "varchar"}
+    )
+    description: str = Field(
+        alias="viDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    invoice_date: datetime | None = Field(
+        None, alias="viInvoiceDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    date_to_pay: datetime | None = Field(
+        None, alias="viDateToPay", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    accounting_date: datetime | None = Field(
+        None, alias="viAccountingDate", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    notes: str | None = Field(
+        None, alias="viNotes", json_schema_extra={"sql_type": "nvarchar"}
+    )
+    expense_report_key: int | None = Field(
+        None, alias="viExpenseReport", json_schema_extra={"sql_type": "int"}
+    )
+    credit_card_statement_key: int | None = Field(
+        None, alias="viCreditCardStatement", json_schema_extra={"sql_type": "int"}
+    )
+    attachments: str | None = Field(
+        None, alias="viAttachments", json_schema_extra={"sql_type": "varchar"}
+    )
+    company_key: int | None = Field(
+        None, alias="viCompany", json_schema_extra={"sql_type": "int"}
+    )
+    is_inter_company: bool = Field(
+        alias="viIsInterCompany", json_schema_extra={"sql_type": "bit"}
+    )
     payroll_service_start_date: datetime | None = Field(
-        None, alias="viPayrollServiceStartDate"
+        None,
+        alias="viPayrollServiceStartDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
     payroll_service_end_date: datetime | None = Field(
-        None, alias="viPayrollServiceEndDate"
+        None,
+        alias="viPayrollServiceEndDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
     )
-    pm_approval_required: bool = Field(alias="viPMApprovalRequired")
-    finance_approval_required: bool = Field(alias="viFinanceApprovalRequired")
-    finance_approver_key: int | None = Field(None, alias="viFinanceApprover")
-    vendor_description: str | None = Field(None, alias="viVendorDescription")
-    internal1: int | None = Field(None, alias="viInternal1")
-    amount_to_pay: Decimal | None = Field(None, alias="viAmountToPay")
-    amount_to_write_off: Decimal | None = Field(None, alias="viAmountToWriteOff")
-    internal2: int | None = Field(None, alias="viInternal2")
-    invoice_amount: Decimal | None = Field(None, alias="viInvoiceAmount")
-    payments: Decimal | None = Field(None, alias="viPayments")
-    payable_balance: Decimal | None = Field(None, alias="viPayableBalance")
-    billed: Decimal | None = Field(None, alias="viBilled")
-    is_billed: bool | None = Field(None, alias="viIsBilled")
-    receipts: Decimal | None = Field(None, alias="viReceipts")
-    receivable_balance: Decimal | None = Field(None, alias="viReceivableBalance")
-    net_zero_invoice: bool | None = Field(None, alias="viNetZeroInvoice")
-    new_accounting_date: datetime | None = Field(None, alias="viNewAccountingDate")
-    check_sum: int | None = Field(None, alias="viCheckSum")
-    needs_re_approval: bool | None = Field(None, alias="viNeedsReApproval")
+    pm_approval_required: bool = Field(
+        alias="viPMApprovalRequired", json_schema_extra={"sql_type": "bit"}
+    )
+    finance_approval_required: bool = Field(
+        alias="viFinanceApprovalRequired", json_schema_extra={"sql_type": "bit"}
+    )
+    finance_approver_key: int | None = Field(
+        None, alias="viFinanceApprover", json_schema_extra={"sql_type": "int"}
+    )
+    vendor_description: str | None = Field(
+        None, alias="viVendorDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    internal1: int | None = Field(
+        None, alias="viInternal1", json_schema_extra={"sql_type": "int"}
+    )
+    amount_to_pay: Decimal | None = Field(
+        None, alias="viAmountToPay", json_schema_extra={"sql_type": "decimal"}
+    )
+    amount_to_write_off: Decimal | None = Field(
+        None, alias="viAmountToWriteOff", json_schema_extra={"sql_type": "decimal"}
+    )
+    internal2: int | None = Field(
+        None, alias="viInternal2", json_schema_extra={"sql_type": "int"}
+    )
+    invoice_amount: Decimal | None = Field(
+        None, alias="viInvoiceAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    payments: Decimal | None = Field(
+        None, alias="viPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    payable_balance: Decimal | None = Field(
+        None, alias="viPayableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    billed: Decimal | None = Field(
+        None, alias="viBilled", json_schema_extra={"sql_type": "decimal"}
+    )
+    is_billed: bool | None = Field(
+        None, alias="viIsBilled", json_schema_extra={"sql_type": "bit"}
+    )
+    receipts: Decimal | None = Field(
+        None, alias="viReceipts", json_schema_extra={"sql_type": "decimal"}
+    )
+    receivable_balance: Decimal | None = Field(
+        None, alias="viReceivableBalance", json_schema_extra={"sql_type": "decimal"}
+    )
+    net_zero_invoice: bool | None = Field(
+        None, alias="viNetZeroInvoice", json_schema_extra={"sql_type": "bit"}
+    )
+    new_accounting_date: datetime | None = Field(
+        None,
+        alias="viNewAccountingDate",
+        json_schema_extra={"sql_type": "smalldatetime"},
+    )
+    check_sum: int | None = Field(
+        None, alias="viCheckSum", json_schema_extra={"sql_type": "bigint"}
+    )
+    needs_re_approval: bool | None = Field(
+        None, alias="viNeedsReApproval", json_schema_extra={"sql_type": "bit"}
+    )
 
 
 class VendorTotalsRow(DatabaseRecord):
@@ -2234,75 +5099,169 @@ class VendorTotalsRow(DatabaseRecord):
         parameters=("TotalType", "StartDate", "EndDate"),
     )
 
-    key: int = Field(alias="vKey")
-    status: int = Field(alias="vStatus")
-    description: str = Field(alias="vDescription")
-    address1: str = Field(alias="vAddress1")
-    address2: str = Field(alias="vAddress2")
-    address3: str = Field(alias="vAddress3")
-    city: str = Field(alias="vCity")
-    state: str = Field(alias="vState")
-    zip: str = Field(alias="vZip")
-    country: str = Field(alias="vCountry")
-    phone1: str = Field(alias="vPhone1")
-    phone1_text: str = Field(alias="vPhone1Text")
-    phone2: str = Field(alias="vPhone2")
-    phone2_text: str = Field(alias="vPhone2Text")
-    phone3: str = Field(alias="vPhone3")
-    phone3_text: str = Field(alias="vPhone3Text")
-    fax: str = Field(alias="vFax")
-    fax_text: str = Field(alias="vFaxText")
-    email: str = Field(alias="vEmail")
-    website: str = Field(alias="vWebsite")
-    contact1: int | None = Field(None, alias="vContact1")
-    contact1_text: str = Field(alias="vContact1Text")
-    contact2: int | None = Field(None, alias="vContact2")
-    contact2_text: str = Field(alias="vContact2Text")
-    contact3: int | None = Field(None, alias="vContact3")
-    contact3_text: str = Field(alias="vContact3Text")
-    contact4: int | None = Field(None, alias="vContact4")
-    contact4_text: str = Field(alias="vContact4Text")
-    contact5: int | None = Field(None, alias="vContact5")
-    contact5_text: str = Field(alias="vContact5Text")
-    notes: str = Field(alias="vNotes")
-    vendor_type: int | None = Field(None, alias="vVendorType")
-    vendor_entity: int | None = Field(None, alias="vVendorEntity")
-    vendor_account: int | None = Field(None, alias="vVendorAccount")
-    days_type: int = Field(alias="vDaysType")
-    days_to_pay: int = Field(alias="vDaysToPay")
-    day_to_pay: int = Field(alias="vDayToPay")
-    receives1099: bool = Field(alias="vReceives1099")
-    v1099_recipient_id: str = Field(alias="v1099RecipientID")
-    v1099_recipient_name: str = Field(alias="v1099RecipientName")
-    v1099_override_amount: Decimal = Field(alias="v1099OverrideAmount")
-    v1099_override_fwh: Decimal = Field(alias="v1099OverrideFwh")
-    v1099_form_type: int = Field(alias="v1099FormType")
-    v1099_w9_form_received: bool = Field(alias="v1099W9FormReceived")
-    v1099_w9_business_type: str = Field(alias="v1099W9BusinessType")
-    v1099_w9_other_description: str = Field(alias="v1099W9OtherDescription")
-    is_consultant: bool | None = Field(None, alias="vIsConsultant")
-    prenote: bool = Field(alias="vPrenote")
-    date_established: datetime | None = Field(None, alias="vDateEstablished")
-    mailing_address_same: bool = Field(alias="vMailingAddressSame")
-    mailing_address1: str = Field(alias="vMailingAddress1")
-    mailing_address2: str = Field(alias="vMailingAddress2")
-    mailing_address3: str = Field(alias="vMailingAddress3")
-    mailing_city: str = Field(alias="vMailingCity")
-    mailing_state: str = Field(alias="vMailingState")
-    mailing_zip: str = Field(alias="vMailingZip")
-    mailing_country: str = Field(alias="vMailingCountry")
-    account_id: str = Field(alias="vAccountID")
-    vendor_type_description: str | None = Field(None, alias="vVendorTypeDescription")
+    key: int = Field(alias="vKey", json_schema_extra={"sql_type": "int"})
+    status: int = Field(alias="vStatus", json_schema_extra={"sql_type": "tinyint"})
+    description: str = Field(
+        alias="vDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    address1: str = Field(alias="vAddress1", json_schema_extra={"sql_type": "varchar"})
+    address2: str = Field(alias="vAddress2", json_schema_extra={"sql_type": "varchar"})
+    address3: str = Field(alias="vAddress3", json_schema_extra={"sql_type": "varchar"})
+    city: str = Field(alias="vCity", json_schema_extra={"sql_type": "varchar"})
+    state: str = Field(alias="vState", json_schema_extra={"sql_type": "varchar"})
+    zip: str = Field(alias="vZip", json_schema_extra={"sql_type": "varchar"})
+    country: str = Field(alias="vCountry", json_schema_extra={"sql_type": "varchar"})
+    phone1: str = Field(alias="vPhone1", json_schema_extra={"sql_type": "varchar"})
+    phone1_text: str = Field(
+        alias="vPhone1Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    phone2: str = Field(alias="vPhone2", json_schema_extra={"sql_type": "varchar"})
+    phone2_text: str = Field(
+        alias="vPhone2Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    phone3: str = Field(alias="vPhone3", json_schema_extra={"sql_type": "varchar"})
+    phone3_text: str = Field(
+        alias="vPhone3Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    fax: str = Field(alias="vFax", json_schema_extra={"sql_type": "varchar"})
+    fax_text: str = Field(alias="vFaxText", json_schema_extra={"sql_type": "varchar"})
+    email: str = Field(alias="vEmail", json_schema_extra={"sql_type": "varchar"})
+    website: str = Field(alias="vWebsite", json_schema_extra={"sql_type": "varchar"})
+    contact1: int | None = Field(
+        None, alias="vContact1", json_schema_extra={"sql_type": "int"}
+    )
+    contact1_text: str = Field(
+        alias="vContact1Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    contact2: int | None = Field(
+        None, alias="vContact2", json_schema_extra={"sql_type": "int"}
+    )
+    contact2_text: str = Field(
+        alias="vContact2Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    contact3: int | None = Field(
+        None, alias="vContact3", json_schema_extra={"sql_type": "int"}
+    )
+    contact3_text: str = Field(
+        alias="vContact3Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    contact4: int | None = Field(
+        None, alias="vContact4", json_schema_extra={"sql_type": "int"}
+    )
+    contact4_text: str = Field(
+        alias="vContact4Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    contact5: int | None = Field(
+        None, alias="vContact5", json_schema_extra={"sql_type": "int"}
+    )
+    contact5_text: str = Field(
+        alias="vContact5Text", json_schema_extra={"sql_type": "varchar"}
+    )
+    notes: str = Field(alias="vNotes", json_schema_extra={"sql_type": "text"})
+    vendor_type: int | None = Field(
+        None, alias="vVendorType", json_schema_extra={"sql_type": "int"}
+    )
+    vendor_entity: int | None = Field(
+        None, alias="vVendorEntity", json_schema_extra={"sql_type": "int"}
+    )
+    vendor_account: int | None = Field(
+        None, alias="vVendorAccount", json_schema_extra={"sql_type": "int"}
+    )
+    days_type: int = Field(alias="vDaysType", json_schema_extra={"sql_type": "int"})
+    days_to_pay: int = Field(alias="vDaysToPay", json_schema_extra={"sql_type": "int"})
+    day_to_pay: int = Field(alias="vDayToPay", json_schema_extra={"sql_type": "int"})
+    receives1099: bool = Field(
+        alias="vReceives1099", json_schema_extra={"sql_type": "bit"}
+    )
+    v1099_recipient_id: str = Field(
+        alias="v1099RecipientID", json_schema_extra={"sql_type": "varchar"}
+    )
+    v1099_recipient_name: str = Field(
+        alias="v1099RecipientName", json_schema_extra={"sql_type": "varchar"}
+    )
+    v1099_override_amount: Decimal = Field(
+        alias="v1099OverrideAmount", json_schema_extra={"sql_type": "decimal"}
+    )
+    v1099_override_fwh: Decimal = Field(
+        alias="v1099OverrideFwh", json_schema_extra={"sql_type": "decimal"}
+    )
+    v1099_form_type: int = Field(
+        alias="v1099FormType", json_schema_extra={"sql_type": "int"}
+    )
+    v1099_w9_form_received: bool = Field(
+        alias="v1099W9FormReceived", json_schema_extra={"sql_type": "bit"}
+    )
+    v1099_w9_business_type: str = Field(
+        alias="v1099W9BusinessType", json_schema_extra={"sql_type": "varchar"}
+    )
+    v1099_w9_other_description: str = Field(
+        alias="v1099W9OtherDescription", json_schema_extra={"sql_type": "varchar"}
+    )
+    is_consultant: bool | None = Field(
+        None, alias="vIsConsultant", json_schema_extra={"sql_type": "bit"}
+    )
+    prenote: bool = Field(alias="vPrenote", json_schema_extra={"sql_type": "bit"})
+    date_established: datetime | None = Field(
+        None, alias="vDateEstablished", json_schema_extra={"sql_type": "smalldatetime"}
+    )
+    mailing_address_same: bool = Field(
+        alias="vMailingAddressSame", json_schema_extra={"sql_type": "bit"}
+    )
+    mailing_address1: str = Field(
+        alias="vMailingAddress1", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_address2: str = Field(
+        alias="vMailingAddress2", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_address3: str = Field(
+        alias="vMailingAddress3", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_city: str = Field(
+        alias="vMailingCity", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_state: str = Field(
+        alias="vMailingState", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_zip: str = Field(
+        alias="vMailingZip", json_schema_extra={"sql_type": "varchar"}
+    )
+    mailing_country: str = Field(
+        alias="vMailingCountry", json_schema_extra={"sql_type": "varchar"}
+    )
+    account_id: str = Field(
+        alias="vAccountID", json_schema_extra={"sql_type": "varchar"}
+    )
+    vendor_type_description: str | None = Field(
+        None, alias="vVendorTypeDescription", json_schema_extra={"sql_type": "varchar"}
+    )
     vendor_entity_description: str | None = Field(
-        None, alias="vVendorEntityDescription"
+        None,
+        alias="vVendorEntityDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
     vendor_account_description: str | None = Field(
-        None, alias="vVendorAccountDescription"
+        None,
+        alias="vVendorAccountDescription",
+        json_schema_extra={"sql_type": "varchar"},
     )
-    internal1: int | None = Field(None, alias="vInternal1")
-    amount_to_pay: Decimal | None = Field(None, alias="vAmountToPay")
-    amount_to_write_off: Decimal | None = Field(None, alias="vAmountToWriteOff")
-    internal2: int | None = Field(None, alias="vInternal2")
-    invoiced: Decimal | None = Field(None, alias="vInvoiced")
-    payments: Decimal | None = Field(None, alias="vPayments")
-    payable_balance: Decimal | None = Field(None, alias="vPayableBalance")
+    internal1: int | None = Field(
+        None, alias="vInternal1", json_schema_extra={"sql_type": "int"}
+    )
+    amount_to_pay: Decimal | None = Field(
+        None, alias="vAmountToPay", json_schema_extra={"sql_type": "decimal"}
+    )
+    amount_to_write_off: Decimal | None = Field(
+        None, alias="vAmountToWriteOff", json_schema_extra={"sql_type": "decimal"}
+    )
+    internal2: int | None = Field(
+        None, alias="vInternal2", json_schema_extra={"sql_type": "int"}
+    )
+    invoiced: Decimal | None = Field(
+        None, alias="vInvoiced", json_schema_extra={"sql_type": "decimal"}
+    )
+    payments: Decimal | None = Field(
+        None, alias="vPayments", json_schema_extra={"sql_type": "decimal"}
+    )
+    payable_balance: Decimal | None = Field(
+        None, alias="vPayableBalance", json_schema_extra={"sql_type": "decimal"}
+    )

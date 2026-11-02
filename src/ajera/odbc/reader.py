@@ -1,4 +1,5 @@
 import logging
+import threading
 from collections.abc import Iterator, Sequence
 from types import TracebackType
 from typing import Self, override
@@ -6,6 +7,7 @@ from typing import Self, override
 from ajera.odbc import connection as odbc_connection
 from ajera.odbc.connection import Connection, Cursor, OdbcSettings
 from ajera.odbc.functions import FunctionReads
+from ajera.odbc.measures import Measure
 from ajera.odbc.queries import reference as reference_queries
 from ajera.odbc.queries import select as select_queries
 from ajera.odbc.queries.generic import Query, Record
@@ -25,9 +27,10 @@ DEFAULT_TIMEOUT: tuple[int, int] = (30, 300)
 DISCONNECT_STATES = frozenset({"08S01", "08003", "08007"})
 
 # SQLSTATE for a statement that ran past the query timeout. The pipeline keeps
-# working on it, and the next statement on the same connection times out too,
-# so the connection is discarded; the read is not retried, since it would only
-# time out again.
+# working on it: the next statement on the same connection waits behind it, and
+# closing the connection blocks until it finishes. So the connection is closed
+# on a background thread and the next read opens a fresh one; the read is not
+# retried, since it would only time out again.
 TIMEOUT_STATE = "HYT00"
 
 # Column types left out of a read unless `include_blobs=True`. A few hold
@@ -52,11 +55,12 @@ class AjeraOdbc(FunctionReads, RestReads):
     Every table, view, and table-valued function the database exposes has a
     model in `ajera.schemas.database`; pass the model to `read`, `stream`,
     `count`, or `get`, or call a function through its typed method
-    (`project_totals`, `ledger`, ...). Values reach the server only as bound
+    (`project_totals`, `ledger`, ...). `rows` reads only named fields, and
+    `aggregate` totals on the server. Values reach the server only as bound
     parameters, and nothing here writes. The REST client's list methods are
     here too (`list_companies`, ...), returning the REST models from the
-    database. One connection is opened on first
-    use, reused for every read, and reopened once if it drops.
+    database. One connection is opened on first use, reused for every read,
+    and reopened once if it drops.
     """
 
     settings: OdbcSettings
@@ -161,18 +165,52 @@ class AjeraOdbc(FunctionReads, RestReads):
     # Execution
     # -------------------------------------------------------------------------
 
-    def _execute[T](self, query: Query[T]) -> Cursor:
+    def _execute[T](self, query: Query[T], timeout: int | None = None) -> Cursor:
         logger.info("%s %s", query.statement, query.parameters)
-        cursor = self.connection.cursor()
+        connection = self.connection
+        if timeout is None:
+            return self._open_cursor(connection, query)
+        if timeout < 0:
+            raise ValueError("timeout must be 0 (no limit) or a number of seconds")
+        # The driver reads the timeout when the statement executes; the
+        # connection goes back to its own once it has, so no other read
+        # inherits it.
+        odbc_connection.set_query_timeout(connection, timeout)
+        try:
+            return self._open_cursor(connection, query)
+        finally:
+            self._restore_timeout(connection)
+
+    def _open_cursor[T](self, connection: Connection, query: Query[T]) -> Cursor:
+        cursor = connection.cursor()
         try:
             cursor.execute(query.statement, *query.parameters)
         except Exception as error:
             cursor.close()
             if _sqlstate(error) == TIMEOUT_STATE:
-                logger.info("Statement timed out; discarding the connection")
-                self.close()
+                self._discard()
             raise
         return cursor
+
+    def _discard(self) -> None:
+        """Drop the connection after a timeout, without waiting for its statement."""
+        connection, self._connection = self._connection, None
+        if connection is not None:
+            logger.info("Statement timed out; closing its connection in the background")
+            _close_in_background(connection)
+
+    def _restore_timeout(self, connection: Connection) -> None:
+        if self._connection is not connection:
+            return  # Already discarded; the next read opens a fresh one.
+        try:
+            odbc_connection.set_query_timeout(connection, self.timeout[1])
+        except Exception:
+            # A connection still carrying one call's timeout must not serve
+            # the next read; a fresh one opens with the configured timeout.
+            logger.info(
+                "Could not restore the query timeout; discarding the connection"
+            )
+            self.close()
 
     @staticmethod
     def _records(
@@ -188,23 +226,23 @@ class AjeraOdbc(FunctionReads, RestReads):
             for row in rows
         ]
 
-    def _fetch[T](self, query: Query[T]) -> list[Record]:
-        cursor = self._execute(query)
+    def _fetch[T](self, query: Query[T], timeout: int | None = None) -> list[Record]:
+        cursor = self._execute(query, timeout)
         try:
             return self._records(cursor, cursor.fetchall(), query.keep_nulls)
         finally:
             cursor.close()
 
     @override
-    def _run[T](self, query: Query[T]) -> T:
+    def _run[T](self, query: Query[T], timeout: int | None = None) -> T:
         try:
-            records = self._fetch(query)
+            records = self._fetch(query, timeout)
         except Exception as error:
             if not _is_disconnect(error):
                 raise
             logger.info("Connection dropped (%s); reconnecting once", error)
             self.close()
-            records = self._fetch(query)
+            records = self._fetch(query, timeout)
         return query.parse(records)
 
     # -------------------------------------------------------------------------
@@ -217,6 +255,7 @@ class AjeraOdbc(FunctionReads, RestReads):
 
         Includes the tenant's custom fields, which no generated model
         declares. Looked up once per source and connection lifetime.
+        `ajera.schemas.database.describe` is the offline description.
 
         Returns:
             list[tuple[str, str]]: Column name and SQL type, in order.
@@ -226,13 +265,26 @@ class AjeraOdbc(FunctionReads, RestReads):
             self._columns[name] = self._run(select_queries.live_columns(model))
         return self._columns[name]
 
-    def _select_list(
-        self, model: type[DatabaseRecord], include_blobs: bool
-    ) -> list[str]:
+    def _visible_columns(self, model: type[DatabaseRecord]) -> list[tuple[str, str]]:
         live = self.columns(model)
         if not live:
             raise LookupError(f"{model.__source__.name} is not visible to this login")
-        return [name for name, kind in live if include_blobs or kind not in BLOB_TYPES]
+        return live
+
+    def _select_list(
+        self, model: type[DatabaseRecord], include_blobs: bool
+    ) -> list[str]:
+        return [
+            name
+            for name, kind in self._visible_columns(model)
+            if include_blobs or kind not in BLOB_TYPES
+        ]
+
+    @staticmethod
+    def _filtered(
+        model: type[DatabaseRecord], where: Where | None, current: bool
+    ) -> Where | None:
+        return select_queries.with_current(model, where) if current else where
 
     # -------------------------------------------------------------------------
     # Generic reads
@@ -246,7 +298,10 @@ class AjeraOdbc(FunctionReads, RestReads):
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        after: object | None = None,
+        current: bool = False,
         include_blobs: bool = False,
+        timeout: int | None = None,
     ) -> list[T]:
         """
         Read rows of a table or view into its model.
@@ -265,8 +320,19 @@ class AjeraOdbc(FunctionReads, RestReads):
                 descending. Keyed sources default to key order.
             limit: The most rows to return.
             offset: Rows to skip first, for paging; needs an order.
+            after: Resume after this key: only rows whose single-column
+                primary key is above it, in key order. Pass the key of the
+                last row already read; nothing else is kept between calls.
+            current: Only the current version of each row of a source Ajera
+                keeps versions of (`Source.current_column` set and
+                `Source.deleted_column` clear). Raises on any other source.
             include_blobs: Also fetch binary columns (files, images), which
                 are otherwise left as None.
+            timeout: Seconds each statement may run, for this call only; 0
+                waits indefinitely. None keeps the reader's query timeout. A
+                statement that times out raises at once, but keeps running on
+                Deltek's server until it finishes; its connection is closed in
+                the background meanwhile, so the login holds one more session.
 
         Returns:
             list[T]: The rows.
@@ -278,7 +344,10 @@ class AjeraOdbc(FunctionReads, RestReads):
                 order_by=order_by,
                 limit=limit,
                 offset=offset,
+                after=after,
+                current=current,
                 include_blobs=include_blobs,
+                timeout=timeout,
             )
         )
 
@@ -290,8 +359,11 @@ class AjeraOdbc(FunctionReads, RestReads):
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        after: object | None = None,
+        current: bool = False,
         include_blobs: bool = False,
         batch_size: int = 5000,
+        timeout: int | None = None,
     ) -> Iterator[T]:
         """
         Read rows of a table or view lazily, a batch at a time.
@@ -308,13 +380,85 @@ class AjeraOdbc(FunctionReads, RestReads):
         for record in self._records_paged(
             model,
             columns,
-            where=where,
+            where=self._filtered(model, where, current),
             order_by=order_by,
             limit=limit,
             offset=offset,
             batch_size=batch_size,
+            after=after,
+            timeout=timeout,
         ):
             yield model.model_validate(record)
+
+    def rows(
+        self,
+        model: type[DatabaseRecord],
+        *arguments: object,
+        fields: Sequence[str],
+        where: Where | None = None,
+        order_by: Sequence[str] | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+        after: object | None = None,
+        current: bool = False,
+        timeout: int | None = None,
+    ) -> list[dict[str, object]]:
+        """
+        Read only the named fields of a table, view, or function.
+
+        Many Ajera tables have over 100 columns; this transfers the ones
+        named. A model cannot validate a partial row, so each row is a
+        dictionary keyed by field name (a custom field keeps its column
+        name), but each value is still validated as its field: a code
+        decodes to its enum, and a `decimal` stays a `Decimal`.
+
+        A keyed source always returns its primary key, first, even when
+        `fields` leaves it out: it is what `after=` resumes from and what
+        `get` fetches the whole row by. Pages like `read`.
+
+        Args:
+            model: The model of a table, view, or function.
+            arguments: A function's arguments, in declaration order.
+            fields: Fields or columns to return. A binary column is fetched
+                when named here; nothing fetches one unnamed.
+            where: As for `read`.
+            order_by: As for `read`.
+            limit: As for `read`.
+            offset: As for `read`.
+            after: As for `read`.
+            current: As for `read`.
+            timeout: As for `read`.
+
+        Returns:
+            list[dict[str, object]]: One dictionary per row.
+        """
+        if isinstance(fields, str) or not fields:
+            raise ValueError("fields takes a non-empty list of field or column names")
+        live = [name for name, _ in self._visible_columns(model)]
+        columns = list(model.__source__.primary_key)
+        for name in fields:
+            column = select_queries.resolve(model, name, live)
+            if column not in columns:
+                columns.append(column)
+        names = {column: select_queries.field_name(model, column) for column in columns}
+        return [
+            {
+                names[column]: select_queries.decode(model, column, record[column])
+                for column in columns
+            }
+            for record in self._records_paged(
+                model,
+                columns,
+                where=self._filtered(model, where, current),
+                order_by=order_by,
+                limit=limit,
+                offset=offset,
+                batch_size=5000,
+                arguments=arguments,
+                after=after,
+                timeout=timeout,
+            )
+        ]
 
     def _keyset(
         self,
@@ -333,15 +477,42 @@ class AjeraOdbc(FunctionReads, RestReads):
                 return None
         return key[0]
 
-    def _cursor_records[T](self, query: Query[T], batch_size: int) -> Iterator[Record]:
+    def _resume_key(
+        self,
+        model: type[DatabaseRecord],
+        order_by: Sequence[str] | None,
+        offset: int | None,
+    ) -> str:
+        """The key column `after=` resumes from, or why it cannot."""
+        source = model.__source__
+        if len(source.primary_key) != 1:
+            raise ValueError(
+                f"after= needs a single-column primary key, which {source.name} "
+                "does not have"
+            )
+        if offset is not None:
+            raise ValueError(
+                "after= resumes by key, so it cannot be combined with offset"
+            )
+        key = self._keyset(model, order_by, offset)
+        if key is None:
+            raise ValueError(
+                "after= reads in key order; leave order_by out or order by "
+                f"{source.primary_key[0]!r}"
+            )
+        return key
+
+    def _cursor_records[T](
+        self, query: Query[T], batch_size: int, timeout: int | None = None
+    ) -> Iterator[Record]:
         try:
-            cursor = self._execute(query)
+            cursor = self._execute(query, timeout)
         except Exception as error:
             if not _is_disconnect(error):
                 raise
             logger.info("Connection dropped (%s); reconnecting once", error)
             self.close()
-            cursor = self._execute(query)
+            cursor = self._execute(query, timeout)
         try:
             while rows := cursor.fetchmany(batch_size):
                 yield from self._records(cursor, rows, keep_nulls=True)
@@ -359,8 +530,13 @@ class AjeraOdbc(FunctionReads, RestReads):
         offset: int | None,
         batch_size: int,
         arguments: Sequence[object] = (),
+        after: object | None = None,
+        timeout: int | None = None,
     ) -> Iterator[Record]:
-        key = self._keyset(model, order_by, offset) if not arguments else None
+        if after is not None:
+            key: str | None = self._resume_key(model, order_by, offset)
+        else:
+            key = self._keyset(model, order_by, offset) if not arguments else None
         if key is None:
             yield from self._cursor_records(
                 select_queries.select(
@@ -373,18 +549,18 @@ class AjeraOdbc(FunctionReads, RestReads):
                     arguments=arguments,
                 ),
                 batch_size,
+                timeout,
             )
             return
 
         remaining = limit
-        after: object | None = None
         while remaining is None or remaining > 0:
             size = PAGE_SIZE if remaining is None else min(PAGE_SIZE, remaining)
             query = select_queries.select(
                 model, columns, where=where, order_by=[key], limit=size, after=after
             )
             fetched = 0
-            for record in self._cursor_records(query, batch_size):
+            for record in self._cursor_records(query, batch_size, timeout):
                 fetched += 1
                 after = record[key]
                 yield record
@@ -398,6 +574,8 @@ class AjeraOdbc(FunctionReads, RestReads):
         model: type[DatabaseRecord],
         *arguments: object,
         where: Where | None = None,
+        current: bool = False,
+        timeout: int | None = None,
     ) -> int:
         """
         Count the rows a read would return.
@@ -406,13 +584,77 @@ class AjeraOdbc(FunctionReads, RestReads):
             model: The model of a table, view, or function.
             arguments: A function's arguments, in declaration order.
             where: As for `read`.
+            current: As for `read`.
+            timeout: As for `read`.
 
         Returns:
             int: The number of rows.
         """
+        where = self._filtered(model, where, current)
         live = [name for name, _ in self.columns(model)] if where else []
         return self._run(
-            select_queries.count(model, where=where, arguments=arguments, live=live)
+            select_queries.count(model, where=where, arguments=arguments, live=live),
+            timeout,
+        )
+
+    def aggregate(
+        self,
+        model: type[DatabaseRecord],
+        *arguments: object,
+        measures: Sequence[Measure],
+        group_by: Sequence[str] = (),
+        where: Where | None = None,
+        order_by: Sequence[str] | None = None,
+        limit: int | None = None,
+        current: bool = False,
+        timeout: int | None = None,
+    ) -> list[dict[str, object]]:
+        """
+        Total rows on the server: `GROUP BY` with sums, counts, and date buckets.
+
+        Each result is a dictionary keyed by each `group_by` entry as it was
+        spelled (`employee_key`, `date:month`) and by each measure's alias.
+        A grouped code column decodes to its enum.
+
+        `SUM` and `AVG` of a `decimal` column return a `Decimal`. SQL Server
+        averages an `int` column with integer division, so `avg` of one
+        returns an `int`; sum and count it for a fractional mean. Weeks
+        start on Monday (ISO 8601); Ajera timesheets can start on another
+        day, so group timesheet weeks by the timesheet's own date field.
+
+        There is no paging. Deltek's pipeline refuses a result over 500,000
+        rows, which here means groups; its error is raised unchanged.
+
+        Args:
+            model: The model of a table, view, or function.
+            arguments: A function's arguments, in declaration order.
+            measures: The totals: `sum_`, `count`, `count_distinct`, `min_`,
+                `max_`, and `avg` from `ajera.odbc`.
+            group_by: Fields to group by. `field:day`, `field:week`,
+                `field:month`, `field:quarter`, and `field:year` group a date
+                field by the first day of its period, returned as a `date`.
+            where: As for `read`.
+            order_by: Group keys or measure aliases; prefix one with `-` to
+                sort it descending. Defaults to the group keys.
+            limit: The most groups to return.
+            current: As for `read`.
+            timeout: As for `read`.
+
+        Returns:
+            list[dict[str, object]]: One dictionary per group.
+        """
+        return self._run(
+            select_queries.aggregate(
+                model,
+                measures,
+                group_by=group_by,
+                where=self._filtered(model, where, current),
+                order_by=order_by,
+                limit=limit,
+                arguments=arguments,
+                live=dict(self._visible_columns(model)),
+            ),
+            timeout,
         )
 
     def get[T: DatabaseRecord](
@@ -420,6 +662,7 @@ class AjeraOdbc(FunctionReads, RestReads):
         model: type[T],
         *keys: object,
         include_blobs: bool = False,
+        timeout: int | None = None,
     ) -> list[T]:
         """
         Fetch rows of a table (or keyed view) by key, in key order.
@@ -437,7 +680,12 @@ class AjeraOdbc(FunctionReads, RestReads):
         rows: list[T] = []
         for start in range(0, len(keys), KEY_BATCH):
             batch = list(keys[start : start + KEY_BATCH])
-            rows += self.read(model, where={key[0]: batch}, include_blobs=include_blobs)
+            rows += self.read(
+                model,
+                where={key[0]: batch},
+                include_blobs=include_blobs,
+                timeout=timeout,
+            )
         return rows
 
     @override
@@ -449,6 +697,7 @@ class AjeraOdbc(FunctionReads, RestReads):
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[T]:
         """
         Call a table-valued function and parse its rows.
@@ -469,7 +718,8 @@ class AjeraOdbc(FunctionReads, RestReads):
                 limit=limit,
                 offset=offset,
                 arguments=arguments,
-            )
+            ),
+            timeout,
         )
 
     @staticmethod
@@ -493,6 +743,35 @@ class AjeraOdbc(FunctionReads, RestReads):
             bool: True when the server answers.
         """
         return self._run(reference_queries.ping())
+
+
+# =============================================================================
+# FUNCTION: _close_in_background
+# =============================================================================
+
+
+def _close_in_background(connection: Connection) -> threading.Thread:
+    """
+    Close a connection on a daemon thread.
+
+    After a timeout the driver's disconnect waits for the server to finish the
+    abandoned statement, which can take minutes. pyodbc releases the GIL while
+    it waits, so the caller carries on, and the login holds one more session
+    until the server is done.
+
+    Returns:
+        threading.Thread: The thread doing the close.
+    """
+
+    def close() -> None:
+        try:
+            connection.close()
+        except Exception:
+            logger.info("Ignoring error while closing a timed-out connection")
+
+    thread = threading.Thread(target=close, name="ajera-odbc-discard", daemon=True)
+    thread.start()
+    return thread
 
 
 # =============================================================================

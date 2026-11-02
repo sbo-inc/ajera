@@ -6,13 +6,16 @@ read produces can be asserted exactly; a fake DB-API connection answers the
 live-column lookup and then a scripted sequence of results.
 """
 
+import importlib.util
 import inspect
+import json
 import keyword
 import typing
 from collections.abc import Callable, Sequence
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from enum import IntEnum
+from pathlib import Path
 from typing import Any
 from uuid import UUID
 
@@ -23,13 +26,35 @@ from pydantic import Field
 from ajera.cli import cli
 from ajera.cli.commands import odbc as odbc_cli
 from ajera.client import AjeraClient
-from ajera.odbc import AjeraOdbc, filters
+from ajera.odbc import (
+    AjeraOdbc,
+    Measure,
+    avg,
+    count,
+    count_distinct,
+    filters,
+    max_,
+    min_,
+    sum_,
+)
 from ajera.odbc import connection as odbc_connection
 from ajera.odbc import reader as odbc_reader
 from ajera.odbc.queries import select as select_queries
 from ajera.odbc.queries.mirror import MIRRORS, mirror_list
 from ajera.odbc.queries.select import select
-from ajera.schemas.database import FUNCTIONS, SOURCES, TABLES, VIEWS
+from ajera.schemas.database import (
+    CODE_LABELS,
+    FUNCTIONS,
+    SENSITIVE_COLUMNS,
+    SOURCES,
+    TABLES,
+    VIEWS,
+    Code,
+    FieldSchema,
+    TransactionRecord,
+    TransactionStatus,
+    describe,
+)
 from ajera.schemas.database.base import DatabaseRecord, Source
 
 # =============================================================================
@@ -88,7 +113,13 @@ class FakeCursor:
         if "INFORMATION_SCHEMA" in sql:
             columns, rows = ["COLUMN_NAME", "DATA_TYPE"], list(self.connection.live)
         else:
-            columns, rows = self.connection.responses.pop(0)
+            # The HDP driver reads the connection's query timeout when a
+            # statement executes.
+            self.connection.timeouts.append(self.connection.query_timeout)
+            response = self.connection.responses.pop(0)
+            if isinstance(response, Exception):
+                raise response
+            columns, rows = response
         self.description = [(column, None) for column in columns]
         self.rows = rows
         return self
@@ -106,16 +137,31 @@ class FakeCursor:
 
 
 class FakeConnection:
-    def __init__(self, *responses: tuple[list[str], list[tuple[Any, ...]]]) -> None:
-        self.live = LIVE
+    def __init__(
+        self,
+        *responses: tuple[list[str], list[tuple[Any, ...]]] | Exception,
+        live: Sequence[tuple[str, str]] = LIVE,
+    ) -> None:
+        self.live = live
         self.responses = list(responses)
         self.executed: list[tuple[str, tuple[object, ...]]] = []
+        self.attributes: list[tuple[int, int]] = []
+        self.timeouts: list[int | None] = []
+        self.query_timeout: int | None = None
+        self.closed = False
+        self.fail_set_attr = False
 
     def cursor(self) -> FakeCursor:
         return FakeCursor(self)
 
+    def set_attr(self, attribute: int, value: int) -> None:
+        if self.fail_set_attr:
+            raise RuntimeError("HY000", "set_attr failed")
+        self.attributes.append((attribute, value))
+        self.query_timeout = value
+
     def close(self) -> None:
-        pass
+        self.closed = True
 
     @property
     def reads(self) -> list[tuple[str, tuple[object, ...]]]:
@@ -366,6 +412,8 @@ def test_generated_model_is_consistent(name: str) -> None:
     assert set(source.primary_key) <= set(aliases)
     assert set(source.foreign_keys) <= set(aliases)
     assert set(source.blobs) <= set(aliases)
+    assert set(source.sensitive) <= set(aliases)
+    assert {source.current_column, source.deleted_column} - {None} <= set(aliases)
     assert (source.kind == "function") == bool(
         source.parameters
     ) or not source.parameters
@@ -478,3 +526,696 @@ def test_every_mirror_has_a_reader_method_matching_rest(method: str) -> None:
         typing.get_type_hints(getattr(AjeraOdbc, method))["return"]
         == (typing.get_type_hints(getattr(AjeraClient, method))["return"])
     )
+
+
+# =============================================================================
+# FIXTURES: a versioned stand-in, for the #30 reads
+# =============================================================================
+
+
+class EntryStatus(Code):
+    billable = 0
+    hold = 2
+
+
+class Entry(DatabaseRecord):
+    __source__ = Source(
+        kind="table",
+        name="AxEntry",
+        primary_key=("eKey",),
+        foreign_keys={"eWidget": ("AxWidget", "wKey")},
+        blobs=("eFile",),
+        current_column="eIsCurrent",
+        deleted_column="eIsDeleted",
+        sensitive=("eAccountNumber",),
+    )
+
+    entry_key: int = Field(alias="eKey", json_schema_extra={"sql_type": "int"})
+    widget_key: int | None = Field(
+        None, alias="eWidget", json_schema_extra={"sql_type": "int"}
+    )
+    status: EntryStatus | int = Field(
+        alias="eStatus",
+        union_mode="left_to_right",
+        json_schema_extra={"sql_type": "tinyint"},
+    )
+    posted: datetime = Field(alias="eDate", json_schema_extra={"sql_type": "datetime"})
+    units: Decimal = Field(alias="eUnits", json_schema_extra={"sql_type": "decimal"})
+    notes: str | None = Field(
+        None, alias="eNotes", json_schema_extra={"sql_type": "varchar"}
+    )
+    account_number: str | None = Field(
+        None,
+        alias="eAccountNumber",
+        repr=False,
+        json_schema_extra={"sql_type": "varchar", "sensitive": True},
+    )
+    file: bytes | None = Field(
+        None, alias="eFile", json_schema_extra={"sql_type": "image"}
+    )
+    is_current: bool = Field(alias="eIsCurrent", json_schema_extra={"sql_type": "bit"})
+    is_deleted: bool = Field(alias="eIsDeleted", json_schema_extra={"sql_type": "bit"})
+
+
+ENTRY_LIVE = [
+    ("eKey", "int"),
+    ("eWidget", "int"),
+    ("eStatus", "tinyint"),
+    ("eDate", "datetime"),
+    ("eUnits", "decimal"),
+    ("eNotes", "varchar"),
+    ("eAccountNumber", "varchar"),
+    ("eFile", "image"),
+    ("eIsCurrent", "bit"),
+    ("eIsDeleted", "bit"),
+    ("e_Hours", "decimal"),
+    ("e_Due", "date"),
+    ("e_Scan", "varbinary"),
+]
+
+
+class Posting(DatabaseRecord):
+    __source__ = Source(kind="view", name="Postings", current_column="pIsCurrent")
+
+    is_current: bool = Field(alias="pIsCurrent")
+
+
+class Pair(DatabaseRecord):
+    __source__ = Source(kind="table", name="AxPair", primary_key=("aKey", "bKey"))
+
+    a_key: int = Field(alias="aKey")
+    b_key: int = Field(alias="bKey")
+
+
+START, END = date(2026, 1, 1), date(2026, 3, 31)
+
+
+# =============================================================================
+# TEST: aggregate statements
+# =============================================================================
+
+
+def test_aggregate_renders_the_issue_example() -> None:
+    query = select_queries.aggregate(
+        Entry,
+        [sum_("units", alias="hours"), count()],
+        group_by=["widget_key", "posted:month"],
+        where=select_queries.with_current(
+            Entry,
+            {"status": EntryStatus.billable, "posted": filters.between(START, END)},
+        ),
+    )
+
+    month = "DATEFROMPARTS(YEAR([eDate]), MONTH([eDate]), 1)"
+    assert query.statement == (
+        f"SELECT [eWidget] AS [widget_key], {month} AS [posted:month], "
+        "SUM([eUnits]) AS [hours], COUNT_BIG(*) AS [count] "
+        "FROM [dbo].[AxEntry] "
+        "WHERE [eStatus] = ? AND [eDate] BETWEEN ? AND ? "
+        "AND [eIsCurrent] = ? AND [eIsDeleted] = ? "
+        f"GROUP BY [eWidget], {month} "
+        "ORDER BY [widget_key], [posted:month]"
+    )
+    assert query.parameters == (EntryStatus.billable, START, END, True, False)
+
+
+@pytest.mark.parametrize(
+    "bucket, expression",
+    [
+        ("day", "CAST([eDate] AS date)"),
+        (
+            "week",
+            "DATEADD(day, -(DATEDIFF(day, 0, [eDate]) % 7), CAST([eDate] AS date))",
+        ),
+        ("month", "DATEFROMPARTS(YEAR([eDate]), MONTH([eDate]), 1)"),
+        (
+            "quarter",
+            "DATEFROMPARTS(YEAR([eDate]), (DATEPART(quarter, [eDate]) - 1) * 3 + 1, 1)",
+        ),
+        ("year", "DATEFROMPARTS(YEAR([eDate]), 1, 1)"),
+    ],
+)
+def test_aggregate_buckets(bucket: str, expression: str) -> None:
+    query = select_queries.aggregate(Entry, [count()], group_by=[f"posted:{bucket}"])
+
+    assert query.statement == (
+        f"SELECT {expression} AS [posted:{bucket}], COUNT_BIG(*) AS [count] "
+        f"FROM [dbo].[AxEntry] GROUP BY {expression} ORDER BY [posted:{bucket}]"
+    )
+
+
+def test_aggregate_buckets_a_custom_date_column_by_its_live_type() -> None:
+    query = select_queries.aggregate(
+        Entry, [count()], group_by=["e_Due:year"], live=dict(ENTRY_LIVE)
+    )
+
+    assert "DATEFROMPARTS(YEAR([e_Due]), 1, 1) AS [e_Due:year]" in query.statement
+
+
+@pytest.mark.parametrize(
+    "measure, expression",
+    [
+        (sum_("units"), "SUM([eUnits]) AS [sum_units]"),
+        (avg("eUnits"), "AVG([eUnits]) AS [avg_units]"),
+        (min_("posted"), "MIN([eDate]) AS [min_posted]"),
+        (max_("status"), "MAX([eStatus]) AS [max_status]"),
+        (
+            count_distinct("widget_key"),
+            "COUNT_BIG(DISTINCT [eWidget]) AS [count_distinct_widget_key]",
+        ),
+        (count(), "COUNT_BIG(*) AS [count]"),
+        (count(alias="rows"), "COUNT_BIG(*) AS [rows]"),
+        (sum_("e_Hours"), "SUM([e_Hours]) AS [sum_e_hours]"),
+    ],
+)
+def test_aggregate_measures(measure: Measure, expression: str) -> None:
+    query = select_queries.aggregate(Entry, [measure], live=dict(ENTRY_LIVE))
+
+    # No group keys: one row, no GROUP BY, no order.
+    assert query.statement == f"SELECT {expression} FROM [dbo].[AxEntry]"
+
+
+def test_aggregate_over_a_function_binds_arguments_after_the_limit() -> None:
+    query = select_queries.aggregate(
+        WidgetTotals,
+        [count()],
+        group_by=["widget_key"],
+        where={"widget_key": filters.gt(5)},
+        order_by=["-count"],
+        limit=3,
+        arguments=(START, END),
+    )
+
+    assert query.statement == (
+        "SELECT TOP (?) [wKey] AS [widget_key], COUNT_BIG(*) AS [count] "
+        "FROM [dbo].[WidgetTotals](?, ?) WHERE [wKey] > ? "
+        "GROUP BY [wKey] ORDER BY [count] DESC"
+    )
+    assert query.parameters == (3, START, END, 5)
+
+
+@pytest.mark.parametrize(
+    "measures, group_by, order_by, message",
+    [
+        ([count()], ["nope"], None, "no field or column named 'nope'"),
+        ([sum_("nope")], [], None, "no field or column named 'nope'"),
+        (
+            [sum_("status")],
+            [],
+            None,
+            "SUM needs a numeric field; 'status' is a code column",
+        ),
+        ([avg("notes")], [], None, "AVG needs a numeric field; 'notes' is not numeric"),
+        ([count()], ["units:month"], None, "a month bucket needs a date field"),
+        ([count()], ["posted:decade"], None, "unknown bucket 'decade'"),
+        ([count()], ["file"], None, "cannot group by binary field 'file'"),
+        ([max_("file")], [], None, "cannot aggregate binary field 'file'"),
+        ([min_("e_Scan")], [], None, "cannot aggregate binary field 'e_Scan'"),
+        ([count(), count()], [], None, "measure alias 'count' collides"),
+        ([sum_("units", alias="widget_key")], ["widget_key"], None, "collides"),
+        ([count()], ["status", "status"], None, "group key 'status' collides"),
+        ([count(alias="two words")], [], None, "not a Python identifier"),
+        ([count()], ["status"], ["units"], "order_by 'units' names neither"),
+        ([Measure("COUNT", "units")], [], None, "count\\(\\) takes no field"),
+        ([Measure("SUM")], [], None, "SUM needs a field"),
+        ([Measure("DROP", "units")], [], None, "unknown aggregate function 'DROP'"),  # type: ignore[arg-type]
+        ([], [], None, "at least one measure"),
+    ],
+)
+def test_aggregate_refuses(
+    measures: list[Measure],
+    group_by: list[str],
+    order_by: list[str] | None,
+    message: str,
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        select_queries.aggregate(
+            Entry, measures, group_by=group_by, order_by=order_by, live=dict(ENTRY_LIVE)
+        )
+
+
+def test_aggregate_decodes_group_codes_and_keeps_measures(
+    connect: Callable[..., AjeraOdbc],
+) -> None:
+    fake = FakeConnection(
+        (
+            ["status", "posted:month", "sum_units", "count"],
+            [
+                (2, date(2026, 1, 1), Decimal("7.50"), 3),
+                (9, date(2026, 2, 1), None, 1),
+            ],
+        ),
+        live=ENTRY_LIVE,
+    )
+
+    rows = connect(fake).aggregate(
+        Entry, measures=[sum_("units"), count()], group_by=["status", "posted:month"]
+    )
+
+    assert rows[0] == {
+        "status": EntryStatus.hold,
+        "posted:month": date(2026, 1, 1),
+        "sum_units": Decimal("7.50"),
+        "count": 3,
+    }
+    assert rows[0]["status"] is EntryStatus.hold
+    # An undocumented code stays an int; a NULL total stays None.
+    assert rows[1]["status"] == 9 and not isinstance(rows[1]["status"], EntryStatus)
+    assert rows[1]["sum_units"] is None
+
+
+# =============================================================================
+# TEST: rows (projected reads)
+# =============================================================================
+
+
+def test_rows_select_named_fields_plus_the_key(
+    connect: Callable[..., AjeraOdbc],
+) -> None:
+    fake = FakeConnection(
+        (
+            ["eKey", "eUnits", "eStatus", "e_Hours"],
+            [(1, Decimal("1.25"), 2, Decimal("3")), (2, Decimal("0"), 7, None)],
+        ),
+        live=ENTRY_LIVE,
+    )
+
+    rows = connect(fake).rows(Entry, fields=["units", "eStatus", "e_Hours", "units"])
+
+    assert fake.reads[0][0] == (
+        "SELECT TOP (?) [eKey], [eUnits], [eStatus], [e_Hours] "
+        "FROM [dbo].[AxEntry] ORDER BY [eKey]"
+    )
+    assert rows == [
+        {
+            "entry_key": 1,
+            "units": Decimal("1.25"),
+            "status": EntryStatus.hold,
+            "e_Hours": Decimal("3"),
+        },
+        {"entry_key": 2, "units": Decimal("0"), "status": 7, "e_Hours": None},
+    ]
+    assert rows[0]["status"] is EntryStatus.hold
+    assert isinstance(rows[0]["units"], Decimal)
+
+
+def test_rows_fetch_a_binary_column_only_when_named(
+    connect: Callable[..., AjeraOdbc],
+) -> None:
+    fake = FakeConnection(
+        (["eKey", "eUnits"], [(1, Decimal("1"))]),
+        (["eKey", "eFile"], [(1, b"\x00")]),
+        live=ENTRY_LIVE,
+    )
+    db = connect(fake)
+
+    db.rows(Entry, fields=["units"])
+    rows = db.rows(Entry, fields=["file"])
+
+    assert "[eFile]" not in fake.reads[0][0]
+    assert "[eFile]" in fake.reads[1][0]
+    assert rows == [{"entry_key": 1, "file": b"\x00"}]
+
+
+def test_rows_of_a_function_take_its_arguments(
+    connect: Callable[..., AjeraOdbc],
+) -> None:
+    fake = FakeConnection((["wKey"], [(4,)]))
+
+    rows = connect(fake).rows(WidgetTotals, START, END, fields=["widget_key"])
+
+    assert fake.reads[0] == (
+        "SELECT [wKey] FROM [dbo].[WidgetTotals](?, ?)",
+        (START, END),
+    )
+    assert rows == [{"widget_key": 4}]
+
+
+@pytest.mark.parametrize("fields", [[], "units"])
+def test_rows_need_a_list_of_fields(
+    connect: Callable[..., AjeraOdbc], fields: Any
+) -> None:
+    with pytest.raises(ValueError, match="non-empty list"):
+        connect(FakeConnection(live=ENTRY_LIVE)).rows(Entry, fields=fields)
+
+
+def test_rows_refuse_unknown_fields(connect: Callable[..., AjeraOdbc]) -> None:
+    with pytest.raises(ValueError, match="no field or column named 'nope'"):
+        connect(FakeConnection(live=ENTRY_LIVE)).rows(Entry, fields=["nope"])
+
+
+# =============================================================================
+# TEST: after= (keyset cursor)
+# =============================================================================
+
+
+def test_after_resumes_past_a_key(
+    connect: Callable[..., AjeraOdbc], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(odbc_reader, "PAGE_SIZE", 2)
+    page = ["wKey", "wStatus"]
+    fake = FakeConnection((page, [(41, 1), (42, 1)]), (page, [(43, 1)]))
+
+    rows = connect(fake).read(Widget, after=40, where={"status": 1})
+
+    assert [row.widget_key for row in rows] == [41, 42, 43]
+    assert "WHERE [wStatus] = ? AND [wKey] > ? ORDER BY [wKey]" in fake.reads[0][0]
+    assert [params for _, params in fake.reads] == [(2, 1, 40), (2, 1, 42)]
+
+
+def test_after_works_on_rows_and_in_explicit_key_order(
+    connect: Callable[..., AjeraOdbc],
+) -> None:
+    fake = FakeConnection((["eKey", "eUnits"], [(8, Decimal("1"))]), live=ENTRY_LIVE)
+
+    rows = connect(fake).rows(Entry, fields=["units"], after=7, order_by=["entry_key"])
+
+    assert "[eKey] > ?" in fake.reads[0][0]
+    assert rows == [{"entry_key": 8, "units": Decimal("1")}]
+
+
+@pytest.mark.parametrize(
+    "model, options, message",
+    [
+        (Pair, {}, "AxPair does not have"),
+        (WidgetView, {}, "Widgets does not have"),
+        (Widget, {"offset": 10}, "cannot be combined with offset"),
+        (Widget, {"order_by": ["amount"]}, "leave order_by out or order by 'wKey'"),
+        (Widget, {"order_by": ["-widget_key"]}, "reads in key order"),
+    ],
+)
+def test_after_needs_key_order_on_a_single_key(
+    connect: Callable[..., AjeraOdbc],
+    model: type[DatabaseRecord],
+    options: dict[str, Any],
+    message: str,
+) -> None:
+    fake = FakeConnection(live=[("wKey", "int"), ("aKey", "int"), ("bKey", "int")])
+
+    with pytest.raises(ValueError, match=message):
+        connect(fake).read(model, after=1, **options)
+    assert fake.reads == []
+
+
+# =============================================================================
+# TEST: current=True
+# =============================================================================
+
+
+def test_current_adds_both_markers_as_parameters(
+    connect: Callable[..., AjeraOdbc],
+) -> None:
+    fake = FakeConnection((["Rows"], [(5,)]), live=ENTRY_LIVE)
+
+    total = connect(fake).count(Entry, where={"status": 0}, current=True)
+
+    assert total == 5
+    assert fake.reads[0] == (
+        "SELECT COUNT_BIG(*) AS Rows FROM [dbo].[AxEntry] "
+        "WHERE [eStatus] = ? AND [eIsCurrent] = ? AND [eIsDeleted] = ?",
+        (0, True, False),
+    )
+
+
+def test_current_on_read_and_with_one_marker(connect: Callable[..., AjeraOdbc]) -> None:
+    fake = FakeConnection(
+        (["eKey"], []),
+        (["pIsCurrent"], []),
+        live=[("eKey", "int"), ("pIsCurrent", "bit")],
+    )
+    db = connect(fake)
+
+    db.read(Entry, current=True)
+    db.read(Posting, current=True)
+
+    assert (
+        "WHERE [eIsCurrent] = ? AND [eIsDeleted] = ? ORDER BY [eKey]"
+        in fake.reads[0][0]
+    )
+    # A view with only a current marker gets only that predicate.
+    assert fake.reads[1][0].endswith("FROM [dbo].[Postings] WHERE [pIsCurrent] = ?")
+    assert fake.reads[1][1] == (True,)
+
+
+def test_current_raises_on_an_unversioned_source(
+    connect: Callable[..., AjeraOdbc],
+) -> None:
+    with pytest.raises(ValueError, match="AxWidget keeps no row versions"):
+        connect(FakeConnection()).count(Widget, current=True)
+
+
+@pytest.mark.parametrize("name", ["is_current", "eIsDeleted"])
+def test_current_raises_on_a_conflicting_where(name: str) -> None:
+    with pytest.raises(ValueError, match=f"drop '{name}' from where"):
+        select_queries.with_current(Entry, {name: True})
+
+
+# =============================================================================
+# TEST: per-call timeout
+# =============================================================================
+
+
+def test_timeout_applies_to_one_call_and_is_restored(
+    connect: Callable[..., AjeraOdbc],
+) -> None:
+    fake = FakeConnection((["Rows"], [(1,)]), (["Rows"], [(2,)]))
+    db = connect(fake)
+
+    db.count(Widget, timeout=7)
+    db.count(Widget)
+
+    # The statement ran with the call's timeout; the connection then went
+    # back to the reader's own (300 s), which the next statement used.
+    assert fake.timeouts == [7, 300]
+    assert fake.attributes == [
+        (odbc_connection.SQL_ATTR_QUERY_TIMEOUT, 7),
+        (odbc_connection.SQL_ATTR_QUERY_TIMEOUT, 300),
+    ]
+
+
+def test_timeout_reaches_every_page_and_function_calls(
+    connect: Callable[..., AjeraOdbc], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(odbc_reader, "PAGE_SIZE", 1)
+    page = ["wKey", "wStatus"]
+    fake = FakeConnection((page, [(1, 1)]), (page, []), (["wKey"], []))
+    db = connect(fake)
+
+    db.read(Widget, timeout=0)
+    db.call(WidgetTotals, START, END, timeout=60)
+
+    assert fake.timeouts == [0, 0, 60]
+
+
+def test_a_timed_out_call_discards_the_connection(
+    connect: Callable[..., AjeraOdbc], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    first = FakeConnection(RuntimeError("HYT00", "Query timeout expired"))
+    second = FakeConnection((["Rows"], [(3,)]))
+    connections = iter([first, second])
+    discarded: list[object] = []
+    monkeypatch.setattr(odbc_connection, "connect", lambda *a, **k: next(connections))
+    monkeypatch.setattr(odbc_reader, "_close_in_background", discarded.append)
+    db = AjeraOdbc(datasource="ds", username="user", password="secret")
+
+    with pytest.raises(RuntimeError, match="HYT00"):
+        db.count(Widget, timeout=1)
+
+    # Discarded in the background rather than restored, and the next read
+    # opens a fresh connection.
+    assert discarded == [first]
+    assert first.attributes == [(odbc_connection.SQL_ATTR_QUERY_TIMEOUT, 1)]
+    assert db.count(Widget) == 3
+    assert second.attributes == []
+
+
+def test_a_timed_out_connection_closes_off_the_calling_thread() -> None:
+    fake = FakeConnection()
+
+    thread = odbc_reader._close_in_background(fake)  # type: ignore[arg-type]
+    thread.join(timeout=5)
+
+    assert thread.daemon and fake.closed
+
+
+def test_a_failed_restore_discards_the_connection(
+    connect: Callable[..., AjeraOdbc],
+) -> None:
+    fake = FakeConnection((["Rows"], [(1,)]))
+    db = connect(fake)
+    original = fake.set_attr
+
+    def set_once(attribute: int, value: int) -> None:
+        original(attribute, value)
+        fake.fail_set_attr = True
+
+    fake.set_attr = set_once  # type: ignore[method-assign]
+
+    assert db.count(Widget, timeout=5) == 1
+    assert fake.closed
+
+
+def test_timeout_must_not_be_negative(connect: Callable[..., AjeraOdbc]) -> None:
+    with pytest.raises(ValueError, match="timeout must be 0"):
+        connect(FakeConnection()).count(Widget, timeout=-1)
+
+
+# =============================================================================
+# TEST: describe
+# =============================================================================
+
+
+def test_describe_the_stand_in(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setitem(CODE_LABELS, EntryStatus, {0: "Billable", 2: "On Hold"})
+
+    schema = describe(Entry)
+
+    assert (schema.name, schema.kind, schema.model) == ("AxEntry", "table", "Entry")
+    assert schema.primary_key == ("eKey",)
+    assert (schema.current_column, schema.deleted_column) == (
+        "eIsCurrent",
+        "eIsDeleted",
+    )
+    fields = {field.name: field for field in schema.fields}
+    assert list(fields) == list(Entry.model_fields)
+    assert fields["status"] == FieldSchema(
+        name="status",
+        column="eStatus",
+        sql_type="tinyint",
+        python_type="EntryStatus | int",
+        nullable=False,
+        enum="EntryStatus",
+        codes={0: "Billable", 2: "On Hold"},
+        references=None,
+        sensitive=False,
+        blob=False,
+    )
+    assert fields["widget_key"].references == ("AxWidget", "wKey")
+    assert fields["widget_key"].nullable and fields["widget_key"].python_type == "int"
+    assert fields["account_number"].sensitive
+    assert fields["file"].blob and fields["file"].sql_type == "image"
+    assert EntryStatus.hold.label == "On Hold"
+
+
+def test_describe_a_generated_source() -> None:
+    schema = describe(TransactionRecord)
+    status = next(field for field in schema.fields if field.column == "tStatus")
+
+    assert schema.current_column == "tIsCurrent"
+    assert status.enum == "TransactionStatus"
+    assert status.codes[4] == "Write Off" == TransactionStatus.write_off.label
+    assert status.sql_type == "tinyint"
+
+
+def test_cli_describe_needs_no_connection() -> None:
+    text = CliRunner().invoke(cli, ["odbc", "describe", "axtransaction"])
+    as_json = CliRunner().invoke(cli, ["odbc", "describe", "PayCheck", "--json"])
+
+    assert text.exit_code == 0, text.output
+    assert "current: tIsCurrent" in text.output
+    assert "Write Off" in text.output
+    assert as_json.exit_code == 0, as_json.output
+    payload = json.loads(as_json.output)
+    assert (payload["name"], payload["current_column"]) == ("PayCheck", "tIsCurrent")
+
+
+# =============================================================================
+# TEST: the generator's metadata
+# =============================================================================
+
+SCRIPTS = Path(__file__).resolve().parents[2] / "scripts" / "odbc"
+
+
+@pytest.fixture(scope="module")
+def generator() -> Any:
+    spec = importlib.util.spec_from_file_location(
+        "odbc_generate", SCRIPTS / "generate.py"
+    )
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.fixture(scope="module")
+def catalog() -> dict[str, Any]:
+    return dict(json.loads((SCRIPTS / "catalog.json").read_text()))
+
+
+def test_sensitive_columns_match_the_pattern(
+    generator: Any, catalog: dict[str, Any]
+) -> None:
+    expected = {
+        column["name"]
+        for group in catalog.values()
+        for source in group.values()
+        for column in source["columns"]
+        if generator.SENSITIVE.search(column["name"])
+    }
+
+    assert SENSITIVE_COLUMNS == expected
+    for name, model in SOURCES.items():
+        source = model.__source__
+        flagged = {
+            info.alias
+            for info in model.model_fields.values()
+            if isinstance(info.json_schema_extra, dict)
+            and info.json_schema_extra.get("sensitive")
+        }
+        assert set(source.sensitive) == flagged, name
+        assert flagged <= SENSITIVE_COLUMNS
+
+
+def test_version_markers_match_the_catalog() -> None:
+    markers = {
+        name: (model.__source__.current_column, model.__source__.deleted_column)
+        for name, model in SOURCES.items()
+        if model.__source__.current_column or model.__source__.deleted_column
+    }
+
+    assert markers == {
+        "AxTransaction": ("tIsCurrent", "tIsDeleted"),
+        "CurrentTransactions": ("tIsCurrent", "tIsDeleted"),
+        "Trans": ("tIsCurrent", "tIsDeleted"),
+        "PayCheckPay": ("tIsCurrent", "tIsDeleted"),
+        "PayCheck": ("tIsCurrent", None),
+        "AxGLDetail": ("gldIsCurrent", None),
+        "GLDetail": ("gldIsCurrent", None),
+        "GLDetailWithOffset": ("gldIsCurrent", None),
+        "AxVendorInvoiceApproval": ("viaIsCurrent", None),
+    }
+
+
+def test_generator_refuses_two_markers_on_one_source(generator: Any) -> None:
+    columns = [
+        {"name": "aIsCurrent", "type": "bit"},
+        {"name": "bIsCurrent", "type": "bit"},
+    ]
+
+    with pytest.raises(SystemExit, match="AxTwice has 2 columns"):
+        generator.marker("AxTwice", columns, generator.CURRENT)
+
+
+def test_every_code_has_its_documented_label() -> None:
+    documented = json.loads((SCRIPTS / "enums.json").read_text())
+    covered: set[type[Code]] = set()
+
+    for name, model in TABLES.items():
+        for info in model.model_fields.values():
+            enum = next(
+                (
+                    m
+                    for m in typing.get_args(info.annotation)
+                    if isinstance(m, type) and issubclass(m, Code)
+                ),
+                None,
+            )
+            spec = documented.get(info.alias or "")
+            if enum is None or spec is None or spec["table"] != name:
+                continue
+            covered.add(enum)
+            assert {member.value: member.label for member in enum} == {
+                int(code): label for code, label in spec["codes"].items()
+            }
+
+    assert covered == set(CODE_LABELS)

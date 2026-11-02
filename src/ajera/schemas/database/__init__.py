@@ -9,7 +9,9 @@ scripts/odbc/enums.json. Do not edit by hand; run `make odbc-generate`.
 """
 
 from ajera.schemas.database.base import DatabaseRecord, Source, SourceKind
+from ajera.schemas.database.describe import FieldSchema, SourceSchema, describe
 from ajera.schemas.database.enums import (
+    CODE_LABELS,
     ActivityStatus,
     ActivityType,
     AlertType,
@@ -29,6 +31,7 @@ from ajera.schemas.database.enums import (
     ClientInvoiceInvoiceType,
     ClientInvoiceStatus,
     ClientTypeStatus,
+    Code,
     CombineHistoryCombineType,
     CompanyClientInvoiceAccountingDate,
     CompanyPayrollType,
@@ -750,6 +753,44 @@ FUNCTIONS: dict[str, type[DatabaseRecord]] = {
 
 SOURCES: dict[str, type[DatabaseRecord]] = {**TABLES, **VIEWS, **FUNCTIONS}
 
+# Every column name the generator classifies as sensitive, across all sources:
+# identity numbers, credentials, tokens, and banking details.
+SENSITIVE_COLUMNS: frozenset[str] = frozenset(
+    {
+        "apiuPasswordHash",
+        "baDirDepDestinationRouting",
+        "baDirDepIdIsRoutingNumber",
+        "baPlaidAccessToken",
+        "cntPassword",
+        "edepRoutingNumber",
+        "empDateBorn",
+        "empSocialSecurityNumber",
+        "euiAccessToken",
+        "euiRefreshToken",
+        "isAjeraCRMPassword",
+        "isBillAndPayBillerPassword",
+        "isCRMPassword",
+        "isPIMSecret",
+        "isVantageAPISecret",
+        "pcddRoutingNumber",
+        "pwhPassword",
+        "sAzureClientSecret",
+        "sCosentialPassword",
+        "sEmailAuthPassword",
+        "sPasswordExpirationDays",
+        "sServiceBrokerSecret",
+        "sUsePasswordSync",
+        "vecBankAccount",
+        "vecBankRoutingNumber",
+        "vecDateBorn",
+        "vecLastPasswordChangeDate",
+        "vecPassword",
+        "vecPasswordHash",
+        "vecPasswordWindowStartDateTime",
+        "vecSocialSecurityNumber",
+    }
+)
+
 __all__ = [
     "APIMethodRecord",
     "APIRelatedSettingsRecord",
@@ -801,6 +842,7 @@ __all__ = [
     "BillAndPayLogRecord",
     "BillingReviewStageRecord",
     "BillingReviewStageStatus",
+    "CODE_LABELS",
     "ChangedClientInvoicesRecord",
     "ClientInvoiceBeginningBalanceType",
     "ClientInvoiceInvoiceType",
@@ -814,6 +856,7 @@ __all__ = [
     "ClientTypeStatus",
     "ClientTypeView",
     "ClientView",
+    "Code",
     "CombineHistoryCombineType",
     "CombineHistoryRecord",
     "CommittedPrepaymentsView",
@@ -880,6 +923,7 @@ __all__ = [
     "ErrorLogRecord",
     "ExpenseReportRecord",
     "FUNCTIONS",
+    "FieldSchema",
     "FinancialStatementDesignsRecord",
     "FinancialStatementPrintJobDetailRecord",
     "FinancialStatementTagRecord",
@@ -1074,6 +1118,7 @@ __all__ = [
     "RevenueDetailRecord",
     "RevenueRecord",
     "RevenueStatus",
+    "SENSITIVE_COLUMNS",
     "SOURCES",
     "SecurityGroupPLMPActualDates",
     "SecurityGroupPLMPBillingRate",
@@ -1169,6 +1214,7 @@ __all__ = [
     "SettingsView",
     "Source",
     "SourceKind",
+    "SourceSchema",
     "SystemInfoRecord",
     "SystemWidgetRecord",
     "TABLES",
@@ -1235,4 +1281,5 @@ __all__ = [
     "WebSessionSessionType",
     "WidgetRecord",
     "WorkflowItemRecord",
+    "describe",
 ]

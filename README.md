@@ -77,7 +77,7 @@ The reader also needs `unixODBC` and the Progress DataDirect Hybrid Data Pipelin
 | `AJERA_ODBC_HOST` | Service host (default `ajera-hdp01.prd.mydeltek.com`). |
 | `AJERA_ODBC_PORT` | Service port (default `443`). |
 
-The database reaches much further than the REST API. It holds transaction-level detail, accounts receivable, receipts, the general ledger, revenue, payroll, purchase orders and rate values. Every table (165), view (60), and table-valued function (19) has a typed model in `ajera.schemas.database`, generated from the live catalog. Pass a model to `read`, `stream`, `get`, or `count`, or call a function through its typed method:
+The database reaches much further than the REST API. It holds transaction-level detail, accounts receivable, receipts, the general ledger, revenue, payroll, purchase orders and rate values. Every table (165), view (60), and table-valued function (19) has a typed model in `ajera.schemas.database`, generated from the live catalog. Pass a model to `read`, `stream`, `get`, `count`, `rows`, or `aggregate`, or call a function through its typed method:
 
 ```python
 from datetime import date
@@ -110,10 +110,65 @@ with AjeraOdbc() as db:
 - **Large reads are paged.** Deltek's pipeline refuses any result over 500,000 rows, so keyed sources are read in pages of 100,000 transparently.
 - **Filters** are in `ajera.odbc`: `eq`, `ne`, `lt`, `le`, `gt`, `ge`, `between`, `like`, `in_`, `not_in`, `is_null`, `not_null`.
 
+`aggregate` totals on the server, so a monthly figure never moves every row through the pipeline. `rows` returns only the fields you name, as dictionaries whose values are validated like a full read:
+
+```python
+from datetime import date
+
+from ajera.odbc import AjeraOdbc, between, count, sum_
+from ajera.schemas.database import (
+    ProjectRecord,
+    ProjectStatus,
+    TransactionActivityType,
+    TransactionRecord,
+    describe,
+)
+
+with AjeraOdbc() as db:
+    # Hours per employee per month, counting each transaction's current version once.
+    hours = db.aggregate(
+        TransactionRecord,
+        measures=[sum_("units", alias="hours"), count()],
+        group_by=["employee_key", "date:month"],
+        where={
+            "activity_type": TransactionActivityType.labor,
+            "date": between(date(2026, 1, 1), date(2026, 3, 31)),
+        },
+        current=True,
+    )
+    # [{"employee_key": 101, "date:month": date(2026, 1, 1), "hours": Decimal("162.5"), "count": 41}, ...]
+
+    # Two of a project's 200 columns. The key always comes along.
+    projects = db.rows(
+        ProjectRecord,
+        fields=["description", "status"],
+        where={"status": ProjectStatus.active},
+    )
+    # [{"project_key": 7, "description": "...", "status": ProjectStatus.active}, ...]
+
+    # Resume after the last key you saw, in this process or another.
+    more = db.rows(
+        ProjectRecord, fields=["description"], after=projects[-1]["project_key"]
+    )
+
+    # A slow function gets a longer timeout for this one call.
+    balances = db.gl_balance_totals(date(2026, 3, 31), timeout=900)
+
+# Fields, SQL types, keys, and Deltek's code labels, without a connection.
+schema = describe(TransactionRecord)
+```
+
+- **Measures** are `sum_`, `count`, `count_distinct`, `min_`, `max_`, and `avg`. Group a date field by period with `field:day`, `field:week`, `field:month`, `field:quarter`, or `field:year`, which return the first day of the period. Weeks start on Monday. As in SQL Server, `avg` of an integer column is an integer.
+- **`current=True`** keeps only the current version of each row, for the sources where Ajera keeps edited and deleted rows: `AxTransaction`, `AxGLDetail`, `AxVendorInvoiceApproval`, and the views over them. It raises on any other source. `Source.current_column` and `Source.deleted_column` name the marker columns.
+- **`after=`** resumes a read of a source with a single-column key, in key order. It works on `read`, `stream`, and `rows`.
+- **`timeout=`** sets the query timeout for one call. A statement that times out raises at once but keeps running on Deltek's server until it finishes. The reader closes that connection in the background and opens a new one, so the login holds one more session meanwhile.
+- **Schema facts** come from the generated models. `describe(model)` and `ajera odbc describe SOURCE` describe a source offline. Each code has a `label` with Deltek's own text (`TransactionStatus.write_off.label` is `"Write Off"`). `Source.sensitive` and `SENSITIVE_COLUMNS` name the columns holding identity numbers, credentials, tokens, and banking details.
+
 The CLI exposes the same reads:
 
 ```console
 $ ajera odbc sources --kind function
+$ ajera odbc describe AxTransaction
 $ ajera odbc read AxClientInvoice -w status=1,4 -w "invoice_date>=2026-01-01" -n 50
 $ ajera odbc call ProjectTotals 2026-01-01 2026-03-31 -w project_key=1234
 ```

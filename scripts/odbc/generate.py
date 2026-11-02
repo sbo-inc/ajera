@@ -92,6 +92,14 @@ SENSITIVE = re.compile(
 
 RESERVED = set(dir(BaseModel)) | {"custom_fields"}
 
+# The `bit` columns that mark the current version of a row Ajera keeps old
+# versions of, and a deleted row it keeps. A lower-case table prefix followed
+# directly by the marker, so `GLDetailWithOffset.gldOffsetIsCurrent` (which
+# describes the offset line, not the row) stays out, and `PayCheck.tIsCurrent`
+# is found even though most of that view's columns use another prefix.
+CURRENT = re.compile(r"^[a-z]+IsCurrent$")
+DELETED = re.compile(r"^[a-z]+IsDeleted$")
+
 # Views whose leading table key repeats across rows (a join fans it out), so it
 # cannot serve as the view's row key. Found by `verify.py`.
 NON_UNIQUE_VIEW_KEYS: set[str] = {
@@ -200,11 +208,43 @@ def member(label: str, code: int) -> str:
         name = f"n_{name}"
     if (
         keyword.iskeyword(name)
-        or name in {"name", "value", "mro"}
+        or name in {"name", "value", "mro", "label"}
         or name.startswith("_")
     ):
         name = f"{name}_"
     return name
+
+
+def marker(
+    source: str, columns: list[dict[str, Any]], pattern: re.Pattern[str]
+) -> str | None:
+    """
+    The one `bit` column of a source that matches a version marker pattern.
+
+    Two matches stop the run, so a person decides which marks the row; the
+    generator never guesses.
+
+    Returns:
+        str | None: The column, or None when the source has none.
+    """
+    found = [
+        c["name"] for c in columns if c["type"] == "bit" and pattern.match(c["name"])
+    ]
+    if len(found) > 1:
+        sys.exit(
+            f"{source} has {len(found)} columns matching {pattern.pattern} "
+            f"({', '.join(found)}); decide which one marks the row"
+        )
+    return found[0] if found else None
+
+
+def markers(source: str, columns: list[dict[str, Any]]) -> dict[str, Any]:
+    """The `Source` arguments that describe versioned and sensitive columns."""
+    return {
+        "current_column": marker(source, columns, CURRENT),
+        "deleted_column": marker(source, columns, DELETED),
+        "sensitive": [c["name"] for c in columns if SENSITIVE.search(c["name"])],
+    }
 
 
 # =============================================================================
@@ -274,6 +314,7 @@ def render_model(
 
         enum = enum_for.get(column["name"]) if py_type == "int" else None
         arguments = [f'alias="{column["name"]}"']
+        extra = {"sql_type": sql_type}
         if enum:
             module.enums.add(enum)
             annotation = f"{enum} | int"
@@ -282,6 +323,8 @@ def render_model(
             annotation = py_type
         if SENSITIVE.search(column["name"]):
             arguments.append("repr=False")
+            extra["sensitive"] = True
+        arguments.append(f"json_schema_extra={extra!r}".replace("'", '"'))
         if nullable:
             annotation += " | None"
             arguments.insert(0, "None")
@@ -306,6 +349,11 @@ def source_literal(**values: Any) -> str:
         parts.append(f"blobs={tuple(values['blobs'])!r}")
     if values.get("parameters"):
         parts.append(f"parameters={tuple(values['parameters'])!r}")
+    for name in ("current_column", "deleted_column"):
+        if values.get(name):
+            parts.append(f'{name}="{values[name]}"')
+    if values.get("sensitive"):
+        parts.append(f"sensitive={tuple(values['sensitive'])!r}")
     return ", ".join(parts)
 
 
@@ -321,6 +369,7 @@ def main() -> None:
     # -- enums ------------------------------------------------------------
     enum_for: dict[str, str] = {}
     enum_lines: list[str] = []
+    enum_labels: dict[str, dict[int, str]] = {}
     used_enum_names: set[str] = set()
     for column, spec in sorted(
         documented.items(), key=lambda item: (item[1]["table"], item[0])
@@ -346,28 +395,46 @@ def main() -> None:
         )
         enum_lines += [
             "",
-            f"class {name}(IntEnum):",
+            f"class {name}(Code):",
             f'    """`{spec["table"]}.{column}` codes, as Ajera documents them.{note}"""',
             "",
         ]
         members: set[str] = set()
+        enum_labels[name] = {}
         for code, label in sorted(spec["codes"].items(), key=lambda item: int(item[0])):
             member_name = member(label, int(code))
             if member_name in members:
                 member_name = f"{member_name}_{code}".replace("-", "m")
             members.add(member_name)
             enum_lines.append(f"    {member_name} = {code}")
+            enum_labels[name][int(code)] = label
         enum_lines.append("")
 
+    labels = "".join(
+        f"    {name}: {{{', '.join(f'{code}: {label!r}' for code, label in codes.items())}}},\n"
+        for name, codes in enum_labels.items()
+    )
     (SCHEMAS / "enums.py").write_text(
         HEADER.format(
             doc="Documented code values for the Ajera database's integer code columns.\n\n"
             "Each field that holds one of these codes is typed `<Enum> | int`: a documented\n"
             "code validates to its member, and an undocumented one stays a plain int\n"
-            "rather than failing the read."
+            "rather than failing the read. Each member's `label` is Deltek's own text for\n"
+            "the code."
         )
         + "\nfrom enum import IntEnum\n\n"
+        + "\nclass Code(IntEnum):\n"
+        + '    """A documented Ajera code, which knows Deltek\'s text for itself."""\n\n'
+        + "    @property\n"
+        + "    def label(self) -> str:\n"
+        + '        """Deltek\'s documented text for the code (`"Write Off"`)."""\n'
+        + "        return CODE_LABELS[type(self)][self.value]\n\n"
         + "\n".join(enum_lines)
+        + "\n\n# Deltek's documented text for every code, by enum. The member names above are\n"
+        + "# derived from these and lose their spacing and case.\n"
+        + "CODE_LABELS: dict[type[Code], dict[int, str]] = {\n"
+        + labels
+        + "}\n"
     )
 
     # -- tables -----------------------------------------------------------
@@ -404,6 +471,7 @@ def main() -> None:
                 primary_key=key,
                 foreign_keys=table.get("foreign_keys", {}),
                 blobs=[c["name"] for c in table["columns"] if c["type"] in BLOB_TYPES],
+                **markers(name, table["columns"]),
             ),
             columns=table["columns"],
             names=names,
@@ -443,6 +511,7 @@ def main() -> None:
                 name=name,
                 primary_key=view_key,
                 blobs=[c["name"] for c in view["columns"] if c["type"] in BLOB_TYPES],
+                **markers(name, view["columns"]),
             ),
             columns=view["columns"],
             names=names,
@@ -478,6 +547,7 @@ def main() -> None:
                 blobs=[
                     c["name"] for c in function["columns"] if c["type"] in BLOB_TYPES
                 ],
+                **markers(name, function["columns"]),
             ),
             columns=function["columns"],
             names=names,
@@ -502,6 +572,7 @@ def main() -> None:
             "        order_by: Sequence[str] | None = None,",
             "        limit: int | None = None,",
             "        offset: int | None = None,",
+            "        timeout: int | None = None,",
             f"    ) -> list[{class_name}]:",
             '        """',
             f"        Call `{name}({signature})`.",
@@ -516,6 +587,7 @@ def main() -> None:
             "            order_by=order_by,",
             "            limit=limit,",
             "            offset=offset,",
+            "            timeout=timeout,",
             "        )",
         ]
 
@@ -524,12 +596,27 @@ def main() -> None:
     (SCHEMAS / "functions.py").write_text(functions.render("DatabaseRecord, Source"))
 
     # -- package re-exports and registries ---------------------------------
+    sensitive_columns = sorted(
+        {
+            c["name"]
+            for group in ("tables", "views", "functions")
+            for source in catalog[group].values()
+            for c in source["columns"]
+            if SENSITIVE.search(c["name"])
+        }
+    )
     enum_names = sorted(enum_for.values())
     exports = sorted(
         [
+            "CODE_LABELS",
+            "Code",
             "DatabaseRecord",
+            "FieldSchema",
+            "SENSITIVE_COLUMNS",
             "Source",
             "SourceKind",
+            "SourceSchema",
+            "describe",
             "TABLES",
             "VIEWS",
             "FUNCTIONS",
@@ -561,7 +648,8 @@ def main() -> None:
         )
         + "\n"
         + "from ajera.schemas.database.base import DatabaseRecord, Source, SourceKind\n"
-        + block("enums", enum_names)
+        + "from ajera.schemas.database.describe import FieldSchema, SourceSchema, describe\n"
+        + block("enums", ["CODE_LABELS", "Code", *enum_names])
         + block("functions", [cls for _, cls in registry["functions"]])
         + block("tables", [cls for _, cls in registry["tables"]])
         + block("views", [cls for _, cls in registry["views"]])
@@ -572,6 +660,11 @@ def main() -> None:
         + "\n"
         + mapping("FUNCTIONS", "functions")
         + "\nSOURCES: dict[str, type[DatabaseRecord]] = {**TABLES, **VIEWS, **FUNCTIONS}\n\n"
+        + "# Every column name the generator classifies as sensitive, across all sources:\n"
+        + "# identity numbers, credentials, tokens, and banking details.\n"
+        + "SENSITIVE_COLUMNS: frozenset[str] = frozenset(\n    {\n"
+        + "".join(f'        "{name}",\n' for name in sensitive_columns)
+        + "    }\n)\n\n"
         + "__all__ = [\n"
         + "".join(f'    "{name}",\n' for name in exports)
         + "]\n"
@@ -607,6 +700,7 @@ def main() -> None:
         + "        order_by: Sequence[str] | None = None,\n"
         + "        limit: int | None = None,\n"
         + "        offset: int | None = None,\n"
+        + "        timeout: int | None = None,\n"
         + "    ) -> list[T]:\n"
         + '        """\n'
         + "        Call a table-valued function and parse its rows.\n\n"
@@ -628,7 +722,7 @@ def main() -> None:
     )
     sensitive = sorted(
         f"{name}.{c['name']}"
-        for group in ("tables", "views")
+        for group in ("tables", "views", "functions")
         for name, source in catalog[group].items()
         for c in source["columns"]
         if SENSITIVE.search(c["name"])

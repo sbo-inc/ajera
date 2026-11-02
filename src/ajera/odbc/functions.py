@@ -48,6 +48,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[T]:
         """
         Call a table-valued function and parse its rows.
@@ -67,6 +68,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[Ax1099TotalsRow]:
         """
         Call `Ax1099Totals(@Minimum, @StartDate, @EndDate)`.
@@ -83,6 +85,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def credit_memo(
@@ -93,6 +96,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[CreditMemoRow]:
         """
         Call `AxCreditMemo(@Receipt)`.
@@ -107,6 +111,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def financials(
@@ -120,6 +125,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[FinancialsRow]:
         """
         Call `AxFinancials(@StartDate, @EndDate, @CloseYear, @AccrualCash)`.
@@ -137,6 +143,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def financials_mc(
@@ -151,6 +158,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[FinancialsMCRow]:
         """
         Call `AxFinancials_MC(@StartDate, @EndDate, @CloseYear, @AccrualCash, @pCompany)`.
@@ -169,6 +177,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def financials_mc_trial_balance(
@@ -183,6 +192,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[FinancialsMCTrialBalanceRow]:
         """
         Call `AxFinancials_MC_TrialBalance(@StartDate, @EndDate, @CloseYear, @AccrualCash, @pCompany)`.
@@ -201,6 +211,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def gl_balance_totals(
@@ -211,6 +222,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[GLBalanceTotalsRow]:
         """
         Call `AxGLBalanceTotals(@CutoffDate)`.
@@ -225,6 +237,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def gld_totals(
@@ -237,6 +250,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[GLDTotalsRow]:
         """
         Call `AxGLDTotals(@TotalType, @StartDate, @EndDate)`.
@@ -253,6 +267,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def ledger(
@@ -266,6 +281,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[LedgerRow]:
         """
         Call `AxLedger(@StartDate, @EndDate, @CloseYear, @AccrualCash)`.
@@ -283,6 +299,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def tran_totals(
@@ -295,6 +312,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[TranTotalsRow]:
         """
         Call `AxTranTotals(@TotalType, @StartDate, @EndDate)`.
@@ -311,6 +329,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def bank_entries(
@@ -321,6 +340,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[BankEntriesRow]:
         """
         Call `BankEntries(@CutoffDate)`.
@@ -335,6 +355,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def client_invoice_totals(
@@ -347,6 +368,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[ClientInvoiceTotalsRow]:
         """
         Call `ClientInvoiceTotals(@TotalType, @StartDate, @EndDate)`.
@@ -363,6 +385,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def client_totals(
@@ -375,6 +398,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[ClientTotalsRow]:
         """
         Call `ClientTotals(@TotalType, @StartDate, @EndDate)`.
@@ -391,6 +415,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def employee_totals(
@@ -403,6 +428,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[EmployeeTotalsRow]:
         """
         Call `EmployeeTotals(@TotalType, @StartDate, @EndDate)`.
@@ -419,6 +445,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def gl_full_account_with_cutoff(
@@ -429,6 +456,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[GLFullAccountWithCutoffRow]:
         """
         Call `GLFullAccountWithCutoff(@CutoffDate)`.
@@ -443,6 +471,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def project_totals(
@@ -454,6 +483,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[ProjectTotalsRow]:
         """
         Call `ProjectTotals(@StartDate, @EndDate)`.
@@ -469,6 +499,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def receipt_totals(
@@ -483,6 +514,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[ReceiptTotalsRow]:
         """
         Call `ReceiptTotals(@StartDate, @EndDate, @Client, @Project, @IncludeVoidedNSF)`.
@@ -501,6 +533,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def refund_totals(
@@ -514,6 +547,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[RefundTotalsRow]:
         """
         Call `RefundTotals(@StartDate, @EndDate, @Client, @Project)`.
@@ -531,6 +565,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def vendor_invoice_totals(
@@ -543,6 +578,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[VendorInvoiceTotalsRow]:
         """
         Call `VendorInvoiceTotals(@TotalType, @StartDate, @EndDate)`.
@@ -559,6 +595,7 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
 
     def vendor_totals(
@@ -571,6 +608,7 @@ class FunctionReads:
         order_by: Sequence[str] | None = None,
         limit: int | None = None,
         offset: int | None = None,
+        timeout: int | None = None,
     ) -> list[VendorTotalsRow]:
         """
         Call `VendorTotals(@TotalType, @StartDate, @EndDate)`.
@@ -587,4 +625,5 @@ class FunctionReads:
             order_by=order_by,
             limit=limit,
             offset=offset,
+            timeout=timeout,
         )
