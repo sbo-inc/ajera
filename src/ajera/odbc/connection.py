@@ -24,6 +24,13 @@ DEFAULT_DRIVER = "DataDirect HDP 4.6"
 # misread as a new one.
 _SPECIAL = frozenset(";{}=")
 
+# ODBC's SQL_ATTR_QUERY_TIMEOUT. Set on a connection, it becomes the timeout
+# of the statements the connection runs, which is how a per-call timeout
+# reaches pyodbc's cursors. pyodbc's own `Connection.timeout` cannot do this:
+# it sets SQL_ATTR_CONNECTION_TIMEOUT first, which the HDP driver rejects
+# (HYC00, optional feature not implemented).
+SQL_ATTR_QUERY_TIMEOUT = 0
+
 
 # =============================================================================
 # PROTOCOLS: the DB-API surface the reader uses
@@ -50,6 +57,8 @@ class Cursor(Protocol):
 
 class Connection(Protocol):
     def cursor(self) -> Cursor: ...
+
+    def set_attr(self, attribute: int, value: int, /) -> None: ...
 
     def close(self) -> None: ...
 
@@ -122,9 +131,9 @@ class OdbcSettings:
         Missing credentials are reported here, at connect time, rather than at
         construction, the same point at which `AjeraClient` reports them.
 
-        Timeouts travel in the string because the driver rejects the query
-        timeout as a connection attribute (HYC00, optional feature not
-        implemented); 0 waits indefinitely.
+        The login timeout has to be known before the connection exists, and
+        the query timeout here is the default for every statement; 0 waits
+        indefinitely. `set_query_timeout` changes it on an open connection.
 
         Returns:
             str: The connection string.
@@ -226,3 +235,22 @@ def connect(
     # credential would allow one.
     open_connection = cast(Callable[..., Connection], pyodbc.connect)
     return open_connection(connection_string, autocommit=True, readonly=True)
+
+
+# =============================================================================
+# FUNCTION: set_query_timeout
+# =============================================================================
+
+
+def set_query_timeout(connection: Connection, seconds: int) -> None:
+    """
+    Set the query timeout of the statements a connection runs from now on.
+
+    The HDP driver reads it when a statement executes, so a timeout meant for
+    one statement must stay set until that statement's `execute` returns.
+
+    Args:
+        connection: The open connection.
+        seconds: The timeout; 0 waits indefinitely.
+    """
+    connection.set_attr(SQL_ATTR_QUERY_TIMEOUT, seconds)

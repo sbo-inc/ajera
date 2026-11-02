@@ -9,16 +9,25 @@ small reference table the reader maps; none prints row contents.
 
 import importlib
 import os
+import time
 from collections.abc import Generator
-from datetime import date
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 import pytest
 
 from ajera.client import AjeraClient
-from ajera.odbc import PAGE_SIZE, AjeraOdbc
+from ajera.odbc import PAGE_SIZE, AjeraOdbc, between, count, sum_
+from ajera.odbc.queries.generic import Query
 from ajera.odbc.queries.mirror import MIRRORS
-from ajera.schemas.database import FUNCTIONS, TABLES, VIEWS
+from ajera.schemas.database import (
+    FUNCTIONS,
+    TABLES,
+    VIEWS,
+    ProjectStatus,
+    TransactionActivityType,
+    TransactionStatus,
+)
 
 pytestmark: list[pytest.MarkDecorator] = [pytest.mark.integration, pytest.mark.odbc]
 
@@ -225,3 +234,191 @@ def test_mirror_matches_rest(
     # The fields the database fills are ones REST really leaves at default.
     for row in expected:
         assert all(not getattr(row, name) for name in richer)
+
+
+# =============================================================================
+# TEST: totals, projected reads, versions, and per-call timeouts
+# =============================================================================
+#
+# Production data: compare values, never print them. Each comparison is
+# reduced to a bool first so a failure shows no row contents.
+
+
+def quiet_week() -> tuple[date, date]:
+    """A Monday-to-Sunday week a month back, which nobody is still editing."""
+    today = date.today()
+    sunday = today - timedelta(days=today.weekday() + 1) - timedelta(weeks=4)
+    return sunday - timedelta(days=6), sunday
+
+
+def test_aggregate_sum_matches_read(db: AjeraOdbc) -> None:
+    model = TABLES["AxTransaction"]
+    where = {"date": between(*quiet_week())}
+
+    totals = db.aggregate(model, measures=[sum_("units"), count()], where=where)
+    rows = db.read(model, where=where)
+
+    assert len(totals) == 1
+    assert totals[0]["count"] == len(rows) > 0
+    same = totals[0]["sum_units"] == sum(row.units for row in rows)  # type: ignore[attr-defined]
+    assert same, "SUM(tUnits) differs from the sum over read"
+
+
+def test_aggregate_groups_match_read(db: AjeraOdbc) -> None:
+    model = TABLES["AxTransaction"]
+    where = {"date": between(*quiet_week())}
+
+    groups = db.aggregate(
+        model,
+        measures=[sum_("units", alias="units")],
+        group_by=["employee_key", "activity_type"],
+        where=where,
+        current=True,
+    )
+    expected: dict[tuple[object, object], Decimal] = {}
+    for row in db.rows(
+        model,
+        fields=["employee_key", "activity_type", "units"],
+        where=where,
+        current=True,
+    ):
+        key = (row["employee_key"], row["activity_type"])
+        expected[key] = expected.get(key, Decimal(0)) + row["units"]  # type: ignore[operator]
+
+    assert all(
+        isinstance(group["activity_type"], TransactionActivityType) for group in groups
+    )
+    same = {
+        (g["employee_key"], g["activity_type"]): g["units"] for g in groups
+    } == expected
+    assert same, "grouped SUM(tUnits) differs from the per-group sum over rows"
+
+
+def test_aggregate_buckets_start_their_periods(db: AjeraOdbc) -> None:
+    end = date.today()
+    groups = db.aggregate(
+        TABLES["AxTransaction"],
+        measures=[count()],
+        group_by=["date:week", "date:month", "date:quarter", "date:year"],
+        where={"date": between(end - timedelta(days=120), end)},
+        current=True,
+    )
+
+    assert groups
+    for group in groups:
+        week, month, quarter, year = (
+            group[k] for k in ("date:week", "date:month", "date:quarter", "date:year")
+        )
+        assert isinstance(week, date) and week.weekday() == 0
+        assert isinstance(month, date) and month.day == 1
+        assert (
+            isinstance(quarter, date)
+            and quarter.day == 1
+            and quarter.month in (1, 4, 7, 10)
+        )
+        assert isinstance(year, date) and (year.month, year.day) == (1, 1)
+
+
+@pytest.mark.parametrize(
+    "name, hand_written",
+    [
+        ("AxTransaction", {"is_current": True, "is_deleted": False}),
+        ("AxGLDetail", {"is_current": True}),
+    ],
+)
+def test_count_current_matches_hand_written_where(
+    db: AjeraOdbc, name: str, hand_written: dict[str, object]
+) -> None:
+    model = TABLES[name]
+
+    current = db.count(model, current=True)
+
+    assert current == db.count(model, where=hand_written)
+    assert 0 < current < db.count(model)
+
+
+@pytest.mark.parametrize(
+    "name, fields, expected",
+    [
+        (
+            "AxProject",
+            ["description", "status"],
+            ["project_key", "description", "status"],
+        ),
+        ("AxTransaction", ["units", "status"], ["transaction_key", "units", "status"]),
+    ],
+)
+def test_rows_return_only_named_fields(
+    db: AjeraOdbc, name: str, fields: list[str], expected: list[str]
+) -> None:
+    model = TABLES[name]
+
+    rows = db.rows(model, fields=fields, limit=50)
+
+    assert len(rows) == 50
+    assert all(list(row) == expected for row in rows)
+    assert any(
+        isinstance(row["status"], (ProjectStatus, TransactionStatus)) for row in rows
+    )
+
+
+def test_rows_keep_field_types(db: AjeraOdbc) -> None:
+    rows = db.rows(
+        TABLES["AxTransaction"],
+        fields=["units", "date"],
+        where={"date": between(*quiet_week())},
+        limit=50,
+    )
+
+    assert rows
+    assert all(isinstance(row["units"], Decimal) for row in rows)
+    assert all(isinstance(row["date"], datetime) for row in rows)
+
+
+def test_after_resumes_where_a_read_stopped(db: AjeraOdbc) -> None:
+    model = TABLES["AxActivity"]
+    keys = [row.activity_key for row in db.read(model, limit=6)]  # type: ignore[attr-defined]
+
+    resumed = db.read(model, after=keys[2], limit=3)
+    projected = db.rows(model, fields=["description"], after=keys[2], limit=3)
+
+    assert [row.activity_key for row in resumed] == keys[3:]  # type: ignore[attr-defined]
+    assert [row["activity_key"] for row in projected] == keys[3:]
+
+
+def waitfor(seconds: int) -> Query[int]:
+    """A statement that only waits: a timeout test that reads nothing."""
+    return Query(
+        statement=f"WAITFOR DELAY '00:00:{seconds:02d}'; SELECT 1 AS Done",
+        parse=len,
+    )
+
+
+def test_per_call_timeout_cuts_a_statement_short() -> None:
+    with AjeraOdbc(timeout=(30, 60)) as reader:
+        start = time.monotonic()
+        with pytest.raises(Exception) as caught:
+            reader._run(waitfor(6), timeout=1)
+
+        # Raised at the timeout, not when the server gives up on the
+        # statement: the connection closes in the background.
+        assert caught.value.args[0] == "HYT00"
+        assert time.monotonic() - start < 4
+        # The next statement gets a fresh connection, with the reader's 60 s.
+        assert reader._run(waitfor(2)) == 1
+
+
+def test_per_call_timeout_extends_a_statement() -> None:
+    with AjeraOdbc(timeout=(30, 2)) as reader:
+        assert reader._run(waitfor(4), timeout=10) == 1
+        # Restored: the reader's own 2 s applies again.
+        with pytest.raises(Exception) as caught:
+            reader._run(waitfor(4))
+        assert caught.value.args[0] == "HYT00"
+
+
+def test_per_call_timeout_through_a_public_read(db: AjeraOdbc) -> None:
+    model = TABLES["AxActivity"]
+
+    assert db.count(model, timeout=30) == db.count(model) > 0
+    assert len(db.rows(model, fields=["description"], limit=5, timeout=30)) == 5

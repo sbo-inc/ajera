@@ -1,9 +1,11 @@
 """
 Verify every generated database model against the live database.
 
-For each table and view, streams every row through its model; for each
-documented code column, compares the codes in use with the documented ones;
-for each table-valued function, calls it with representative arguments. Only
+For each table and view, streams every row through its model and checks
+that any recorded version marker (`tIsCurrent`, `tIsDeleted`, ...) holds only
+0 and 1; for each documented code column, compares the codes in use with the
+documented ones; for each table-valued function, calls it with
+representative arguments. Only
 names, counts, and validation error types are printed, never row values.
 
     make odbc-verify                    # everything
@@ -116,6 +118,32 @@ def verify_blobs(db: AjeraOdbc, model: type[DatabaseRecord]) -> Counter[str]:
     return errors
 
 
+def verify_versioned(db: AjeraOdbc, model: type[DatabaseRecord]) -> Counter[str]:
+    """The recorded current and deleted columns exist live and hold only 0 and 1."""
+    errors: Counter[str] = Counter()
+    source = model.__source__
+    live = {name for name, _ in db.columns(model)}
+    for column in (source.current_column, source.deleted_column):
+        if column is None:
+            continue
+        if column not in live:
+            errors[f"{column}: recorded as a version marker but not a live column"] += 1
+            continue
+        cursor = db.connection.cursor()
+        try:
+            cursor.execute(f"SELECT DISTINCT [{column}] FROM [dbo].[{source.name}]")
+            values = {row[0] for row in cursor.fetchall()}
+        finally:
+            cursor.close()
+        # True and False compare equal to 1 and 0, so only NULL or another
+        # value is left over.
+        if unexpected := values - {0, 1}:
+            errors[
+                f"{column}: holds {sorted(map(repr, unexpected))}, not only 0 and 1"
+            ] += 1
+    return errors
+
+
 def verify_codes(db: AjeraOdbc, model: type[DatabaseRecord]) -> list[str]:
     """Codes in use that the documented enum does not name."""
     findings = []
@@ -160,6 +188,7 @@ def main(match: str, kinds: set[str], max_rows: int | None) -> int:
                 try:
                     rows, errors = verify_rows(db, model, max_rows)
                     errors.update(verify_blobs(db, model))
+                    errors.update(verify_versioned(db, model))
                     codes = verify_codes(db, model) if group == "table" else []
                 except Exception as error:  # noqa: BLE001 - report and continue
                     print(f"ERROR {group} {name}: {str(error)[:300]}")

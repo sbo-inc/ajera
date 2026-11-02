@@ -7,7 +7,9 @@ rows as JSON. Values given on the command line are coerced to the field's
 type before they are sent, always as bound parameters.
 """
 
+import dataclasses
 import inspect
+import json
 import re
 import typing
 from typing import Any
@@ -18,7 +20,7 @@ from pydantic import TypeAdapter
 from ajera.cli.output import render
 from ajera.odbc import AjeraOdbc, filters
 from ajera.odbc.filters import Condition
-from ajera.schemas.database import SOURCES, DatabaseRecord
+from ajera.schemas.database import SOURCES, DatabaseRecord, describe
 
 WHERE = re.compile(
     r"^(?P<field>[A-Za-z_][A-Za-z0-9_]*)\s*(?P<op>>=|<=|!=|=|>|<|~)\s*(?P<value>.*)$"
@@ -178,6 +180,49 @@ def columns(db: AjeraOdbc, source: str) -> None:
     by_alias = {info.alias: name for name, info in model.model_fields.items()}
     for column, kind in db.columns(model):
         click.echo(f"{column:40} {kind:18} {by_alias.get(column, '(custom)')}")
+
+
+@group.command(name="describe")
+@click.argument("source")
+@click.option("--json", "as_json", is_flag=True, help="Print the description as JSON.")
+def describe_source(source: str, as_json: bool) -> None:
+    """
+    Describe SOURCE: its keys, fields, SQL types, and documented codes.
+
+    Needs no connection: this is the generated metadata. `columns` is the
+    live view, which also lists the tenant's custom fields.
+    """
+    schema = describe(_model(source))
+    if as_json:
+        click.echo(json.dumps(dataclasses.asdict(schema), indent=2))
+        return
+    click.echo(f"{schema.kind} {schema.name} ({schema.model})")
+    for label, values in (
+        ("key", schema.primary_key),
+        ("parameters", tuple("@" + p for p in schema.parameters)),
+        ("current", (schema.current_column,) if schema.current_column else ()),
+        ("deleted", (schema.deleted_column,) if schema.deleted_column else ()),
+    ):
+        if values:
+            click.echo(f"{label}: {', '.join(values)}")
+    for field in schema.fields:
+        notes = [
+            note
+            for note, present in (
+                ("nullable", field.nullable),
+                (f"-> {'.'.join(field.references or ())}", field.references),
+                ("sensitive", field.sensitive),
+                ("blob", field.blob),
+                (field.enum or "", field.enum),
+            )
+            if present
+        ]
+        click.echo(
+            f"  {field.name:40} {field.column:36} {field.sql_type:16} "
+            f"{' '.join(notes)}".rstrip()
+        )
+        for code, text in field.codes.items():
+            click.echo(f"      {code:>4} {text}")
 
 
 @group.command(name="read")

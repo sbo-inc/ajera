@@ -1,3 +1,5 @@
+import types
+import typing
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import ClassVar, Literal
@@ -32,6 +34,14 @@ class Source:
         blobs: Binary columns, left out of a read unless asked for, because a
             handful of them hold whole files (invoice PDFs, report designs).
         parameters: A function's SQL parameter names, in call order.
+        current_column: The `bit` column that marks the current version of a
+            row Ajera keeps old versions of (`tIsCurrent`), if any.
+        deleted_column: The `bit` column that marks a deleted row Ajera keeps
+            (`tIsDeleted`), if any.
+        sensitive: Columns that must never reach a log line: identity
+            numbers, credentials, tokens, and banking details. Classified by
+            column name alone, so this is a fact about the name rather than a
+            policy about who may read it.
     """
 
     kind: SourceKind
@@ -40,6 +50,9 @@ class Source:
     foreign_keys: Mapping[str, tuple[str, str]] = field(default_factory=dict)
     blobs: tuple[str, ...] = ()
     parameters: tuple[str, ...] = ()
+    current_column: str | None = None
+    deleted_column: str | None = None
+    sensitive: tuple[str, ...] = ()
 
 
 # =============================================================================
@@ -84,3 +97,21 @@ class DatabaseRecord(GenericBaseModel):
             defines none on this table.
         """
         return dict(self.model_extra or {})
+
+
+# =============================================================================
+# FUNCTION: annotation_members
+# =============================================================================
+
+
+def annotation_members(annotation: object) -> tuple[object, ...]:
+    """
+    The types a field annotation admits: each member of a union, or itself.
+
+    Returns:
+        tuple[object, ...]: The member types, `NoneType` included if present.
+    """
+    origin = typing.get_origin(annotation)
+    if origin is typing.Union or origin is types.UnionType:
+        return typing.get_args(annotation)
+    return (annotation,)

@@ -23,14 +23,27 @@ from ajera.odbc.filters import (
     not_in,
     not_null,
 )
+from ajera.odbc.measures import (
+    Measure,
+    avg,
+    count,
+    count_distinct,
+    max_,
+    min_,
+    sum_,
+)
 from ajera.odbc.reader import PAGE_SIZE, AjeraOdbc
 
 __all__ = [
     "PAGE_SIZE",
     "AjeraOdbc",
     "Condition",
+    "Measure",
     "OdbcSettings",
+    "avg",
     "between",
+    "count",
+    "count_distinct",
     "eq",
     "ge",
     "gt",
@@ -39,7 +52,10 @@ __all__ = [
     "le",
     "like",
     "lt",
+    "max_",
+    "min_",
     "ne",
     "not_in",
     "not_null",
+    "sum_",
 ]
