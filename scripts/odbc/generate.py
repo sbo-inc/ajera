@@ -29,6 +29,7 @@ import keyword
 import re
 import subprocess
 import sys
+import textwrap
 from collections import Counter
 from collections.abc import Iterable
 from pathlib import Path
@@ -345,6 +346,43 @@ def declaration(parameter: dict[str, Any]) -> str:
     return str(parameter["type"])
 
 
+def listed(items: list[str], conjunction: str = "and") -> str:
+    """Join `a`, `a and b`, or `a, b, and c`."""
+    if len(items) < 3:
+        return f" {conjunction} ".join(items)
+    return f"{', '.join(items[:-1])}, {conjunction} {items[-1]}"
+
+
+def ignored_caveat(arguments: list[str], fields: list[str], notes: list[str]) -> str:
+    """The docstring sentence for a typed method whose function ignores arguments."""
+    text = (
+        f"The function ignores {listed([f'`{a}`' for a in arguments])}; "
+        "pass None, or the call logs a warning."
+    )
+    if fields:
+        unique = [f"`{field}`" for field in dict.fromkeys(fields)]
+        text += f" Filter on {' or '.join(unique)} instead."
+    return " ".join([text, *dict.fromkeys(notes)])
+
+
+def conditional_caveat(
+    arguments: list[str], conditions: dict[str, tuple[Any, ...]], arg: dict[str, str]
+) -> str:
+    """The docstring sentence for arguments a function ignores under some codes."""
+    held = listed(
+        [
+            f"`{arg[code]}` "
+            + listed(["None" if v is None else str(v) for v in values], "or")
+            for code, values in conditions.items()
+        ]
+    )
+    return (
+        f"With {held}, the function ignores "
+        f"{listed([f'`{a}`' for a in arguments])}: its rows are the same "
+        "whatever they hold, and a value passed to them logs a warning."
+    )
+
+
 def source_literal(**values: Any) -> str:
     parts = [f'kind="{values["kind"]}"', f'name="{values["name"]}"']
     if values.get("primary_key"):
@@ -361,6 +399,13 @@ def source_literal(**values: Any) -> str:
         parts.append(f"parameters={tuple(values['parameters'])!r}")
     if values.get("parameter_types"):
         parts.append(f"parameter_types={tuple(values['parameter_types'])!r}")
+    if values.get("ignored_parameters"):
+        parts.append(f"ignored_parameters={tuple(values['ignored_parameters'])!r}")
+    for name in ("parameter_filters", "parameter_notes"):
+        if values.get(name):
+            parts.append(f"{name}={dict(values[name])!r}")
+    if values.get("ignored_when"):
+        parts.append(f"ignored_when={values['ignored_when']!r}")
     for name in ("current_column", "deleted_column"):
         if values.get(name):
             parts.append(f'{name}="{values[name]}"')
@@ -548,6 +593,18 @@ def main() -> None:
         registry["functions"].append((name, class_name))
         parameters = [p["name"] for p in function["parameters"]]
         signature = ", ".join(f"@{p}" for p in parameters)
+        # From `probe.py`, in call order: the parameters the function does not
+        # apply, what to filter on instead, and those it ignores only under
+        # some codes.
+        ignored = [p for p in parameters if p in function.get("ignored_parameters", ())]
+        filters = function.get("parameter_filters", {})
+        notes = function.get("parameter_notes", {})
+        conditional = function.get("ignored_when", {})
+        when = {
+            p: {code: tuple(values) for code, values in conditional[p].items()}
+            for p in parameters
+            if p in conditional
+        }
         render_model(
             functions,
             class_name=class_name,
@@ -557,6 +614,10 @@ def main() -> None:
                 name=name,
                 parameters=parameters,
                 parameter_types=[declaration(p) for p in function["parameters"]],
+                ignored_parameters=ignored,
+                parameter_filters={p: filters[p] for p in ignored if p in filters},
+                parameter_notes={p: notes[p] for p in ignored if p in notes},
+                ignored_when=when,
                 blobs=[
                     c["name"] for c in function["columns"] if c["type"] in BLOB_TYPES
                 ],
@@ -575,6 +636,31 @@ def main() -> None:
             method_types.update(re.findall(r"\b(date|datetime|Decimal)\b", annotation))
             arguments.append((arg, annotation))
         method = snake(class_stem)
+        arg = {p: arguments[parameters.index(p)][0] for p in parameters}
+        caveats = []
+        if ignored:
+            caveats.append(
+                ignored_caveat(
+                    [arg[p] for p in ignored],
+                    fields=[names[filters[p]] for p in ignored if p in filters],
+                    notes=[notes[p] for p in ignored if p in notes],
+                )
+            )
+        for conditions in dict.fromkeys(repr(c) for c in when.values()):
+            held = [p for p in when if repr(when[p]) == conditions]
+            caveats.append(
+                conditional_caveat([arg[p] for p in held], when[held[0]], arg)
+            )
+        caveat = [
+            line
+            for text in caveats
+            for line in [
+                "",
+                *textwrap.wrap(
+                    text, width=79, initial_indent=" " * 8, subsequent_indent=" " * 8
+                ),
+            ]
+        ]
         methods += [
             "",
             f"    def {method}(",
@@ -589,6 +675,7 @@ def main() -> None:
             f"    ) -> list[{class_name}]:",
             '        """',
             f"        Call `{name}({signature})`.",
+            *caveat,
             "",
             "        Returns:",
             f"            list[{class_name}]: The function's rows.",

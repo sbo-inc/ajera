@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.0] - 2026-11-02
+
+- `Source.ignored_parameters` and `describe(model).ignored_parameters` list the function parameters that do not change the rows, in call order. `ignored_when` lists those ignored only under some codes. `parameter_filters` names the field to filter on instead, and `parameter_notes` says where that filter does not mean the same. `ajera odbc describe` prints them, and each typed method's docstring names them ([#34]).
+- Passing any value other than None to an ignored parameter logs a warning on the `ajera.odbc.arguments` logger, whatever `log` is set to. So does a value passed while its condition holds. The call still runs. This covers `call`, `rows`, `count`, `aggregate`, and the typed function methods ([#34]).
+- `make odbc-probe` finds them live. It calls each function again with one argument changed and compares the row count, the sum of every numeric column, and a checksum of every other column. Its findings go into `scripts/odbc/catalog.json`, and `make odbc-catalog` keeps them ([#34]).
+- Found live: `ReceiptTotals` ignores `StartDate` and `EndDate`; filter on `r_date` instead. The seven functions with a `TotalType` ignore their dates when it is 0, and some under other codes too: `ClientTotals(0, start, end)` returns the same totals for any dates. No other parameter is ignored. `AxGLBalanceTotals` and `GLFullAccountWithCutoff` are too slow to probe ([#34]).
+- **Fixed:** passing None for a function's date parameter failed with `HY104`, because the HDP driver refuses a NULL bound to a date parameter. A None argument now goes into the statement as `NULL`. Callers can now pass None for an ignored date, which is what the warning advises ([#34]).
+
 ## [0.8.0] - 2026-11-02
 
 - `AjeraOdbc.closing` counts the sessions still closing after a timeout, `AjeraOdbc.sessions` adds the open one, and `AjeraOdbc.wait_closed()` waits for them. A timed-out session stays held until Deltek's server finishes the abandoned statement, so a caller with few seats can now see and wait for it ([#32]).
@@ -91,3 +99,4 @@
 [#27]: https://github.com/sbo-inc/ajera/issues/27
 [#30]: https://github.com/sbo-inc/ajera/issues/30
 [#32]: https://github.com/sbo-inc/ajera/issues/32
+[#34]: https://github.com/sbo-inc/ajera/issues/34

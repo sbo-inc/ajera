@@ -163,6 +163,8 @@ schema = describe(TransactionRecord)
 - **`after=`** resumes a read of a source with a single-column key, in key order. It works on `read`, `stream`, and `rows`.
 - **`timeout=`** sets the query timeout for one call. A statement that times out raises at once but keeps running on Deltek's server until it finishes. The reader closes that connection in the background and opens a new one, so the login holds one more session meanwhile. `db.closing` counts those sessions, `db.sessions` adds the open one, and `db.wait_closed()` waits for them to close.
 - **Function arguments** are checked against each parameter's SQL type before they are sent, because SQL Server converts some mistakes silently: an `int` passed for a date is a day count from 1900. Date parameters take a `date`, a `datetime`, or an ISO 8601 string. `describe(model).parameter_types` lists the types.
+- **Ignored parameters.** Some functions declare parameters that do not change their rows. `ReceiptTotals` returns receipts of every date, whatever `StartDate` and `EndDate` say, and the functions with a `TotalType` ignore their dates when it is 0 or NULL, and some under other codes too. `describe(model).ignored_parameters` and `ignored_when` list them, and `parameter_filters` names the field to filter on instead, such as `where={"r_date": between(start, end)}`. Passing any value other than None to one logs a warning on the `ajera.odbc.arguments` logger, whatever `log` is set to, and the call still runs.
+- **`AccrualCash`** takes `Accrual` or `Cash`. Any other value, `A` included, returns the same rows as NULL.
 - **Schema facts** come from the generated models. `describe(model)` and `ajera odbc describe SOURCE` describe a source offline. Each code has a `label` with Deltek's own text (`TransactionStatus.write_off.label` is `"Write Off"`). `Source.sensitive` and `SENSITIVE_COLUMNS` name the columns holding identity numbers, credentials, tokens, and banking details.
 
 The CLI exposes the same reads:
@@ -174,7 +176,7 @@ $ ajera odbc read AxClientInvoice -w status=1,4 -w "invoice_date>=2026-01-01" -n
 $ ajera odbc call ProjectTotals 2026-01-01 2026-03-31 -w project_key=1234
 ```
 
-`make test-odbc` runs the live ODBC checks in the image. `make odbc-verify` validates every model against every live row. To pick up a new Ajera release, run `make odbc-catalog`, then `make odbc-enums XLSX=...` and `make odbc-generate`.
+`make test-odbc` runs the live ODBC checks in the image. `make odbc-verify` validates every model against every live row. To pick up a new Ajera release, run `make odbc-catalog` and `make odbc-probe`, then `make odbc-enums XLSX=...` and `make odbc-generate`.
 
 ## Quick start
 

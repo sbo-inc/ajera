@@ -9,14 +9,25 @@ its parameter's declared SQL type, from the catalog, before it is bound.
 
 Pydantic's lax validation is no help here: it reads `2026` as a Unix
 timestamp, the same silent error in another form.
+
+Some functions also declare parameters they do not apply, always or under
+some codes (`Source.ignored_parameters`, `Source.ignored_when`). A value
+passed to one is logged as a warning, and the call still runs.
 """
 
+import logging
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from datetime import date, datetime, time
 from decimal import Decimal, InvalidOperation
 
-from ajera.schemas.database.base import Source
+from ajera.schemas.database.base import DatabaseRecord, Source
+
+# The reader quiets the `ajera` logger unless it is asked to log statements.
+# An ignored argument is about the rows a caller gets back, not about the
+# statement, so its warning keeps a level of its own.
+logger = logging.getLogger("ajera.odbc.arguments")
+logger.setLevel(logging.WARNING)
 
 # `varchar(10)`, `decimal(19,2)`, `varchar(max)`, or a bare type name.
 DECLARATION = re.compile(
@@ -67,8 +78,8 @@ def check_argument(function: str, name: str, declaration: str, value: object) ->
     """
     Check one argument against its parameter's SQL declaration.
 
-    None is always allowed and binds as SQL NULL. A declaration this module
-    does not know passes the value through unchecked.
+    None is always allowed, and goes into the statement as NULL. A
+    declaration this module does not know passes the value through unchecked.
 
     Raises:
         TypeError: The value is the wrong kind for the parameter.
@@ -194,6 +205,109 @@ def _text(where: str, value: object, size: str | None) -> str:
             f"{where} holds at most {size} characters; {len(value)} would be cut short"
         )
     return value
+
+
+# =============================================================================
+# FUNCTION: warn_ignored
+# =============================================================================
+
+
+def warn_ignored(model: type[DatabaseRecord], arguments: Sequence[object]) -> None:
+    """
+    Log a warning when an argument reaches a parameter the function ignores.
+
+    That is a parameter in `Source.ignored_parameters`, or one in
+    `Source.ignored_when` while its condition holds. The call is not refused:
+    the SQL signature requires every argument, so a caller passing each one
+    must still get rows. None is not reported, since it asks for nothing.
+    """
+    source = model.__source__
+    values = dict(zip(source.parameters, arguments, strict=False))
+    always = [n for n in source.ignored_parameters if values.get(n) is not None]
+    if always:
+        message = (
+            f"{source.name} ignores {_listed(['@' + n for n in always])}: its rows "
+            "are the same whatever they hold, so pass None."
+        )
+        if hint := instead_of(model, always):
+            message += f" {hint}"
+        logger.warning(message)
+    held = {
+        name: conditions
+        for name, conditions in source.ignored_when.items()
+        if values.get(name) is not None
+        and all(values.get(code) in codes for code, codes in conditions.items())
+    }
+    if held:
+        codes = dict.fromkeys(
+            code for conditions in held.values() for code in conditions
+        )
+        logger.warning(
+            f"{source.name} ignores {_listed(['@' + n for n in held])} when "
+            + _listed([f"@{code} is {_sql(values.get(code))}" for code in codes])
+            + ": its rows are the same whatever they hold. Pass "
+            + _listed([f"another @{code}" for code in codes], "or")
+            + " to apply them."
+        )
+
+
+def ignored_condition(conditions: Mapping[str, Sequence[object]]) -> str:
+    """
+    Name the codes a parameter is ignored under, for a reader.
+
+    Returns:
+        str: `@TotalType is 0, 1, or NULL`.
+    """
+    return _listed(
+        [
+            f"@{code} is {_listed([_sql(v) for v in values], 'or')}"
+            for code, values in conditions.items()
+        ]
+    )
+
+
+def instead_of(model: type[DatabaseRecord], ignored: Sequence[str]) -> str:
+    """
+    What to do in place of passing these ignored parameters.
+
+    Returns:
+        str: The field to filter on, and any note on how that differs from
+        the parameter; empty when nothing replaces them.
+    """
+    source = model.__source__
+    fields = dict.fromkeys(
+        _field(model, source.parameter_filters[name])
+        for name in ignored
+        if name in source.parameter_filters
+    )
+    notes = dict.fromkeys(
+        source.parameter_notes[name]
+        for name in ignored
+        if name in source.parameter_notes
+    )
+    lead = [f"Filter on {' or '.join(fields)} instead."] if fields else []
+    return " ".join([*lead, *notes])
+
+
+def _listed(names: Sequence[str], conjunction: str = "and") -> str:
+    if len(names) < 3:
+        return f" {conjunction} ".join(names)
+    return f"{', '.join(names[:-1])}, {conjunction} {names[-1]}"
+
+
+def _sql(value: object) -> str:
+    return (
+        "NULL"
+        if value is None
+        else str(int(value) if isinstance(value, int) else value)
+    )
+
+
+def _field(model: type[DatabaseRecord], column: str) -> str:
+    return next(
+        (name for name, info in model.model_fields.items() if info.alias == column),
+        column,
+    )
 
 
 # =============================================================================

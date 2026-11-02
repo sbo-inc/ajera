@@ -7982,7 +7982,8 @@
         {"name": "glfaInternal2", "type": "int", "nullable": false},
         {"name": "glfaBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "glfaCashBasisBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2}
-      ]
+      ],
+      "unchecked_parameters": ["CutoffDate"]
     },
     "AxGLDTotals": {
       "parameters": [
@@ -8024,7 +8025,8 @@
         {"name": "tcdExpensePayableBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "tcdConsultantPayableBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "tcdPrepaymentBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2}
-      ]
+      ],
+      "ignored_when": {"StartDate": {"TotalType": [0, 1]}, "EndDate": {"TotalType": [0, 1]}}
     },
     "AxLedger": {
       "parameters": [
@@ -8107,7 +8109,8 @@
         {"name": "twdLaborInvoiceAdjustment", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "twdExpenseInvoiceAdjustment", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "twdConsultantInvoiceAdjustment", "type": "decimal", "nullable": true, "precision": 38, "scale": 2}
-      ]
+      ],
+      "ignored_when": {"StartDate": {"TotalType": [0, 2, 3, null]}, "EndDate": {"TotalType": [0, 2, 3, null]}}
     },
     "BankEntries": {
       "parameters": [
@@ -8643,7 +8646,8 @@
         {"name": "ciLaborReceivableBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "ciExpenseReceivableBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "ciConsultantReceivableBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2}
-      ]
+      ],
+      "ignored_when": {"StartDate": {"TotalType": [0, null]}, "EndDate": {"TotalType": [0, null]}}
     },
     "ClientTotals": {
       "parameters": [
@@ -8727,7 +8731,8 @@
         {"name": "cExpenseReceivableBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "cConsultantReceivableBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "cPrepaymentBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2}
-      ]
+      ],
+      "ignored_when": {"StartDate": {"TotalType": [0, null]}, "EndDate": {"TotalType": [0, null]}}
     },
     "EmployeeTotals": {
       "parameters": [
@@ -8888,7 +8893,8 @@
         {"name": "empBilledHours", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "empWIPHours", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "empWIPToBillHours", "type": "decimal", "nullable": true, "precision": 38, "scale": 2}
-      ]
+      ],
+      "ignored_when": {"StartDate": {"TotalType": [0, 2, 3, null]}, "EndDate": {"TotalType": [0, 2, 3, null]}}
     },
     "GLFullAccountWithCutoff": {
       "parameters": [
@@ -8925,7 +8931,8 @@
         {"name": "glfaInternal2", "type": "int", "nullable": false},
         {"name": "glfaBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "glfaCashBasisBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2}
-      ]
+      ],
+      "unchecked_parameters": ["CutoffDate"]
     },
     "ProjectTotals": {
       "parameters": [
@@ -9366,7 +9373,9 @@
         {"name": "beStatus", "type": "tinyint", "nullable": true},
         {"name": "beType", "type": "tinyint", "nullable": true},
         {"name": "rClientPayee", "type": "varchar", "nullable": true, "length": 255}
-      ]
+      ],
+      "ignored_parameters": ["StartDate", "EndDate"],
+      "parameter_filters": {"StartDate": "rDate", "EndDate": "rDate"}
     },
     "RefundTotals": {
       "parameters": [
@@ -9430,7 +9439,8 @@
         {"name": "viNewAccountingDate", "type": "smalldatetime", "nullable": true},
         {"name": "viCheckSum", "type": "bigint", "nullable": true},
         {"name": "viNeedsReApproval", "type": "bit", "nullable": true}
-      ]
+      ],
+      "ignored_when": {"StartDate": {"TotalType": [0, 1, null]}, "EndDate": {"TotalType": [0, 1, null]}}
     },
     "VendorTotals": {
       "parameters": [
@@ -9507,7 +9517,8 @@
         {"name": "vInvoiced", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "vPayments", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "vPayableBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2}
-      ]
+      ],
+      "ignored_when": {"StartDate": {"TotalType": [0, 1, 2, null]}, "EndDate": {"TotalType": [0, 1, 2, null]}}
     }
   }
 }

@@ -16,7 +16,12 @@ from pydantic import TypeAdapter
 
 from ajera.cli.output import render
 from ajera.odbc import AjeraOdbc, filters
-from ajera.odbc.arguments import check_arguments, from_text
+from ajera.odbc.arguments import (
+    check_arguments,
+    from_text,
+    ignored_condition,
+    instead_of,
+)
 from ajera.odbc.filters import Condition
 from ajera.schemas.database import SOURCES, DatabaseRecord, describe
 
@@ -182,10 +187,21 @@ def describe_source(source: str, as_json: bool) -> None:
     Needs no connection: this is the generated metadata. `columns` is the
     live view, which also lists the tenant's custom fields.
     """
-    schema = describe(_model(source))
+    model = _model(source)
+    schema = describe(model)
     if as_json:
         click.echo(json.dumps(dataclasses.asdict(schema), indent=2))
         return
+    ignored = [", ".join(f"@{name}" for name in schema.ignored_parameters)]
+    if hint := instead_of(model, schema.ignored_parameters):
+        ignored[0] += f" ({hint})"
+    conditional: dict[str, list[str]] = {}
+    for name, conditions in schema.ignored_when.items():
+        conditional.setdefault(ignored_condition(conditions), []).append(f"@{name}")
+    ignored += [
+        f"{', '.join(names)} when {when}" for when, names in conditional.items()
+    ]
+    ignored_text = "; ".join(text for text in ignored if text)
     click.echo(f"{schema.kind} {schema.name} ({schema.model})")
     for label, values in (
         ("key", schema.primary_key),
@@ -200,6 +216,7 @@ def describe_source(source: str, as_json: bool) -> None:
                 )
             ),
         ),
+        ("ignored", (ignored_text,) if ignored_text else ()),
         ("current", (schema.current_column,) if schema.current_column else ()),
         ("deleted", (schema.deleted_column,) if schema.deleted_column else ()),
     ):

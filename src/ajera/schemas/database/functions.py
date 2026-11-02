@@ -635,6 +635,10 @@ class GLDTotalsRow(DatabaseRecord):
         name="AxGLDTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
         parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
+        ignored_when={
+            "StartDate": {"TotalType": (0, 1)},
+            "EndDate": {"TotalType": (0, 1)},
+        },
     )
 
     key: int = Field(alias="tcdKey", json_schema_extra={"sql_type": "int"})
@@ -781,6 +785,10 @@ class TranTotalsRow(DatabaseRecord):
         name="AxTranTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
         parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
+        ignored_when={
+            "StartDate": {"TotalType": (0, 2, 3, None)},
+            "EndDate": {"TotalType": (0, 2, 3, None)},
+        },
     )
 
     key: int = Field(alias="twdKey", json_schema_extra={"sql_type": "int"})
@@ -1099,6 +1107,10 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         blobs=("ciPDFImage", "ciFinalData"),
         parameters=("TotalType", "StartDate", "EndDate"),
         parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
+        ignored_when={
+            "StartDate": {"TotalType": (0, None)},
+            "EndDate": {"TotalType": (0, None)},
+        },
     )
 
     client_invoice_key: int = Field(
@@ -2809,6 +2821,10 @@ class ClientTotalsRow(DatabaseRecord):
         name="ClientTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
         parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
+        ignored_when={
+            "StartDate": {"TotalType": (0, None)},
+            "EndDate": {"TotalType": (0, None)},
+        },
     )
 
     key: int = Field(alias="cKey", json_schema_extra={"sql_type": "int"})
@@ -3016,6 +3032,10 @@ class EmployeeTotalsRow(DatabaseRecord):
         name="EmployeeTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
         parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
+        ignored_when={
+            "StartDate": {"TotalType": (0, 2, 3, None)},
+            "EndDate": {"TotalType": (0, 2, 3, None)},
+        },
         sensitive=("empDateBorn", "empSocialSecurityNumber"),
     )
 
@@ -4859,6 +4879,8 @@ class ReceiptTotalsRow(DatabaseRecord):
         name="ReceiptTotals",
         parameters=("StartDate", "EndDate", "Client", "Project", "IncludeVoidedNSF"),
         parameter_types=("smalldatetime", "smalldatetime", "int", "int", "bit"),
+        ignored_parameters=("StartDate", "EndDate"),
+        parameter_filters={"StartDate": "rDate", "EndDate": "rDate"},
     )
 
     receipt_key: int = Field(alias="rKey", json_schema_extra={"sql_type": "int"})
@@ -5002,6 +5024,10 @@ class VendorInvoiceTotalsRow(DatabaseRecord):
         name="VendorInvoiceTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
         parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
+        ignored_when={
+            "StartDate": {"TotalType": (0, 1, None)},
+            "EndDate": {"TotalType": (0, 1, None)},
+        },
     )
 
     vendor_invoice_key: int = Field(
@@ -5130,6 +5156,10 @@ class VendorTotalsRow(DatabaseRecord):
         name="VendorTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
         parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
+        ignored_when={
+            "StartDate": {"TotalType": (0, 1, 2, None)},
+            "EndDate": {"TotalType": (0, 1, 2, None)},
+        },
     )
 
     key: int = Field(alias="vKey", json_schema_extra={"sql_type": "int"})

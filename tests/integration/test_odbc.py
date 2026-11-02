@@ -10,7 +10,7 @@ small reference table the reader maps; none prints row contents.
 import importlib
 import os
 import time
-from collections.abc import Generator
+from collections.abc import Generator, Sequence
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 
@@ -75,12 +75,12 @@ def function_arguments(db: AjeraOdbc, name: str) -> tuple[object, ...]:
     arguments: dict[str, tuple[object, ...]] = {
         "Ax1099Totals": (Decimal(0), start, end),
         "AxCreditMemo": (receipt[0].receipt_key if receipt else 0,),  # type: ignore[attr-defined]
-        "AxFinancials": (start, end, False, "A"),
-        "AxFinancials_MC": (start, end, False, "A", None),
-        "AxFinancials_MC_TrialBalance": (start, end, False, "A", None),
+        "AxFinancials": (start, end, False, "Accrual"),
+        "AxFinancials_MC": (start, end, False, "Accrual", None),
+        "AxFinancials_MC_TrialBalance": (start, end, False, "Accrual", None),
         "AxGLBalanceTotals": (end,),
         "AxGLDTotals": (0, start, end),
-        "AxLedger": (start, end, False, "A"),
+        "AxLedger": (start, end, False, "Accrual"),
         "AxTranTotals": (0, start, end),
         "BankEntries": (end,),
         "ClientInvoiceTotals": (0, start, end),
@@ -449,14 +449,135 @@ def test_closing_session_is_counted_until_the_server_finishes() -> None:
 def test_checked_arguments_reach_the_function(db: AjeraOdbc) -> None:
     start, end = date(date.today().year, 1, 1), date.today()
 
-    typed = db.vendor_totals(0, start, end)
+    # TotalType 3 applies the dates; 0 ignores them.
+    typed = db.vendor_totals(3, start, end)
     from_text = db.call(
-        FUNCTIONS["VendorTotals"], 0, start.isoformat(), end.isoformat()
+        FUNCTIONS["VendorTotals"], 3, start.isoformat(), end.isoformat()
     )
+    same = typed == from_text
 
-    assert len(typed) == len(from_text) > 0
+    assert typed
+    assert same
 
 
 def test_a_mistyped_argument_never_reaches_the_server(db: AjeraOdbc) -> None:
     with pytest.raises(TypeError, match="VendorTotals @StartDate"):
         db.vendor_totals(0, 2026, date.today())  # type: ignore[arg-type]
+
+
+# =============================================================================
+# TEST: parameters a function ignores
+# =============================================================================
+#
+# These fail if Deltek starts to apply a parameter, which means it must come
+# out of `ignored_parameters`: run `make odbc-probe` and `make odbc-generate`.
+
+# A date range that does not overlap this year's.
+OTHER_DATES: dict[str, object] = {
+    "StartDate": date(2023, 3, 1),
+    "EndDate": date(2023, 3, 31),
+}
+IGNORING = sorted(
+    name
+    for name, model in FUNCTIONS.items()
+    if model.__source__.ignored_parameters or model.__source__.ignored_when
+)
+
+
+def with_other_dates(
+    name: str, arguments: Sequence[object], ignored: set[str]
+) -> tuple[object, ...]:
+    """The arguments with each ignored date moved to another year."""
+    parameters = FUNCTIONS[name].__source__.parameters
+    return tuple(
+        OTHER_DATES[p] if p in ignored else v
+        for p, v in zip(parameters, arguments, strict=True)
+    )
+
+
+def totals(
+    db: AjeraOdbc, name: str, arguments: Sequence[object]
+) -> list[dict[str, object]]:
+    """The row count and the sum of every decimal column."""
+    model = FUNCTIONS[name]
+    decimals = [
+        field
+        for field, info in model.model_fields.items()
+        if isinstance(info.json_schema_extra, dict)
+        and info.json_schema_extra.get("sql_type") == "decimal"
+    ]
+    return db.aggregate(
+        model, *arguments, measures=[count(), *(sum_(field) for field in decimals)]
+    )
+
+
+@pytest.mark.parametrize("name", IGNORING)
+def test_ignored_parameters_do_not_change_the_rows(
+    db: AjeraOdbc, name: str, caplog: pytest.LogCaptureFixture
+) -> None:
+    source = FUNCTIONS[name].__source__
+    # TotalType 0, where every recorded condition holds.
+    base = function_arguments(db, name)
+    held = set(source.ignored_parameters) | {
+        p
+        for p, conditions in source.ignored_when.items()
+        if all(
+            base[source.parameters.index(code)] in codes
+            for code, codes in conditions.items()
+        )
+    }
+
+    first = totals(db, name, base)
+    second = totals(db, name, with_other_dates(name, base, held))
+    same = first == second
+
+    assert held
+    assert first[0]["count"]
+    assert same
+    assert any(
+        record.name == "ajera.odbc.arguments" and record.levelname == "WARNING"
+        for record in caplog.records
+    )
+
+
+@pytest.mark.parametrize(
+    "name", sorted(n for n in IGNORING if FUNCTIONS[n].__source__.ignored_when)
+)
+def test_dates_apply_under_the_other_codes(db: AjeraOdbc, name: str) -> None:
+    source = FUNCTIONS[name].__source__
+    conditions = source.ignored_when["StartDate"]
+    code = next(iter(conditions))
+    applying = next(v for v in (1, 2, 3) if v not in conditions[code])
+    index = source.parameters.index(code)
+    base = list(function_arguments(db, name))
+    base[index] = applying
+
+    first = totals(db, name, base)
+    second = totals(db, name, with_other_dates(name, base, {"StartDate", "EndDate"}))
+    differ = first != second
+
+    assert differ
+
+
+def test_receipt_totals_ignores_its_dates(db: AjeraOdbc) -> None:
+    this_year = (date(date.today().year, 1, 1), date.today())
+    other_year = (date(2023, 3, 1), date(2023, 3, 31))
+
+    first = totals(db, "ReceiptTotals", (*this_year, None, None, False))
+    second = totals(db, "ReceiptTotals", (*other_year, None, None, False))
+    undated = totals(db, "ReceiptTotals", (None, None, None, None, False))
+    filtered = db.count(
+        FUNCTIONS["ReceiptTotals"],
+        None,
+        None,
+        None,
+        None,
+        False,
+        where={"r_date": between(*this_year)},
+    )
+    total = first[0]["count"]
+    same = first == second == undated
+    narrower = isinstance(total, int) and 0 < filtered < total
+
+    assert same
+    assert narrower

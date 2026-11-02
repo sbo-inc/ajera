@@ -1357,10 +1357,10 @@ def test_checked_arguments_are_bound_converted() -> None:
     query = select(
         FUNCTIONS["AxFinancials"],
         ["glaKey"],
-        arguments=("2026-01-01", date(2026, 3, 31), 0, "A"),
+        arguments=("2026-01-01", date(2026, 3, 31), 0, "Accrual"),
     )
 
-    assert query.parameters == (date(2026, 1, 1), date(2026, 3, 31), False, "A")
+    assert query.parameters == (date(2026, 1, 1), date(2026, 3, 31), False, "Accrual")
 
 
 def test_parameter_types_match_the_catalog(
@@ -1386,9 +1386,11 @@ def test_parameter_types_match_the_catalog(
 def test_cli_reads_arguments_by_sql_type() -> None:
     model = FUNCTIONS["AxFinancials"]
 
-    values = odbc_cli._arguments(model, ("2026-01-01", "2026-03-31", "false", "A"))
+    values = odbc_cli._arguments(
+        model, ("2026-01-01", "2026-03-31", "false", "Accrual")
+    )
 
-    assert values == [date(2026, 1, 1), date(2026, 3, 31), False, "A"]
+    assert values == [date(2026, 1, 1), date(2026, 3, 31), False, "Accrual"]
     assert odbc_cli._arguments(
         FUNCTIONS["ReceiptTotals"], ("2026-01-01", "2026-03-31", "null", "7", "0")
     )[2:] == [None, 7, False]
@@ -1419,3 +1421,271 @@ def test_cli_describe_prints_parameter_types() -> None:
         "parameters: @StartDate smalldatetime, @EndDate smalldatetime, "
         "@CloseYear bit, @AccrualCash varchar(10)"
     ) in result.output
+
+
+# =============================================================================
+# TEST: parameters a function ignores
+# =============================================================================
+
+BALANCES = "Its balances stay current."
+
+
+class GadgetTotals(DatabaseRecord):
+    __source__ = Source(
+        kind="function",
+        name="GadgetTotals",
+        parameters=("Kind", "StartDate", "EndDate", "Client"),
+        ignored_parameters=("Kind", "StartDate", "EndDate"),
+        parameter_filters={"StartDate": "gDate", "EndDate": "gDate"},
+        parameter_notes={"StartDate": BALANCES, "EndDate": BALANCES},
+    )
+
+    gadget_key: int = Field(alias="gKey")
+    date: datetime | None = Field(None, alias="gDate")
+
+
+def ignored_warnings(caplog: pytest.LogCaptureFixture) -> list[str]:
+    return [
+        record.getMessage()
+        for record in caplog.records
+        if record.name == "ajera.odbc.arguments" and record.levelname == "WARNING"
+    ]
+
+
+GADGET_READS: dict[str, Callable[[AjeraOdbc, tuple[object, ...]], object]] = {
+    "call": lambda db, arguments: db.call(GadgetTotals, *arguments),
+    "rows": lambda db, arguments: db.rows(GadgetTotals, *arguments, fields=["date"]),
+    "count": lambda db, arguments: db.count(GadgetTotals, *arguments),
+    "aggregate": lambda db, arguments: db.aggregate(
+        GadgetTotals, *arguments, measures=[count()]
+    ),
+}
+GADGET_RESPONSES = {
+    "call": (["gKey", "gDate"], [(1, None)]),
+    "rows": (["gKey", "gDate"], [(1, None)]),
+    "count": (["Rows"], [(1,)]),
+    "aggregate": (["count"], [(1,)]),
+}
+
+
+@pytest.mark.parametrize("read", sorted(GADGET_READS))
+def test_a_value_for_an_ignored_parameter_is_logged_and_the_call_runs(
+    read: str,
+    connect: Callable[..., AjeraOdbc],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    fake = FakeConnection(GADGET_RESPONSES[read])
+    # The reader quiets the `ajera` logger unless asked to log statements;
+    # this warning is about the rows, so it is logged regardless.
+    db = connect(fake)
+
+    result = GADGET_READS[read](db, (3, START, END, 7))
+
+    assert result
+    assert fake.reads[0][1][-4:] == (3, START, END, 7)
+    assert ignored_warnings(caplog) == [
+        "GadgetTotals ignores @Kind, @StartDate, and @EndDate: its rows are the "
+        "same whatever they hold, so pass None. Filter on date instead. " + BALANCES
+    ]
+
+
+def test_none_for_an_ignored_parameter_is_not_logged(
+    connect: Callable[..., AjeraOdbc], caplog: pytest.LogCaptureFixture
+) -> None:
+    db = connect(FakeConnection(GADGET_RESPONSES["call"]))
+
+    db.call(GadgetTotals, None, None, None, 7)
+
+    assert ignored_warnings(caplog) == []
+
+
+def test_a_parameter_without_a_filter_is_named_alone(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    odbc_arguments.warn_ignored(GadgetTotals, (3, None, None, None))
+
+    assert ignored_warnings(caplog) == [
+        "GadgetTotals ignores @Kind: its rows are the same whatever they hold, "
+        "so pass None."
+    ]
+
+
+def test_a_typed_method_logs_its_ignored_arguments(
+    connect: Callable[..., AjeraOdbc], caplog: pytest.LogCaptureFixture
+) -> None:
+    fake = FakeConnection((["rKey"], []))
+
+    rows = connect(fake).receipt_totals(START, END, None, None, False)
+
+    assert rows == []
+    assert fake.reads[0][1] == (START, END, False)
+    assert ignored_warnings(caplog) == [
+        "ReceiptTotals ignores @StartDate and @EndDate: its rows are the same "
+        "whatever they hold, so pass None. Filter on r_date instead."
+    ]
+
+
+class WidgetPeriods(DatabaseRecord):
+    __source__ = Source(
+        kind="function",
+        name="WidgetPeriods",
+        parameters=("TotalType", "StartDate", "EndDate"),
+        ignored_when={
+            "StartDate": {"TotalType": (0, None)},
+            "EndDate": {"TotalType": (0, None)},
+        },
+    )
+
+    widget_key: int = Field(alias="wKey")
+
+
+@pytest.mark.parametrize(
+    "arguments, expected",
+    [
+        (
+            (0, START, END),
+            [
+                "WidgetPeriods ignores @StartDate and @EndDate when @TotalType is 0: "
+                "its rows are the same whatever they hold. Pass another @TotalType "
+                "to apply them."
+            ],
+        ),
+        (
+            (None, START, None),
+            [
+                "WidgetPeriods ignores @StartDate when @TotalType is NULL: its rows "
+                "are the same whatever they hold. Pass another @TotalType to apply "
+                "them."
+            ],
+        ),
+        ((2, START, END), []),
+        ((0, None, None), []),
+    ],
+)
+def test_a_parameter_ignored_under_a_code_is_logged_only_under_it(
+    arguments: tuple[object, ...],
+    expected: list[str],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    odbc_arguments.warn_ignored(WidgetPeriods, arguments)
+
+    assert ignored_warnings(caplog) == expected
+
+
+def test_describe_and_the_cli_report_conditions(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setitem(SOURCES, "WidgetPeriods", WidgetPeriods)
+
+    schema = describe(WidgetPeriods)
+    result = CliRunner().invoke(cli, ["odbc", "describe", "WidgetPeriods"])
+
+    assert schema.ignored_parameters == ()
+    assert schema.ignored_when["StartDate"] == {"TotalType": (0, None)}
+    assert result.exit_code == 0, result.output
+    assert "ignored: @StartDate, @EndDate when @TotalType is 0 or NULL" in result.output
+
+
+def test_the_known_functions_record_their_ignored_parameters() -> None:
+    receipts = describe(FUNCTIONS["ReceiptTotals"])
+    invoices = describe(FUNCTIONS["ClientInvoiceTotals"])
+
+    assert receipts.ignored_parameters == ("StartDate", "EndDate")
+    assert receipts.parameter_filters == {"StartDate": "rDate", "EndDate": "rDate"}
+    assert receipts.parameter_notes == {}
+    # Probed live, against the issue's report: TotalType changes the invoice
+    # amounts, and the dates apply under every code but 0 and NULL.
+    assert invoices.ignored_parameters == ()
+    for name in ("StartDate", "EndDate"):
+        codes = invoices.ignored_when[name]["TotalType"]
+        assert 0 in codes and None in codes and 1 not in codes
+
+
+def test_ignored_parameters_match_the_catalog(
+    generator: Any, catalog: dict[str, Any]
+) -> None:
+    for name, function in catalog["functions"].items():
+        source = FUNCTIONS[name].__source__
+        aliases = {info.alias for info in FUNCTIONS[name].model_fields.values()}
+        listed = function.get("ignored_parameters", [])
+
+        assert source.ignored_parameters == tuple(
+            p for p in source.parameters if p in listed
+        ), name
+        assert set(listed) <= set(source.parameters), name
+        assert dict(source.parameter_filters) == function.get("parameter_filters", {})
+        assert dict(source.parameter_notes) == function.get("parameter_notes", {})
+        assert {
+            p: {code: tuple(values) for code, values in conditions.items()}
+            for p, conditions in function.get("ignored_when", {}).items()
+        } == {p: dict(c) for p, c in source.ignored_when.items()}, name
+        assert not set(source.ignored_when) & set(source.ignored_parameters), name
+        assert set(source.parameter_filters) <= set(source.ignored_parameters), name
+        assert set(source.parameter_filters.values()) <= aliases, name
+        assert not set(listed) & set(function.get("unchecked_parameters", [])), name
+
+
+def test_typed_method_docs_name_their_ignored_arguments() -> None:
+    doc = AjeraOdbc.receipt_totals.__doc__ or ""
+
+    assert "ignores `start_date` and `end_date`" in " ".join(doc.split())
+    assert "Filter on `r_date` instead." in " ".join(doc.split())
+    assert "ignores" not in (AjeraOdbc.project_totals.__doc__ or "")
+
+
+def test_cli_describe_prints_ignored_parameters() -> None:
+    result = CliRunner().invoke(cli, ["odbc", "describe", "ReceiptTotals"])
+    as_json = CliRunner().invoke(cli, ["odbc", "describe", "ReceiptTotals", "--json"])
+
+    assert result.exit_code == 0, result.output
+    assert "ignored: @StartDate, @EndDate (Filter on r_date instead.)" in result.output
+    assert json.loads(as_json.output)["parameter_filters"] == {
+        "StartDate": "rDate",
+        "EndDate": "rDate",
+    }
+
+
+def test_harvest_keeps_probe_results_for_declared_parameters(tmp_path: Path) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "odbc_harvest", SCRIPTS / "harvest.py"
+    )
+    assert spec and spec.loader
+    harvest = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(harvest)
+    previous = tmp_path / "catalog.json"
+    previous.write_text(
+        json.dumps(
+            {
+                "functions": {
+                    "F": {
+                        "ignored_parameters": ["StartDate", "Gone"],
+                        "parameter_filters": {"StartDate": "fDate", "Gone": "fDate"},
+                        "unchecked_parameters": ["Gone"],
+                    }
+                }
+            }
+        )
+    )
+    fresh = {"functions": {"F": {"parameters": [{"name": "StartDate"}], "columns": []}}}
+
+    harvest.carry_probed(fresh, previous)
+
+    assert fresh["functions"]["F"] == {
+        "parameters": [{"name": "StartDate"}],
+        "columns": [],
+        "ignored_parameters": ["StartDate"],
+        "parameter_filters": {"StartDate": "fDate"},
+    }
+
+
+def test_none_function_arguments_are_written_as_null() -> None:
+    # The HDP driver refuses a NULL bound to a date parameter (HY104).
+    query = select(
+        FUNCTIONS["ReceiptTotals"],
+        ["rKey"],
+        where={"r_date": filters.between(START, END)},
+        arguments=(None, None, None, 7, False),
+    )
+
+    assert "FROM [dbo].[ReceiptTotals](NULL, NULL, NULL, ?, ?) WHERE" in query.statement
+    assert query.parameters == (7, False, START, END)

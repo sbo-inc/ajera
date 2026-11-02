@@ -19,7 +19,7 @@ from uuid import UUID
 from pydantic import TypeAdapter
 from pydantic.fields import FieldInfo
 
-from ajera.odbc.arguments import check_arguments
+from ajera.odbc.arguments import check_arguments, warn_ignored
 from ajera.odbc.filters import Condition
 from ajera.odbc.measures import Measure
 from ajera.odbc.queries.generic import Query, Record, placeholders
@@ -316,7 +316,11 @@ def source_clause(
             f"({', '.join(source.parameters)}), got {len(arguments)}"
         )
     checked = check_arguments(source, arguments)
-    return f"{name}({placeholders(len(checked))})", [_bindable(a) for a in checked]
+    warn_ignored(model, checked)
+    # None is written into the statement as NULL rather than bound: the HDP
+    # driver refuses a NULL bound to a date parameter (HY104).
+    slots = ", ".join("NULL" if a is None else "?" for a in checked)
+    return f"{name}({slots})", [_bindable(a) for a in checked if a is not None]
 
 
 def _where(
