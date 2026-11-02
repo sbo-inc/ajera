@@ -19,6 +19,7 @@ from uuid import UUID
 from pydantic import TypeAdapter
 from pydantic.fields import FieldInfo
 
+from ajera.odbc.arguments import check_arguments
 from ajera.odbc.filters import Condition
 from ajera.odbc.measures import Measure
 from ajera.odbc.queries.generic import Query, Record, placeholders
@@ -314,7 +315,8 @@ def source_clause(
             f"{source.name} takes {len(source.parameters)} arguments "
             f"({', '.join(source.parameters)}), got {len(arguments)}"
         )
-    return f"{name}({placeholders(len(arguments))})", [_bindable(a) for a in arguments]
+    checked = check_arguments(source, arguments)
+    return f"{name}({placeholders(len(checked))})", [_bindable(a) for a in checked]
 
 
 def _where(

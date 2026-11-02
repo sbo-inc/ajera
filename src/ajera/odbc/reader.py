@@ -1,5 +1,6 @@
 import logging
 import threading
+import time
 from collections.abc import Iterator, Sequence
 from types import TracebackType
 from typing import Self, override
@@ -113,6 +114,7 @@ class AjeraOdbc(FunctionReads, RestReads):
 
         self._connection: Connection | None = None
         self._columns: dict[str, list[tuple[str, str]]] = {}
+        self._closing: list[threading.Thread] = []
 
     # -------------------------------------------------------------------------
     # Connection lifecycle
@@ -142,6 +144,8 @@ class AjeraOdbc(FunctionReads, RestReads):
 
         Closing a connection the server already dropped can itself raise; the
         handle is discarded either way so the next read opens a fresh one.
+        Sessions still closing after a timeout keep closing in the background;
+        `wait_closed` waits for them.
         """
         connection, self._connection = self._connection, None
         if connection is not None:
@@ -149,6 +153,49 @@ class AjeraOdbc(FunctionReads, RestReads):
                 connection.close()
             except Exception:
                 logger.info("Ignoring error while closing a dropped connection")
+
+    @property
+    def closing(self) -> int:
+        """
+        Sessions still closing after a statement timed out.
+
+        Each one holds a session against the login until Deltek's server
+        finishes the abandoned statement, which can take minutes.
+
+        Returns:
+            int: The number still closing.
+        """
+        self._closing = [thread for thread in self._closing if thread.is_alive()]
+        return len(self._closing)
+
+    @property
+    def sessions(self) -> int:
+        """
+        Sessions this reader holds against the login now.
+
+        Returns:
+            int: Its open connection, if any, plus those still closing.
+        """
+        return (self._connection is not None) + self.closing
+
+    def wait_closed(self, timeout: float | None = None) -> bool:
+        """
+        Wait for the sessions still closing after a timeout to close.
+
+        Args:
+            timeout: The most seconds to wait in all; None waits until they
+                have closed.
+
+        Returns:
+            bool: True when none is still closing.
+        """
+        deadline = None if timeout is None else time.monotonic() + timeout
+        for thread in list(self._closing):
+            remaining = (
+                None if deadline is None else max(0.0, deadline - time.monotonic())
+            )
+            thread.join(remaining)
+        return self.closing == 0
 
     def __enter__(self) -> Self:
         return self
@@ -197,7 +244,7 @@ class AjeraOdbc(FunctionReads, RestReads):
         connection, self._connection = self._connection, None
         if connection is not None:
             logger.info("Statement timed out; closing its connection in the background")
-            _close_in_background(connection)
+            self._closing.append(_close_in_background(connection))
 
     def _restore_timeout(self, connection: Connection) -> None:
         if self._connection is not connection:

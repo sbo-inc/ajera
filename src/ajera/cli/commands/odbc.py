@@ -8,17 +8,15 @@ type before they are sent, always as bound parameters.
 """
 
 import dataclasses
-import inspect
 import json
 import re
-import typing
-from typing import Any
 
 import click
 from pydantic import TypeAdapter
 
 from ajera.cli.output import render
 from ajera.odbc import AjeraOdbc, filters
+from ajera.odbc.arguments import check_arguments, from_text
 from ajera.odbc.filters import Condition
 from ajera.schemas.database import SOURCES, DatabaseRecord, describe
 
@@ -83,14 +81,6 @@ def _where(model: type[DatabaseRecord], clauses: tuple[str, ...]) -> dict[str, o
                 Condition("<>", (value,)) if op == "!=" else OPERATORS[op](value)
             )
     return where
-
-
-def _function_method(model: type[DatabaseRecord]) -> Any:
-    for name, method in inspect.getmembers(AjeraOdbc, inspect.isfunction):
-        hints = typing.get_type_hints(method)
-        if hints.get("return") == list[model]:  # type: ignore[valid-type]
-            return name, method
-    raise click.BadParameter(f"{model.__source__.name} has no typed method")
 
 
 where_option = click.option(
@@ -199,7 +189,17 @@ def describe_source(source: str, as_json: bool) -> None:
     click.echo(f"{schema.kind} {schema.name} ({schema.model})")
     for label, values in (
         ("key", schema.primary_key),
-        ("parameters", tuple("@" + p for p in schema.parameters)),
+        (
+            "parameters",
+            tuple(
+                f"@{name} {kind}".rstrip()
+                for name, kind in zip(
+                    schema.parameters,
+                    schema.parameter_types or ("",) * len(schema.parameters),
+                    strict=True,
+                )
+            ),
+        ),
         ("current", (schema.current_column,) if schema.current_column else ()),
         ("deleted", (schema.deleted_column,) if schema.deleted_column else ()),
     ):
@@ -290,21 +290,25 @@ def count(
 
 
 def _arguments(model: type[DatabaseRecord], raw: tuple[str, ...]) -> list[object]:
-    _, method = _function_method(model)
-    hints = typing.get_type_hints(method)
-    names = [p for p in inspect.signature(method).parameters if p != "self"]
-    positional = names[: len(model.__source__.parameters)]
-    if len(raw) != len(positional):
+    """Read a function's text arguments by each parameter's declared SQL type."""
+    source = model.__source__
+    declarations = source.parameter_types or ("",) * len(source.parameters)
+    if len(raw) != len(source.parameters):
         raise click.BadParameter(
-            f"{model.__source__.name} takes {len(positional)} arguments: "
-            + ", ".join(positional)
+            f"{source.name} takes {len(source.parameters)} arguments: "
+            + ", ".join(
+                f"@{name} {kind}".rstrip()
+                for name, kind in zip(source.parameters, declarations, strict=True)
+            )
         )
-    return [
-        None
-        if value.lower() == "null"
-        else TypeAdapter(hints[name]).validate_python(value)
-        for name, value in zip(positional, raw)
-    ]
+    try:
+        values = [
+            None if value.lower() == "null" else from_text(kind, value)
+            for kind, value in zip(declarations, raw, strict=True)
+        ]
+        return check_arguments(source, values)
+    except (TypeError, ValueError) as error:
+        raise click.BadParameter(str(error)) from error
 
 
 @group.command(name="call")

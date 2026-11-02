@@ -50,6 +50,7 @@ class Ax1099TotalsRow(DatabaseRecord):
         kind="function",
         name="Ax1099Totals",
         parameters=("Minimum", "StartDate", "EndDate"),
+        parameter_types=("decimal(19,2)", "smalldatetime", "smalldatetime"),
     )
 
     key: int = Field(alias="vKey", json_schema_extra={"sql_type": "int"})
@@ -110,7 +111,12 @@ class Ax1099TotalsRow(DatabaseRecord):
 class CreditMemoRow(DatabaseRecord):
     """A row returned by `AxCreditMemo(@Receipt)`."""
 
-    __source__ = Source(kind="function", name="AxCreditMemo", parameters=("Receipt",))
+    __source__ = Source(
+        kind="function",
+        name="AxCreditMemo",
+        parameters=("Receipt",),
+        parameter_types=("int",),
+    )
 
     receipt_key: int = Field(alias="rKey", json_schema_extra={"sql_type": "int"})
     ci_client_description: str | None = Field(
@@ -197,6 +203,7 @@ class FinancialsRow(DatabaseRecord):
         kind="function",
         name="AxFinancials",
         parameters=("StartDate", "EndDate", "CloseYear", "AccrualCash"),
+        parameter_types=("smalldatetime", "smalldatetime", "bit", "varchar(10)"),
     )
 
     gl_account_key: int | None = Field(
@@ -325,6 +332,7 @@ class FinancialsMCRow(DatabaseRecord):
         kind="function",
         name="AxFinancials_MC",
         parameters=("StartDate", "EndDate", "CloseYear", "AccrualCash", "pCompany"),
+        parameter_types=("smalldatetime", "smalldatetime", "bit", "varchar(10)", "int"),
     )
 
     fy_company: int | None = Field(
@@ -465,6 +473,7 @@ class FinancialsMCTrialBalanceRow(DatabaseRecord):
         kind="function",
         name="AxFinancials_MC_TrialBalance",
         parameters=("StartDate", "EndDate", "CloseYear", "AccrualCash", "pCompany"),
+        parameter_types=("smalldatetime", "smalldatetime", "bit", "varchar(10)", "int"),
     )
 
     fy_company: int | None = Field(
@@ -602,7 +611,10 @@ class GLBalanceTotalsRow(DatabaseRecord):
     """A row returned by `AxGLBalanceTotals(@CutoffDate)`."""
 
     __source__ = Source(
-        kind="function", name="AxGLBalanceTotals", parameters=("CutoffDate",)
+        kind="function",
+        name="AxGLBalanceTotals",
+        parameters=("CutoffDate",),
+        parameter_types=("smalldatetime",),
     )
 
     internal1: int = Field(alias="glfaInternal1", json_schema_extra={"sql_type": "int"})
@@ -622,6 +634,7 @@ class GLDTotalsRow(DatabaseRecord):
         kind="function",
         name="AxGLDTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
+        parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
     )
 
     key: int = Field(alias="tcdKey", json_schema_extra={"sql_type": "int"})
@@ -740,6 +753,7 @@ class LedgerRow(DatabaseRecord):
         kind="function",
         name="AxLedger",
         parameters=("StartDate", "EndDate", "CloseYear", "AccrualCash"),
+        parameter_types=("smalldatetime", "smalldatetime", "bit", "varchar(10)"),
     )
 
     last_day_current_fiscal_year: datetime | None = Field(
@@ -766,6 +780,7 @@ class TranTotalsRow(DatabaseRecord):
         kind="function",
         name="AxTranTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
+        parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
     )
 
     key: int = Field(alias="twdKey", json_schema_extra={"sql_type": "int"})
@@ -968,7 +983,12 @@ class TranTotalsRow(DatabaseRecord):
 class BankEntriesRow(DatabaseRecord):
     """A row returned by `BankEntries(@CutoffDate)`."""
 
-    __source__ = Source(kind="function", name="BankEntries", parameters=("CutoffDate",))
+    __source__ = Source(
+        kind="function",
+        name="BankEntries",
+        parameters=("CutoffDate",),
+        parameter_types=("smalldatetime",),
+    )
 
     bank_entry_key: int = Field(alias="beKey", json_schema_extra={"sql_type": "int"})
     type: BankEntryType | int = Field(
@@ -1078,6 +1098,7 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         name="ClientInvoiceTotals",
         blobs=("ciPDFImage", "ciFinalData"),
         parameters=("TotalType", "StartDate", "EndDate"),
+        parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
     )
 
     client_invoice_key: int = Field(
@@ -2787,6 +2808,7 @@ class ClientTotalsRow(DatabaseRecord):
         kind="function",
         name="ClientTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
+        parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
     )
 
     key: int = Field(alias="cKey", json_schema_extra={"sql_type": "int"})
@@ -2993,6 +3015,7 @@ class EmployeeTotalsRow(DatabaseRecord):
         kind="function",
         name="EmployeeTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
+        parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
         sensitive=("empDateBorn", "empSocialSecurityNumber"),
     )
 
@@ -3451,7 +3474,10 @@ class GLFullAccountWithCutoffRow(DatabaseRecord):
     """A row returned by `GLFullAccountWithCutoff(@CutoffDate)`."""
 
     __source__ = Source(
-        kind="function", name="GLFullAccountWithCutoff", parameters=("CutoffDate",)
+        kind="function",
+        name="GLFullAccountWithCutoff",
+        parameters=("CutoffDate",),
+        parameter_types=("smalldatetime",),
     )
 
     entity_key: int = Field(alias="eKey", json_schema_extra={"sql_type": "int"})
@@ -3544,7 +3570,10 @@ class ProjectTotalsRow(DatabaseRecord):
     """A row returned by `ProjectTotals(@StartDate, @EndDate)`."""
 
     __source__ = Source(
-        kind="function", name="ProjectTotals", parameters=("StartDate", "EndDate")
+        kind="function",
+        name="ProjectTotals",
+        parameters=("StartDate", "EndDate"),
+        parameter_types=("smalldatetime", "smalldatetime"),
     )
 
     project_key: int = Field(alias="prjKey", json_schema_extra={"sql_type": "int"})
@@ -4829,6 +4858,7 @@ class ReceiptTotalsRow(DatabaseRecord):
         kind="function",
         name="ReceiptTotals",
         parameters=("StartDate", "EndDate", "Client", "Project", "IncludeVoidedNSF"),
+        parameter_types=("smalldatetime", "smalldatetime", "int", "int", "bit"),
     )
 
     receipt_key: int = Field(alias="rKey", json_schema_extra={"sql_type": "int"})
@@ -4934,6 +4964,7 @@ class RefundTotalsRow(DatabaseRecord):
         kind="function",
         name="RefundTotals",
         parameters=("StartDate", "EndDate", "Client", "Project"),
+        parameter_types=("smalldatetime", "smalldatetime", "int", "int"),
     )
 
     vendor_invoice_key: int = Field(
@@ -4970,6 +5001,7 @@ class VendorInvoiceTotalsRow(DatabaseRecord):
         kind="function",
         name="VendorInvoiceTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
+        parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
     )
 
     vendor_invoice_key: int = Field(
@@ -5097,6 +5129,7 @@ class VendorTotalsRow(DatabaseRecord):
         kind="function",
         name="VendorTotals",
         parameters=("TotalType", "StartDate", "EndDate"),
+        parameter_types=("tinyint", "smalldatetime", "smalldatetime"),
     )
 
     key: int = Field(alias="vKey", json_schema_extra={"sql_type": "int"})

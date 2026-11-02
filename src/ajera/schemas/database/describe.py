@@ -68,6 +68,7 @@ class SourceSchema:
         model: The model's class name (`TransactionRecord`).
         primary_key: The key columns; empty when the source has none.
         parameters: A function's SQL parameter names, in call order.
+        parameter_types: Each parameter's SQL declaration, in the same order.
         current_column: The column marking a row's current version, if any.
         deleted_column: The column marking a deleted row Ajera keeps, if any.
         fields: Every column the model declares, in database order.
@@ -78,6 +79,7 @@ class SourceSchema:
     model: str
     primary_key: tuple[str, ...]
     parameters: tuple[str, ...]
+    parameter_types: tuple[str, ...]
     current_column: str | None
     deleted_column: str | None
     fields: tuple[FieldSchema, ...]
@@ -133,6 +135,7 @@ def describe(model: type[DatabaseRecord]) -> SourceSchema:
         model=model.__name__,
         primary_key=source.primary_key,
         parameters=source.parameters,
+        parameter_types=source.parameter_types,
         current_column=source.current_column,
         deleted_column=source.deleted_column,
         fields=tuple(fields),

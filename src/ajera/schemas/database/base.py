@@ -34,6 +34,9 @@ class Source:
         blobs: Binary columns, left out of a read unless asked for, because a
             handful of them hold whole files (invoice PDFs, report designs).
         parameters: A function's SQL parameter names, in call order.
+        parameter_types: Each parameter's SQL declaration, in the same order
+            (`smalldatetime`, `varchar(10)`, `decimal(19,2)`). Arguments are
+            checked against these before they are bound.
         current_column: The `bit` column that marks the current version of a
             row Ajera keeps old versions of (`tIsCurrent`), if any.
         deleted_column: The `bit` column that marks a deleted row Ajera keeps
@@ -50,6 +53,7 @@ class Source:
     foreign_keys: Mapping[str, tuple[str, str]] = field(default_factory=dict)
     blobs: tuple[str, ...] = ()
     parameters: tuple[str, ...] = ()
+    parameter_types: tuple[str, ...] = ()
     current_column: str | None = None
     deleted_column: str | None = None
     sensitive: tuple[str, ...] = ()
