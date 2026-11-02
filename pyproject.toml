@@ -1,6 +1,6 @@
 [project]
 name = "ajera"
-version = "0.5.0"
+version = "0.6.0"
 description = "Deltek Ajera Python API Client"
 readme = "README.md"
 license = "MIT"
@@ -25,8 +25,11 @@ requires-python = ">=3.12"
 dependencies = [
     "click >= 8.0.0",
     "httpx >= 0.20.0",
-    "pydantic >= 2.10.0",
+    "pydantic >= 2.11.0",
 ]
+
+[project.optional-dependencies]
+odbc = ["pyodbc >= 5.0"]
 
 [project.urls]
 Homepage = "https://github.com/sbo-inc/ajera"
@@ -47,6 +50,7 @@ dev = [
 asyncio_mode = "auto"
 markers = [
     "integration: marks tests that require a live Ajera API instance",
+    "odbc: marks tests that require the HDP ODBC driver and a live Ajera ODBC login",
 ]
 
 [project.scripts]

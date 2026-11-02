@@ -42,6 +42,7 @@ extend-safe-fixes = ["TID252"]
 # Tests can use relative imports
 # Print statements should be allowed in runnable files (tests, examples, etc.)
 "**/tests/**/*" = ["TID252", "T20"]
+"scripts/**/*" = ["T20"]
 "__main__.py" = ["PLC0415","T20"]
 "__init__.py" = ["PLC0415"]
 

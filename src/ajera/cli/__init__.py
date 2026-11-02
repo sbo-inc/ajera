@@ -14,6 +14,7 @@ from ajera.cli.commands import (
     employees,
     invoice_formats,
     ledger,
+    odbc,
     projects,
     rate_tables,
     session,
@@ -34,6 +35,8 @@ Connection settings are read from environment variables:
 - AJERA_API_HEADERS as a JSON object of extra request headers.
 - AJERA_API_TIMEOUT as a per-request timeout in seconds.
 - AJERA_API_RETRIES as a connection-retry count.
+
+`ajera odbc` reads the database instead, over AJERA_ODBC_* settings.
 """
 
 
@@ -70,6 +73,7 @@ for module in (
     rate_tables,
     bank_accounts,
     invoice_formats,
+    odbc,
 ):
     cli.add_command(module.group)
 

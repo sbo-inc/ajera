@@ -113,6 +113,12 @@ AJERA_ENV_VARS = (
     "AJERA_API_HEADERS",
     "AJERA_API_TIMEOUT",
     "AJERA_API_RETRIES",
+    "AJERA_ODBC_DATASOURCE",
+    "AJERA_ODBC_USERNAME",
+    "AJERA_ODBC_PASSWORD",
+    "AJERA_ODBC_HOST",
+    "AJERA_ODBC_PORT",
+    "AJERA_ODBC_DRIVER",
 )
 
 
@@ -121,7 +127,7 @@ def isolate_environment(
     request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """
-    Clear the `AJERA_API_*` variables so unit tests never read the real shell.
+    Clear the `AJERA_*` variables so unit tests never read the real shell.
 
     Without this a developer with credentials exported sees different
     behaviour from CI, which has none: config falls back to the environment,

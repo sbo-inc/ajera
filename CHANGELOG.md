@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.0] - 2026-11-01
+
+- `ajera[odbc]` is a new optional extra. `AjeraOdbc` reads the Ajera database read-only through Deltek's ODBC entitlement into typed models for every table, view, and table-valued function, and `ajera odbc` brings the same reads to the CLI ([#25]).
+- Python 3.15 is now tested in CI and declared in the package metadata, and the locked dependencies are updated.
+
 ## [0.5.0] - 2026-08-26
 
 - Python 3.14 is now tested in CI and declared in the package metadata, so the supported-versions badge and the PyPI classifiers list it ([#26]).
@@ -63,5 +68,6 @@
 [#13]: https://github.com/sbo-inc/ajera/issues/13
 [#14]: https://github.com/sbo-inc/ajera/issues/14
 [#15]: https://github.com/sbo-inc/ajera/issues/15
+[#25]: https://github.com/sbo-inc/ajera/issues/25
 [#26]: https://github.com/sbo-inc/ajera/issues/26
 [#27]: https://github.com/sbo-inc/ajera/issues/27

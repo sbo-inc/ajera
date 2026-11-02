@@ -315,8 +315,8 @@ class Performance(GenericBaseModel):
         """
         Profit factor on work billed.
 
-        Total billed per unit of direct labor cost (the SBO convention). Differs
-        from net_multiplier by including pass-through revenue in the numerator.
+        Total billed per unit of direct labor cost Differs from net_multiplier by
+        including pass-through revenue in the numerator.
 
         Returns:
             float | None: billed / labor_cost, or None when no labor cost.
