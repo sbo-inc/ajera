@@ -67,7 +67,7 @@ Deltek supports read-only ODBC access to the Ajera database as a separate entitl
 pip install 'ajera[odbc]'
 ```
 
-The reader also needs `unixODBC` and the Progress DataDirect Hybrid Data Pipeline ODBC driver, which Deltek ships for `x86_64` Linux and Windows only. On any other machine, including Apple Silicon, use the bundled `linux/amd64` image: `make odbc-image` downloads the driver, checks its checksum, and builds the image.
+The reader also needs `unixODBC` and the Progress DataDirect Hybrid Data Pipeline ODBC driver ([Deltek's Linux download](https://dsm.deltek.com/DFVE/ODBC/HDPLinuxDriver.zip)). The driver is built for `x86_64` Linux and Windows only, so on any other machine, including Apple Silicon, run the reader in a `linux/amd64` container.
 
 | Variable | Description |
 | --- | --- |
@@ -76,8 +76,9 @@ The reader also needs `unixODBC` and the Progress DataDirect Hybrid Data Pipelin
 | `AJERA_ODBC_PASSWORD` | ODBC password. |
 | `AJERA_ODBC_HOST` | Service host (default `ajera-hdp01.prd.mydeltek.com`). |
 | `AJERA_ODBC_PORT` | Service port (default `443`). |
+| `AJERA_ODBC_DRIVER` | Registered ODBC driver name (default `DataDirect HDP 4.6`). |
 
-The database reaches much further than the REST API. It holds transaction-level detail, accounts receivable, receipts, the general ledger, revenue, payroll, purchase orders and rate values. Every table (165), view (60), and table-valued function (19) has a typed model in `ajera.schemas.database`, generated from the live catalog. Pass a model to `read`, `stream`, `get`, `count`, `rows`, or `aggregate`, or call a function through its typed method:
+The database reaches much further than the REST API. It holds transaction-level detail, accounts receivable, receipts, the general ledger, revenue, payroll, purchase orders and rate values. Every table (165), view (60), and table-valued function (19) has a typed model in `ajera.schemas.database`. Pass a model to `read`, `stream`, `get`, `count`, `rows`, or `aggregate`, or call a function through its typed method:
 
 ```python
 from datetime import date
@@ -163,7 +164,9 @@ schema = describe(TransactionRecord)
 - **`after=`** resumes a read of a source with a single-column key, in key order. It works on `read`, `stream`, and `rows`.
 - **`timeout=`** sets the query timeout for one call. A statement that times out raises at once but keeps running on Deltek's server until it finishes. The reader closes that connection in the background and opens a new one, so the login holds one more session meanwhile. `db.closing` counts those sessions, `db.sessions` adds the open one, and `db.wait_closed()` waits for them to close.
 - **Function arguments** are checked against each parameter's SQL type before they are sent, because SQL Server converts some mistakes silently: an `int` passed for a date is a day count from 1900. Date parameters take a `date`, a `datetime`, or an ISO 8601 string. `describe(model).parameter_types` lists the types.
-- **Schema facts** come from the generated models. `describe(model)` and `ajera odbc describe SOURCE` describe a source offline. Each code has a `label` with Deltek's own text (`TransactionStatus.write_off.label` is `"Write Off"`). `Source.sensitive` and `SENSITIVE_COLUMNS` name the columns holding identity numbers, credentials, tokens, and banking details.
+- **Ignored parameters.** Some functions declare parameters that do not change their rows. `ReceiptTotals` returns receipts of every date, whatever `StartDate` and `EndDate` say, and the functions with a `TotalType` ignore their dates when it is 0 or NULL, and some under other codes too. `describe(model).ignored_parameters` and `ignored_when` list them, and `parameter_filters` names the field to filter on instead, such as `where={"r_date": between(start, end)}`. Passing any value other than None to one logs a warning on the `ajera.odbc.arguments` logger, whatever `log` is set to, and the call still runs.
+- **`AccrualCash`** takes `Accrual` or `Cash`. Any other value, `A` included, returns the same rows as NULL.
+- **Schema facts** need no connection. `describe(model)` and `ajera odbc describe SOURCE` give a source's fields, SQL types, keys, and parameters. Each code has a `label` with Deltek's own text (`TransactionStatus.write_off.label` is `"Write Off"`). `Source.sensitive` and `SENSITIVE_COLUMNS` name the columns holding identity numbers, credentials, tokens, and banking details.
 
 The CLI exposes the same reads:
 
@@ -173,8 +176,6 @@ $ ajera odbc describe AxTransaction
 $ ajera odbc read AxClientInvoice -w status=1,4 -w "invoice_date>=2026-01-01" -n 50
 $ ajera odbc call ProjectTotals 2026-01-01 2026-03-31 -w project_key=1234
 ```
-
-`make test-odbc` runs the live ODBC checks in the image. `make odbc-verify` validates every model against every live row. To pick up a new Ajera release, run `make odbc-catalog`, then `make odbc-enums XLSX=...` and `make odbc-generate`.
 
 ## Quick start
 

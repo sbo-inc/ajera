@@ -37,6 +37,22 @@ class Source:
         parameter_types: Each parameter's SQL declaration, in the same order
             (`smalldatetime`, `varchar(10)`, `decimal(19,2)`). Arguments are
             checked against these before they are bound.
+        ignored_parameters: Parameters the function declares but does not
+            apply, in call order: changing one, with the other arguments
+            fixed, did not change the rows (`ReceiptTotals` returns receipts
+            of every date, whatever `StartDate` and `EndDate` say). Probed
+            live by `scripts/odbc/probe.py`; a value other than None passed
+            to one is logged as a warning.
+        parameter_filters: For an ignored parameter, the column a `where`
+            filters on instead (`rDate` for `ReceiptTotals.StartDate`).
+        parameter_notes: For an ignored parameter, how the result differs
+            from what the parameter promises, where the filter alone does not
+            make up for it.
+        ignored_when: Parameters the function ignores only under some
+            codes, with those codes: `{"StartDate": {"TotalType": (0, None)}}`
+            means `StartDate` changes nothing while `TotalType` is 0 or NULL,
+            but is applied under the other codes. A value passed to one under
+            such a code is logged as a warning too.
         current_column: The `bit` column that marks the current version of a
             row Ajera keeps old versions of (`tIsCurrent`), if any.
         deleted_column: The `bit` column that marks a deleted row Ajera keeps
@@ -54,6 +70,12 @@ class Source:
     blobs: tuple[str, ...] = ()
     parameters: tuple[str, ...] = ()
     parameter_types: tuple[str, ...] = ()
+    ignored_parameters: tuple[str, ...] = ()
+    parameter_filters: Mapping[str, str] = field(default_factory=dict)
+    parameter_notes: Mapping[str, str] = field(default_factory=dict)
+    ignored_when: Mapping[str, Mapping[str, tuple[object, ...]]] = field(
+        default_factory=dict
+    )
     current_column: str | None = None
     deleted_column: str | None = None
     sensitive: tuple[str, ...] = ()

@@ -255,6 +255,10 @@ class FunctionReads:
         """
         Call `AxGLDTotals(@TotalType, @StartDate, @EndDate)`.
 
+        With `total_type` 0 or 1, the function ignores `start_date` and
+        `end_date`: its rows are the same whatever they hold, and a value
+        passed to them logs a warning.
+
         Returns:
             list[GLDTotalsRow]: The function's rows.
         """
@@ -317,6 +321,10 @@ class FunctionReads:
         """
         Call `AxTranTotals(@TotalType, @StartDate, @EndDate)`.
 
+        With `total_type` 0, 2, 3, or None, the function ignores `start_date`
+        and `end_date`: its rows are the same whatever they hold, and a value
+        passed to them logs a warning.
+
         Returns:
             list[TranTotalsRow]: The function's rows.
         """
@@ -373,6 +381,10 @@ class FunctionReads:
         """
         Call `ClientInvoiceTotals(@TotalType, @StartDate, @EndDate)`.
 
+        With `total_type` 0 or None, the function ignores `start_date` and
+        `end_date`: its rows are the same whatever they hold, and a value
+        passed to them logs a warning.
+
         Returns:
             list[ClientInvoiceTotalsRow]: The function's rows.
         """
@@ -403,6 +415,10 @@ class FunctionReads:
         """
         Call `ClientTotals(@TotalType, @StartDate, @EndDate)`.
 
+        With `total_type` 0 or None, the function ignores `start_date` and
+        `end_date`: its rows are the same whatever they hold, and a value
+        passed to them logs a warning.
+
         Returns:
             list[ClientTotalsRow]: The function's rows.
         """
@@ -432,6 +448,10 @@ class FunctionReads:
     ) -> list[EmployeeTotalsRow]:
         """
         Call `EmployeeTotals(@TotalType, @StartDate, @EndDate)`.
+
+        With `total_type` 0, 2, 3, or None, the function ignores `start_date`
+        and `end_date`: its rows are the same whatever they hold, and a value
+        passed to them logs a warning.
 
         Returns:
             list[EmployeeTotalsRow]: The function's rows.
@@ -519,6 +539,9 @@ class FunctionReads:
         """
         Call `ReceiptTotals(@StartDate, @EndDate, @Client, @Project, @IncludeVoidedNSF)`.
 
+        The function ignores `start_date` and `end_date`; pass None, or the
+        call logs a warning. Filter on `r_date` instead.
+
         Returns:
             list[ReceiptTotalsRow]: The function's rows.
         """
@@ -583,6 +606,10 @@ class FunctionReads:
         """
         Call `VendorInvoiceTotals(@TotalType, @StartDate, @EndDate)`.
 
+        With `total_type` 0, 1, or None, the function ignores `start_date` and
+        `end_date`: its rows are the same whatever they hold, and a value
+        passed to them logs a warning.
+
         Returns:
             list[VendorInvoiceTotalsRow]: The function's rows.
         """
@@ -612,6 +639,10 @@ class FunctionReads:
     ) -> list[VendorTotalsRow]:
         """
         Call `VendorTotals(@TotalType, @StartDate, @EndDate)`.
+
+        With `total_type` 0, 1, 2, or None, the function ignores `start_date`
+        and `end_date`: its rows are the same whatever they hold, and a value
+        passed to them logs a warning.
 
         Returns:
             list[VendorTotalsRow]: The function's rows.

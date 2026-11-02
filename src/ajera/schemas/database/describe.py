@@ -69,6 +69,14 @@ class SourceSchema:
         primary_key: The key columns; empty when the source has none.
         parameters: A function's SQL parameter names, in call order.
         parameter_types: Each parameter's SQL declaration, in the same order.
+        ignored_parameters: Parameters the function declares but does not
+            apply, in call order, as probed live.
+        parameter_filters: For an ignored parameter, the column to filter on
+            instead.
+        parameter_notes: For an ignored parameter, how the result differs
+            from what the parameter promises.
+        ignored_when: Parameters the function ignores only under some codes,
+            with those codes.
         current_column: The column marking a row's current version, if any.
         deleted_column: The column marking a deleted row Ajera keeps, if any.
         fields: Every column the model declares, in database order.
@@ -80,6 +88,10 @@ class SourceSchema:
     primary_key: tuple[str, ...]
     parameters: tuple[str, ...]
     parameter_types: tuple[str, ...]
+    ignored_parameters: tuple[str, ...]
+    parameter_filters: Mapping[str, str]
+    parameter_notes: Mapping[str, str]
+    ignored_when: Mapping[str, Mapping[str, tuple[object, ...]]]
     current_column: str | None
     deleted_column: str | None
     fields: tuple[FieldSchema, ...]
@@ -136,6 +148,12 @@ def describe(model: type[DatabaseRecord]) -> SourceSchema:
         primary_key=source.primary_key,
         parameters=source.parameters,
         parameter_types=source.parameter_types,
+        ignored_parameters=source.ignored_parameters,
+        parameter_filters=dict(source.parameter_filters),
+        parameter_notes=dict(source.parameter_notes),
+        ignored_when={
+            name: dict(conditions) for name, conditions in source.ignored_when.items()
+        },
         current_column=source.current_column,
         deleted_column=source.deleted_column,
         fields=tuple(fields),

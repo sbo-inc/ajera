@@ -19,7 +19,7 @@ ODBC_RUN = docker run --rm --platform linux/amd64 $(foreach var,$(ODBC_ENV),-e $
 MAKEFLAGS += --no-print-directory
 
 .PHONY: help install lock upgrade outdated check format test test-integration coverage build code clean \
-	odbc-driver odbc-image odbc-shell test-odbc odbc-catalog odbc-enums odbc-generate odbc-verify
+	odbc-driver odbc-image odbc-shell test-odbc odbc-catalog odbc-probe odbc-enums odbc-generate odbc-verify
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -71,6 +71,9 @@ test-odbc: ## Run integration tests against the ODBC database, in the ODBC image
 
 odbc-catalog: ## Snapshot the live database catalog into scripts/odbc/catalog.json
 	$(ODBC_RUN) $(ODBC_IMAGE) uv run --frozen --extra odbc python scripts/odbc/harvest.py
+
+odbc-probe: ## Record which function parameters have no effect (ARGS=function names)
+	$(ODBC_RUN) $(ODBC_IMAGE) uv run --frozen --extra odbc python -u scripts/odbc/probe.py $(ARGS)
 
 odbc-enums: ## Extract documented codes from the schema workbook (XLSX=path)
 	@test -n "$(XLSX)" || { echo "usage: make odbc-enums XLSX=path/to/AjeraSchema.xlsx"; exit 2; }

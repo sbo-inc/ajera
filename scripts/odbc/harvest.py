@@ -11,6 +11,9 @@ The snapshot is tenant-neutral. Columns a tenant added as custom fields (the
 are SQL Server's own tables, so the committed file describes the schema every
 Ajera database shares. Custom fields still reach callers at run time through
 `DatabaseRecord.custom_fields`.
+
+What `probe.py` recorded about each function's parameters is carried over
+from the existing snapshot, for the parameters the function still declares.
 """
 
 import json
@@ -23,6 +26,14 @@ from ajera.odbc import AjeraOdbc
 
 CUSTOM_COLUMN = re.compile(r"^[a-z]+_")
 SYSTEM_TABLES = {"dtproperties", "sysdiagrams"}
+# Written by probe.py, not read from the catalog.
+PROBED = (
+    "ignored_parameters",
+    "unchecked_parameters",
+    "parameter_filters",
+    "parameter_notes",
+    "ignored_when",
+)
 
 
 def fetch(cursor: Any, statement: str) -> list[dict[str, Any]]:
@@ -77,6 +88,23 @@ def dump(catalog: dict[str, dict[str, Any]]) -> str:
         lines.append(f"  }}{',' if g < len(catalog) - 1 else ''}")
     lines.append("}")
     return "\n".join(lines) + "\n"
+
+
+def carry_probed(catalog: dict[str, dict[str, Any]], path: Path) -> None:
+    """Keep what probe.py found, for parameters each function still declares."""
+    if not path.exists():
+        return
+    previous = json.loads(path.read_text()).get("functions", {})
+    for name, function in catalog["functions"].items():
+        declared = {parameter["name"] for parameter in function["parameters"]}
+        for key in PROBED:
+            value = previous.get(name, {}).get(key)
+            if isinstance(value, dict):
+                value = {k: v for k, v in value.items() if k in declared}
+            elif isinstance(value, list):
+                value = [v for v in value if v in declared]
+            if value:
+                function[key] = value
 
 
 def main(path: str) -> None:
@@ -195,6 +223,7 @@ def main(path: str) -> None:
         if function is not None and not CUSTOM_COLUMN.match(row["COLUMN_NAME"]):
             function["columns"].append(column(row))
 
+    carry_probed(catalog, Path(path))
     Path(path).write_text(dump(catalog))
     print(
         f"{path}: {len(catalog['tables'])} tables, {len(catalog['views'])} views, "
