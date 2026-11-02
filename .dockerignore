@@ -1,0 +1,6 @@
+# Only the dependency manifests are copied into the ODBC image; the checkout is
+# bind-mounted at run time. Keep the context small.
+*
+!pyproject.toml
+!uv.lock
+!README.md

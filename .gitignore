@@ -208,3 +208,6 @@ __marimo__/
 
 .python-version
 .DS_Store
+
+# Ajera ODBC: downloaded vendor driver
+.odbc/

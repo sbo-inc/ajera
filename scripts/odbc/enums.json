@@ -1,0 +1,3016 @@
+{
+ "acStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxAttachmentCategory",
+  "truncated": false
+ },
+ "acType": {
+  "codes": {
+   "0": "All",
+   "1": "Bank Account",
+   "10": "Activity",
+   "11": "Billing Rate Table",
+   "12": "Invoice Format",
+   "13": "Overhead Group",
+   "14": "Task",
+   "15": "Expense Report",
+   "16": "Vendor Invoice",
+   "17": "In house Expense Log",
+   "18": "Client Invoice",
+   "19": "Billing Review History",
+   "2": "Department",
+   "20": "Client Receipt",
+   "21": "Deposit",
+   "22": "Bank Statement",
+   "23": "Journal Entry",
+   "3": "Chart Of Accounts",
+   "4": "Security Group",
+   "5": "Project",
+   "6": "Client",
+   "7": "Vendor",
+   "8": "Employee",
+   "9": "Contact"
+  },
+  "table": "AxAttachmentCategory",
+  "truncated": true
+ },
+ "actStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxActivity",
+  "truncated": false
+ },
+ "actType": {
+  "codes": {
+   "0": "None",
+   "1": "Labor",
+   "2": "Expense",
+   "3": "Consultant"
+  },
+  "table": "AxActivity",
+  "truncated": false
+ },
+ "agStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxGLAccountGroup",
+  "truncated": false
+ },
+ "alType": {
+  "codes": {
+   "0": "Email",
+   "1": "SMS"
+  },
+  "table": "AxAlert",
+  "truncated": false
+ },
+ "amAttachmentCategoryType": {
+  "codes": {
+   "0": "All",
+   "1": "Bank Account",
+   "10": "Activity",
+   "11": "Billing Rate Table",
+   "12": "Invoice Format",
+   "13": "Overhead Group",
+   "14": "Task",
+   "15": "Expense Report",
+   "16": "Vendor Invoice",
+   "17": "In house Expense Log",
+   "18": "Client Invoice",
+   "19": "Billing Review History",
+   "2": "Department",
+   "20": "Client Receipt",
+   "21": "Deposit",
+   "22": "Bank Statement",
+   "23": "Journal Entry",
+   "3": "Chart Of Accounts",
+   "4": "Security Group",
+   "5": "Project",
+   "6": "Client",
+   "7": "Vendor",
+   "8": "Employee",
+   "9": "Contact"
+  },
+  "table": "AxAttachmentMap",
+  "truncated": true
+ },
+ "amType": {
+  "codes": {
+   "0": "File Path",
+   "1": "URL",
+   "2": "Filestream"
+  },
+  "table": "AxAttachmentMap",
+  "truncated": false
+ },
+ "baBankAccountType": {
+  "codes": {
+   "0": "Bank",
+   "1": "Credit Card",
+   "2": "Line of Credit"
+  },
+  "table": "AxBankAccount",
+  "truncated": false
+ },
+ "baStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxBankAccount",
+  "truncated": false
+ },
+ "beStatus": {
+  "codes": {
+   "0": "Active",
+   "1": "Voided",
+   "2": "Voided Entry For In/Out Vendor Invoice"
+  },
+  "table": "AxBankEntry",
+  "truncated": false
+ },
+ "beType": {
+  "codes": {
+   "0": "Beginning Balance Paid",
+   "1": "Check",
+   "10": "Debit Card Deposit",
+   "11": "EFT Deposit",
+   "12": "Interest Earned",
+   "13": "Void Check",
+   "14": "Direct Deposit",
+   "15": "Charge",
+   "16": "Payment",
+   "17": "Credit",
+   "18": "LateCharge",
+   "19": "Interest Charged",
+   "2": "Debit Card Payment",
+   "20": "Vendor Invoice Paid By Credit Card",
+   "21": "Inter-Company Transfer",
+   "3": "EFT Payment",
+   "4": "Interest Paid",
+   "5": "NSF Charge",
+   "6": "Service Charge",
+   "7": "Miscellaneous Adjustment",
+   "8": "Bank Transfer",
+   "9": "Deposit"
+  },
+  "table": "AxBankEntry",
+  "truncated": true
+ },
+ "bfdCategoryConfidenceLevel": {
+  "codes": {
+   "0": "Unknown",
+   "1": "VeryHigh",
+   "2": "High",
+   "3": "Medium",
+   "4": "Low"
+  },
+  "table": "AxBankFeedDetail",
+  "truncated": false
+ },
+ "bfdCategoryDetailed": {
+  "codes": {
+   "0": "Unknown",
+   "1": "IncomeDividends",
+   "10": "TransferInInvestmentAndRetirementFunds",
+   "100": "RentAndUtilitiesRent",
+   "101": "RentAndUtilitiesSewageAndWasteManagement",
+   "102": "RentAndUtilitiesTelephone",
+   "103": "RentAndUtilitiesWater",
+   "104": "RentAndUtilitiesOtherUtilities",
+   "11": "TransferInSavings",
+   "12": "TransferInAccountTransfer",
+   "13": "TransferInOtherTransferIn",
+   "14": "TransferOutInvestmentAndRetirementFunds",
+   "15": "TransferOutSavings",
+   "16": "TransferOutWithdrawal",
+   "17": "TransferOutAccountTransfer",
+   "18": "TransferOutOtherTransferOut",
+   "19": "LoanPaymentsCarPayment",
+   "2": "IncomeInterestEarned",
+   "20": "LoanPaymentsCreditCardPayment",
+   "21": "LoanPaymentsPersonalLoanPayment",
+   "22": "LoanPaymentsMortgagePayment",
+   "23": "LoanPaymentsStudentLoanPayment",
+   "24": "LoanPaymentsOtherPayment",
+   "25": "BankFeesAtmFees",
+   "26": "BankFeesForeignTransactionFees",
+   "27": "BankFeesInsufficientFunds",
+   "28": "BankFeesInterestCharge",
+   "29": "BankFeesOverdraftFees",
+   "3": "IncomeRetirementPension",
+   "30": "BankFeesOtherBankFees",
+   "31": "EntertainmentCasinosAndGambling",
+   "32": "EntertainmentMusicAndAudio",
+   "33": "EntertainmentSportingEventsAmusementParksAndMuseums",
+   "34": "EntertainmentTvAndMovies",
+   "35": "EntertainmentVideoGames",
+   "36": "EntertainmentOtherEntertainment",
+   "37": "FoodAndDrinkBeerWineAndLiquor",
+   "38": "FoodAndDrinkCoffee",
+   "39": "FoodAndDrinkFastFood",
+   "4": "IncomeTaxRefund",
+   "40": "FoodAndDrinkGroceries",
+   "41": "FoodAndDrinkRestaurant",
+   "42": "FoodAndDrinkVendingMachines",
+   "43": "FoodAndDrinkOtherFoodAndDrink",
+   "44": "GeneralMerchandiseBookstoresAndNewsstands",
+   "45": "GeneralMerchandiseClothingAndAccessories",
+   "46": "GeneralMerchandiseConvenienceStores",
+   "47": "GeneralMerchandiseDepartmentStores",
+   "48": "GeneralMerchandiseDiscountStores",
+   "49": "GeneralMerchandiseElectronics",
+   "5": "IncomeUnemployment",
+   "50": "GeneralMerchandiseGiftsAndNovelties",
+   "51": "GeneralMerchandiseOfficeSupplies",
+   "52": "GeneralMerchandiseOnlineMarketplaces",
+   "53": "GeneralMerchandisePetSupplies",
+   "54": "GeneralMerchandiseSportingGoods",
+   "55": "GeneralMerchandiseSuperstores",
+   "56": "GeneralMerchandiseTobaccoAndVape",
+   "57": "GeneralMerchandiseOtherGeneralMerchandise",
+   "58": "HomeImprovementFurniture",
+   "59": "HomeImprovementHardware",
+   "6": "IncomeWages",
+   "60": "HomeImprovementRepairAndMaintenance",
+   "61": "HomeImprovementSecurity",
+   "62": "HomeImprovementOtherHomeImprovement",
+   "63": "MedicalDentalCare",
+   "64": "MedicalEyeCare",
+   "65": "MedicalNursingCare",
+   "66": "MedicalPharmaciesAndSupplements",
+   "67": "MedicalPrimaryCare",
+   "68": "MedicalVeterinaryServices",
+   "69": "MedicalOtherMedical",
+   "7": "IncomeOtherIncome",
+   "70": "PersonalCareGymsAndFitnessCenters",
+   "71": "PersonalCareHairAndBeauty",
+   "72": "PersonalCareLaundryAndDryCleaning",
+   "73": "PersonalCareOtherPersonalCare",
+   "74": "GeneralServicesAccountingAndFinancialPlanning",
+   "75": "GeneralServicesAutomotive",
+   "76": "GeneralServicesChildcare",
+   "77": "GeneralServicesConsultingAndLegal",
+   "78": "GeneralServicesEducation",
+   "79": "GeneralServicesInsurance",
+   "8": "TransferInCashAdvancesAndLoans",
+   "80": "GeneralServicesPostageAndShipping",
+   "81": "GeneralServicesStorage",
+   "82": "GeneralServicesOtherGeneralServices",
+   "83": "GovernmentAndNonProfitDonations",
+   "84": "GovernmentAndNonProfitGovernmentDepartmentsAndAgencies",
+   "85": "GovernmentAndNonProfitTaxPayment",
+   "86": "GovernmentAndNonProfitOtherGovernmentAndNonProfit",
+   "87": "TransportationBikesAndScooters",
+   "88": "TransportationGas",
+   "89": "TransportationParking",
+   "9": "TransferInDeposit",
+   "90": "TransportationPublicTransit",
+   "91": "TransportationTaxisAndRideShares",
+   "92": "TransportationTolls",
+   "93": "TransportationOtherTransportation",
+   "94": "TravelFlights",
+   "95": "TravelLodging",
+   "96": "TravelRentalCars",
+   "97": "TravelOtherTravel",
+   "98": "RentAndUtilitiesGasAndElectricity",
+   "99": "RentAndUtilitiesInternetAndCable"
+  },
+  "table": "AxBankFeedDetail",
+  "truncated": true
+ },
+ "bfdCategoryPrimary": {
+  "codes": {
+   "0": "Unknown",
+   "1": "Income",
+   "10": "Medical",
+   "11": "PersonalCare",
+   "12": "GeneralServices",
+   "13": "GovernmentAndNonProfit",
+   "14": "Transportation",
+   "15": "Travel",
+   "16": "RentAndUtilities",
+   "2": "TransferIn",
+   "3": "TransferOut",
+   "4": "LoanPayments",
+   "5": "BankFees",
+   "6": "Entertainment",
+   "7": "FoodAndDrink",
+   "8": "GeneralMerchandise",
+   "9": "HomeImprovement"
+  },
+  "table": "AxBankFeedDetail",
+  "truncated": true
+ },
+ "brsStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxBillingReviewStage",
+  "truncated": false
+ },
+ "cciStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxCreditCardImport",
+  "truncated": false
+ },
+ "ccilStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Successful",
+   "2": "Unsuccessful",
+   "3": "Deleted"
+  },
+  "table": "AxCreditCardImportLog",
+  "truncated": false
+ },
+ "ccisStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxCreditCardImportSettings",
+  "truncated": false
+ },
+ "ccisicValue": {
+  "codes": {
+   "0": "Ignore",
+   "1": "Cardholder name",
+   "10": "User Defined Field 4",
+   "11": "User Defined Field 5",
+   "2": "Date",
+   "3": "Merchant Description",
+   "4": "Amount",
+   "5": "Notes",
+   "6": "Transaction ID",
+   "7": "User Defined Field 1",
+   "8": "User Defined Field 2",
+   "9": "User Defined Field 3"
+  },
+  "table": "AxCreditCardImportSettingsImportColumns",
+  "truncated": false
+ },
+ "cfStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxCustomField",
+  "truncated": false
+ },
+ "cfType": {
+  "codes": {
+   "0": "Text",
+   "1": "Memo",
+   "2": "Custom List",
+   "3": "Number",
+   "4": "Date",
+   "5": "Checkbox"
+  },
+  "table": "AxCustomField",
+  "truncated": false
+ },
+ "chCombineStatus": {
+  "codes": {
+   "0": "Error",
+   "1": "Success"
+  },
+  "table": "AxCombineHistory",
+  "truncated": false
+ },
+ "chCombineType": {
+  "codes": {
+   "0": "None",
+   "1": "Clients",
+   "2": "Vendors",
+   "3": "Contacts"
+  },
+  "table": "AxCombineHistory",
+  "truncated": false
+ },
+ "ciBeginningBalanceType": {
+  "codes": {
+   "0": "None",
+   "1": "Project Totals",
+   "2": "Unpaid Invoices"
+  },
+  "table": "AxClientInvoice",
+  "truncated": false
+ },
+ "ciInvoiceType": {
+  "codes": {
+   "0": "Regular",
+   "1": "Finance Charge"
+  },
+  "table": "AxClientInvoice",
+  "truncated": false
+ },
+ "ciStatus": {
+  "codes": {
+   "0": "Draft",
+   "1": "Approved",
+   "2": "Reissued",
+   "3": "Hold",
+   "4": "Final",
+   "5": "Write Off",
+   "6": "Voided"
+  },
+  "table": "AxClientInvoice",
+  "truncated": false
+ },
+ "cmpClientInvoiceAccountingDate": {
+  "codes": {
+   "0": "Invoice Date",
+   "1": "Billing Cutoff Date"
+  },
+  "table": "AxCompany",
+  "truncated": false
+ },
+ "cmpPayrollType": {
+  "codes": {
+   "0": "None",
+   "1": "Payroll Service",
+   "2": "Process Payroll"
+  },
+  "table": "AxCompany",
+  "truncated": false
+ },
+ "cmpStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxCompany",
+  "truncated": false
+ },
+ "cntStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxContact",
+  "truncated": false
+ },
+ "cnttStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxContactType",
+  "truncated": false
+ },
+ "ctStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxClientType",
+  "truncated": false
+ },
+ "dedStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active",
+   "2": "Non Accessible"
+  },
+  "table": "AxDeduction",
+  "truncated": false
+ },
+ "eStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxEntity",
+  "truncated": false
+ },
+ "ededCalculationMethod": {
+  "codes": {
+   "0": "Hours Times Rate",
+   "1": "Hours",
+   "10": "Premium Hours Times Rate",
+   "11": "Percent Of Taxable",
+   "2": "Tables",
+   "3": "Flat Amount",
+   "4": "Percent Of Total Pay",
+   "5": "Percent Of Regular Pay",
+   "6": "Percent Of Premium Pay",
+   "7": "Percent Of Regular Plus Premium Pay",
+   "8": "Total Hours Times Rate",
+   "9": "Regular Hours Times Rate"
+  },
+  "table": "AxEmployeeDeduction",
+  "truncated": true
+ },
+ "efrnCalculationMethod": {
+  "codes": {
+   "0": "Hours Times Rate",
+   "1": "Hours",
+   "10": "Premium Hours Times Rate",
+   "11": "Percent Of Taxable",
+   "2": "Tables",
+   "3": "Flat Amount",
+   "4": "Percent Of Total Pay",
+   "5": "Percent Of Regular Pay",
+   "6": "Percent Of Premium Pay",
+   "7": "Percent Of Regular Plus Premium Pay",
+   "8": "Total Hours Times Rate",
+   "9": "Regular Hours Times Rate"
+  },
+  "table": "AxEmployeeFringe",
+  "truncated": true
+ },
+ "eitStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxEmailInvoiceTemplates",
+  "truncated": false
+ },
+ "epayCalculationMethod": {
+  "codes": {
+   "0": "Hours Times Rate",
+   "1": "Hours",
+   "10": "Premium Hours Times Rate",
+   "11": "Percent Of Taxable",
+   "2": "Tables",
+   "3": "Flat Amount",
+   "4": "Percent Of Total Pay",
+   "5": "Percent Of Regular Pay",
+   "6": "Percent Of Premium Pay",
+   "7": "Percent Of Regular Plus Premium Pay",
+   "8": "Total Hours Times Rate",
+   "9": "Regular Hours Times Rate"
+  },
+  "table": "AxEmployeePay",
+  "truncated": true
+ },
+ "etStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxEmployeeType",
+  "truncated": false
+ },
+ "etaxCalculationMethod": {
+  "codes": {
+   "0": "Hours Times Rate",
+   "1": "Hours",
+   "10": "Premium Hours Times Rate",
+   "11": "Percent Of Taxable",
+   "2": "Tables",
+   "3": "Flat Amount",
+   "4": "Percent Of Total Pay",
+   "5": "Percent Of Regular Pay",
+   "6": "Percent Of Premium Pay",
+   "7": "Percent Of Regular Plus Premium Pay",
+   "8": "Total Hours Times Rate",
+   "9": "Regular Hours Times Rate"
+  },
+  "table": "AxEmployeeTax",
+  "truncated": true
+ },
+ "euiStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxEmailUserIntegration",
+  "truncated": false
+ },
+ "euiType": {
+  "codes": {
+   "0": "Outlook",
+   "1": "GMail"
+  },
+  "table": "AxEmailUserIntegration",
+  "truncated": false
+ },
+ "ewPayPeriod": {
+  "codes": {
+   "0": "None",
+   "1": "Weekly",
+   "2": "BiWeekly",
+   "3": "SemiMonthly,",
+   "4": "Monthly"
+  },
+  "table": "AxEmployeeWage",
+  "truncated": false
+ },
+ "frnStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxFringe",
+  "truncated": false
+ },
+ "glaInterCompanyType": {
+  "codes": {
+   "0": "None",
+   "1": "Due From",
+   "2": "Due To",
+   "3": "Cash Basis Income"
+  },
+  "table": "AxGLAccount",
+  "truncated": false
+ },
+ "glaStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxGLAccount",
+  "truncated": false
+ },
+ "glaType": {
+  "codes": {
+   "0": "Current Asset",
+   "1": "Non-Current Asset",
+   "10": "Other Income",
+   "2": "Current Liability",
+   "3": "Non-Current Liability",
+   "4": "Equity",
+   "5": "Retained Earnings",
+   "6": "Income",
+   "7": "Billable Cost",
+   "8": "Non-Billable Cost",
+   "9": "Expense"
+  },
+  "table": "AxGLAccount",
+  "truncated": false
+ },
+ "gldControlAccountType": {
+  "codes": {
+   "0": "None",
+   "1": "Cash",
+   "10": "Over Billed",
+   "11": "Under Billed",
+   "2": "AR",
+   "3": "WIP",
+   "4": "AP",
+   "5": "PR",
+   "6": "Prepayment",
+   "7": "Pending Deposit",
+   "8": "Credit Account",
+   "9": "InterCompany",
+   "99": "Miscellaneous"
+  },
+  "table": "AxGLDetail",
+  "truncated": false
+ },
+ "gldType": {
+  "codes": {
+   "0": "Journal Entry",
+   "1": "Cost",
+   "10": "Beginning Balances",
+   "11": "Bank Entry",
+   "12": "Close Year",
+   "13": "Receipt Sales Tax",
+   "14": "Vendor Write Off",
+   "15": "Payroll Payments",
+   "16": "InterCompany",
+   "17": "InterCompanyCashBasis",
+   "18": "InterCompanyReceipt",
+   "19": "InterCompanySalesTax",
+   "2": "Premium Cost",
+   "20": "RevenueOverUnder",
+   "3": "Earned",
+   "4": "Billed",
+   "5": "Unbilled",
+   "6": "Write Off",
+   "7": "Sales Tax",
+   "8": "Receipt",
+   "9": "Payment",
+   "98": "Cash Basis Budgets",
+   "99": "Budgets"
+  },
+  "table": "AxGLDetail",
+  "truncated": true
+ },
+ "gleBasis": {
+  "codes": {
+   "0": "Both",
+   "1": "Accrual",
+   "2": "Cash"
+  },
+  "table": "AxGLEntry",
+  "truncated": false
+ },
+ "glrStatus": {
+  "codes": {
+   "0": "Active",
+   "1": "Inactive"
+  },
+  "table": "AxRecurringGL",
+  "truncated": false
+ },
+ "ieStatus": {
+  "codes": {
+   "0": "Normal",
+   "1": "Voided"
+  },
+  "table": "AxInhouseExpense",
+  "truncated": false
+ },
+ "ifApprovalPosition": {
+  "codes": {
+   "0": "Do Not Print",
+   "1": "Right",
+   "2": "Left"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifApprovalSigner": {
+  "codes": {
+   "0": "Do Not Print",
+   "1": "Billing Manager"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifApprovalStyle": {
+  "codes": {
+   "0": "Signature Line",
+   "1": "Signature Block"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifApprovalTitle": {
+  "codes": {
+   "0": "Do Not Print",
+   "1": "From Employee",
+   "3": "Text"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifClientBillingContactPosition": {
+  "codes": {
+   "0": "Do Not Print",
+   "1": "Before Address",
+   "2": "After Address"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifCompanyHeadingPosition": {
+  "codes": {
+   "0": "Left",
+   "1": "Centered",
+   "2": "Right"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifConsultantGroup1": {
+  "codes": {
+   "0": "None",
+   "1": "Activity",
+   "2": "Vendor",
+   "3": "Date"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifConsultantGroup2": {
+  "codes": {
+   "0": "None",
+   "1": "Activity",
+   "2": "Vendor",
+   "3": "Date"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifConsultantGroup3": {
+  "codes": {
+   "0": "None",
+   "1": "Activity",
+   "2": "Vendor",
+   "3": "Date"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifExpenseGroup1": {
+  "codes": {
+   "0": "None",
+   "1": "Activity",
+   "2": "Vendor",
+   "3": "Date"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifExpenseGroup2": {
+  "codes": {
+   "0": "None",
+   "1": "Activity",
+   "2": "Vendor",
+   "3": "Date"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifExpenseGroup3": {
+  "codes": {
+   "0": "None",
+   "1": "Activity",
+   "2": "Vendor",
+   "3": "Date"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifFeePosition": {
+  "codes": {
+   "0": "Before Cost",
+   "1": "After Cost"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifFeeStyle": {
+  "codes": {
+   "0": "Horizontal By Phase",
+   "1": "Horizontal By Contract",
+   "2": "Vertical By Phase",
+   "3": "Vertical By Contract"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifFooterCenter": {
+  "codes": {
+   "0": "None",
+   "1": "Client Name",
+   "2": "Invoice Number",
+   "3": "Invoice Date",
+   "4": "Text"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifFooterLeft": {
+  "codes": {
+   "0": "None",
+   "1": "Client Name",
+   "2": "Invoice Number",
+   "3": "Invoice Date",
+   "4": "Text"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifFooterRight": {
+  "codes": {
+   "0": "None",
+   "1": "Client Name",
+   "2": "Invoice Number",
+   "3": "Invoice Date",
+   "4": "Text"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifGroupBy1": {
+  "codes": {
+   "0": "Activity Type",
+   "1": "Phase"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifGroupBy2": {
+  "codes": {
+   "0": "Activity Type",
+   "1": "Phase",
+   "2": "None"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifLaborGroup1": {
+  "codes": {
+   "0": "None",
+   "1": "Employee Type",
+   "2": "Employee",
+   "3": "Activity",
+   "4": "Date"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifLaborGroup2": {
+  "codes": {
+   "0": "None",
+   "1": "Employee Type",
+   "2": "Employee",
+   "3": "Activity",
+   "4": "Date"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifLaborGroup3": {
+  "codes": {
+   "0": "None",
+   "1": "Employee Type",
+   "2": "Employee",
+   "3": "Activity",
+   "4": "Date"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifLaborGroup4": {
+  "codes": {
+   "0": "None",
+   "1": "Employee Type",
+   "2": "Employee",
+   "3": "Activity",
+   "4": "Date"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifPageNumberPosition": {
+  "codes": {
+   "0": "Do Not Print",
+   "1": "Top Right",
+   "2": "Bottom Right",
+   "3": "Bottom Center",
+   "4": "Bottom Left"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifScopePosition": {
+  "codes": {
+   "0": "Do Not Print",
+   "1": "Above Fold Line",
+   "2": "Below Fold Line"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifSummaryPosition": {
+  "codes": {
+   "0": "Do Not Print",
+   "1": "Beginning Of Invoice",
+   "3": "End Of Invoice"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "ifType": {
+  "codes": {
+   "0": "Cost",
+   "1": "Fee",
+   "2": "Both"
+  },
+  "table": "AxInvoiceFormat",
+  "truncated": false
+ },
+ "jeisicValue": {
+  "codes": {
+   "0": "Basis",
+   "1": "Description",
+   "10": "Account ID",
+   "11": "Department Key",
+   "12": "Account Key",
+   "2": "Accounting Date",
+   "3": "Reference",
+   "4": "Notes",
+   "5": "Detail Notes",
+   "6": "Account Description",
+   "7": "Department",
+   "8": "Debit Amount",
+   "9": "Credit Amount"
+  },
+  "table": "AxJournalEntryImportSettingsImportColumns",
+  "truncated": false
+ },
+ "ntActive": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxNotification",
+  "truncated": false
+ },
+ "ntFrequency": {
+  "codes": {
+   "0": "Every Ten Minutes",
+   "1": "Every X Hours",
+   "2": "Daily",
+   "3": "Weekly",
+   "4": "Monthly"
+  },
+  "table": "AxNotification",
+  "truncated": false
+ },
+ "ntrState": {
+  "codes": {
+   "0": "General Failure",
+   "1": "Success"
+  },
+  "table": "AxNotificationRun",
+  "truncated": false
+ },
+ "payStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active",
+   "2": "Non Accessible"
+  },
+  "table": "AxPay",
+  "truncated": false
+ },
+ "payType": {
+  "codes": {
+   "0": "Regular",
+   "1": "Premium 1",
+   "10": "Cash Fringe",
+   "2": "Premium 2",
+   "3": "Premium 3",
+   "4": "Sick Pay",
+   "5": "Vacation Pay",
+   "6": "Other Pay",
+   "7": "Other In/Out",
+   "8": "Reimbursement",
+   "9": "Accrual"
+  },
+  "table": "AxPay",
+  "truncated": false
+ },
+ "pcPayPeriod": {
+  "codes": {
+   "0": "None",
+   "1": "Weekly",
+   "2": "BiWeekly",
+   "3": "SemiMonthly",
+   "4": "Monthly",
+   "5": "Supplemental"
+  },
+  "table": "AxPayCheck",
+  "truncated": false
+ },
+ "pcStatus": {
+  "codes": {
+   "1": "Preliminary",
+   "2": "Processed",
+   "3": "Paid",
+   "4": "Void"
+  },
+  "table": "AxPayCheck",
+  "truncated": false
+ },
+ "pcdCalculationMethod": {
+  "codes": {
+   "0": "Hours Times Rate",
+   "1": "Hours",
+   "10": "Premium Hours Times Rate",
+   "11": "Percent Of Taxable",
+   "2": "Tables",
+   "3": "Flat Amount",
+   "4": "Percent Of Total Pay",
+   "5": "Percent Of Regular Pay",
+   "6": "Percent Of Premium Pay",
+   "7": "Percent Of Regular Plus Premium Pay",
+   "8": "Total Hours Times Rate",
+   "9": "Regular Hours Times Rate"
+  },
+  "table": "AxPayCheckDeduction",
+  "truncated": true
+ },
+ "pcddAccountType": {
+  "codes": {
+   "0": "Checking",
+   "1": "Savings"
+  },
+  "table": "AxPayCheckDeposit",
+  "truncated": false
+ },
+ "pcfCalculationMethod": {
+  "codes": {
+   "0": "Hours Times Rate",
+   "1": "Hours",
+   "10": "Premium Hours Times Rate",
+   "11": "Percent Of Taxable",
+   "2": "Tables",
+   "3": "Flat Amount",
+   "4": "Percent Of Total Pay",
+   "5": "Percent Of Regular Pay",
+   "6": "Percent Of Premium Pay",
+   "7": "Percent Of Regular Plus Premium Pay",
+   "8": "Total Hours Times Rate",
+   "9": "Regular Hours Times Rate"
+  },
+  "table": "AxPayCheckFringe",
+  "truncated": true
+ },
+ "pctCalculationMethod": {
+  "codes": {
+   "0": "Hours Times Rate",
+   "1": "Hours",
+   "10": "Premium Hours Times Rate",
+   "11": "Percent Of Taxable",
+   "2": "Tables",
+   "3": "Flat Amount",
+   "4": "Percent Of Total Pay",
+   "5": "Percent Of Regular Pay",
+   "6": "Percent Of Premium Pay",
+   "7": "Percent Of Regular Plus Premium Pay",
+   "8": "Total Hours Times Rate",
+   "9": "Regular Hours Times Rate"
+  },
+  "table": "AxPayCheckTax",
+  "truncated": true
+ },
+ "pmsStatus": {
+  "codes": {
+   "0": "NotStarted",
+   "1": "InProgress",
+   "2": "Completed",
+   "3": "Waiting",
+   "4": "Deferred",
+   "5": "Open",
+   "6": "Won",
+   "7": "Lost",
+   "8": "Declined"
+  },
+  "table": "AxProjectMarketingStage",
+  "truncated": false
+ },
+ "poStatus": {
+  "codes": {
+   "0": "Preliminary",
+   "1": "Completed",
+   "2": "Approved",
+   "3": "Closed",
+   "4": "Voided"
+  },
+  "table": "AxPurchaseOrder",
+  "truncated": false
+ },
+ "poType": {
+  "codes": {
+   "0": "Purchase Order",
+   "1": "Change Order"
+  },
+  "table": "AxPurchaseOrder",
+  "truncated": false
+ },
+ "prPayPeriod": {
+  "codes": {
+   "0": "None",
+   "1": "Weekly",
+   "2": "BiWeekly",
+   "3": "SemiMonthly",
+   "4": "Monthly",
+   "5": "Supplemental"
+  },
+  "table": "AxPayroll",
+  "truncated": false
+ },
+ "prStatus": {
+  "codes": {
+   "0": "Mixed",
+   "1": "Preliminary",
+   "2": "Processed",
+   "3": "Paid"
+  },
+  "table": "AxPayroll",
+  "truncated": false
+ },
+ "prjAdjustActivityType": {
+  "codes": {
+   "0": "None",
+   "1": "Labor",
+   "2": "Expense",
+   "3": "Consultant"
+  },
+  "table": "AxProject",
+  "truncated": false
+ },
+ "prjBillingType": {
+  "codes": {
+   "0": "Time And Expense",
+   "1": "Fixed Fee",
+   "2": "Percent Complete",
+   "3": "Unit Price",
+   "4": "Percent of Construction Cost",
+   "5": "Nonbillable",
+   "6": "Marketing",
+   "7": "Overhead",
+   "8": "Adjustment"
+  },
+  "table": "AxProject",
+  "truncated": false
+ },
+ "prjCapWIPConsultant": {
+  "codes": {
+   "0": "None",
+   "1": "Write-off WIP",
+   "2": "Adjustment"
+  },
+  "table": "AxProject",
+  "truncated": false
+ },
+ "prjCapWIPExpense": {
+  "codes": {
+   "0": "None",
+   "1": "Write-off WIP",
+   "2": "Adjustment"
+  },
+  "table": "AxProject",
+  "truncated": false
+ },
+ "prjCapWIPLabor": {
+  "codes": {
+   "0": "None",
+   "1": "Write-off WIP",
+   "2": "Adjustment"
+  },
+  "table": "AxProject",
+  "truncated": false
+ },
+ "prjPMPChangeResources": {
+  "codes": {
+   "0": "Do Not Allow",
+   "1": "Allow Until Budget Final",
+   "2": "Allow Always"
+  },
+  "table": "AxProject",
+  "truncated": false
+ },
+ "prjPMPChangeWBS": {
+  "codes": {
+   "0": "Do Not Allow",
+   "1": "Allow Until Budget Final",
+   "2": "Allow Always"
+  },
+  "table": "AxProject",
+  "truncated": false
+ },
+ "prjRevenueMethodConsultant": {
+  "codes": {
+   "0": "None",
+   "1": "Billed plus WIP",
+   "2": "Billed",
+   "3": "Percent of Contract",
+   "4": "Formula plus WIP",
+   "5": "Formula"
+  },
+  "table": "AxProject",
+  "truncated": false
+ },
+ "prjRevenueMethodExpense": {
+  "codes": {
+   "0": "None",
+   "1": "Billed plus WIP",
+   "2": "Billed",
+   "3": "Percent of Contract",
+   "4": "Formula plus WIP",
+   "5": "Formula"
+  },
+  "table": "AxProject",
+  "truncated": false
+ },
+ "prjRevenueMethodLabor": {
+  "codes": {
+   "0": "None",
+   "1": "Billed plus WIP",
+   "2": "Billed",
+   "3": "Percent of Contract",
+   "4": "Formula plus WIP",
+   "5": "Formula"
+  },
+  "table": "AxProject",
+  "truncated": false
+ },
+ "prjState": {
+  "codes": {
+   "0": "na",
+   "1": "AL",
+   "10": "GA",
+   "11": "HI",
+   "12": "ID",
+   "13": "IL",
+   "14": "IN",
+   "15": "IA",
+   "16": "KS",
+   "17": "KY",
+   "18": "LA",
+   "19": "ME",
+   "2": "AK",
+   "20": "MD",
+   "21": "MA",
+   "22": "MI",
+   "23": "MN",
+   "24": "MS",
+   "25": "MO",
+   "26": "MT",
+   "27": "NE",
+   "28": "NV",
+   "29": "NH",
+   "3": "AZ",
+   "30": "NJ",
+   "31": "NM",
+   "32": "NY",
+   "33": "NC",
+   "34": "ND",
+   "35": "OH",
+   "36": "OK",
+   "37": "OR",
+   "38": "PA",
+   "39": "RI",
+   "4": "AR",
+   "40": "SC",
+   "41": "SD",
+   "42": "TN",
+   "43": "TX",
+   "44": "UT",
+   "45": "VT",
+   "46": "VA",
+   "47": "WA",
+   "48": "WV",
+   "49": "WI",
+   "5": "CA",
+   "50": "WY",
+   "51": "DC",
+   "52": "PR",
+   "6": "CO",
+   "7": "CT",
+   "8": "DE",
+   "9": "FL"
+  },
+  "table": "AxProject",
+  "truncated": true
+ },
+ "prjStatus": {
+  "codes": {
+   "0": "Preliminary",
+   "1": "Active",
+   "2": "Hold",
+   "3": "Work Hold",
+   "4": "Billing Hold",
+   "5": "Closed",
+   "6": "Marketing"
+  },
+  "table": "AxProject",
+  "truncated": false
+ },
+ "ptStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxProjectType",
+  "truncated": false
+ },
+ "rExternalType": {
+  "codes": {
+   "0": "Receipt",
+   "1": "Prepayment",
+   "2": "MiscReceipt"
+  },
+  "table": "AxReceipt",
+  "truncated": false
+ },
+ "rMethod": {
+  "codes": {
+   "0": "Check",
+   "1": "Cash",
+   "2": "EFT",
+   "3": "Credit Card",
+   "4": "Wire Transfer"
+  },
+  "table": "AxReceipt",
+  "truncated": false
+ },
+ "rStatus": {
+  "codes": {
+   "0": "Active",
+   "1": "Voided",
+   "2": "NSF"
+  },
+  "table": "AxReceipt",
+  "truncated": false
+ },
+ "rType": {
+  "codes": {
+   "0": "Client",
+   "1": "Miscellaneous",
+   "2": "Credit Memo",
+   "3": "InterCompany",
+   "99": "Refund"
+  },
+  "table": "AxReceipt",
+  "truncated": false
+ },
+ "resActivityType": {
+  "codes": {
+   "0": "None",
+   "1": "Labor",
+   "2": "Expense",
+   "3": "Consultant"
+  },
+  "table": "AxResource",
+  "truncated": false
+ },
+ "resPriority": {
+  "codes": {
+   "0": "None",
+   "1": "Low",
+   "2": "Medium",
+   "3": "High"
+  },
+  "table": "AxResource",
+  "truncated": false
+ },
+ "resStatus": {
+  "codes": {
+   "0": "Not Started",
+   "1": "In Progress",
+   "2": "Complete",
+   "3": "Waiting",
+   "4": "Deferred"
+  },
+  "table": "AxResource",
+  "truncated": false
+ },
+ "revStatus": {
+  "codes": {
+   "0": "Preliminary",
+   "1": "Active",
+   "2": "Committed",
+   "3": "Voided"
+  },
+  "table": "AxRevenue",
+  "truncated": false
+ },
+ "revdActivityType": {
+  "codes": {
+   "0": "None",
+   "1": "Labor",
+   "2": "Expense",
+   "3": "Consultant"
+  },
+  "table": "AxRevenueDetail",
+  "truncated": false
+ },
+ "rptType": {
+  "codes": {
+   "0": "Standard",
+   "1": "Custom",
+   "2": "Report View"
+  },
+  "table": "AxReportDesign",
+  "truncated": false
+ },
+ "rtStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxRateTable",
+  "truncated": false
+ },
+ "rtlActivityType": {
+  "codes": {
+   "0": "None",
+   "1": "Labor",
+   "2": "Expense",
+   "3": "Consultant"
+  },
+  "table": "AxRateTableDetail",
+  "truncated": false
+ },
+ "sAutoClientInvoiceNumber": {
+  "codes": {
+   "0": "Organization",
+   "1": "Client",
+   "2": "Project",
+   "3": "Constant",
+   "4": "Company"
+  },
+  "table": "AxSettings",
+  "truncated": false
+ },
+ "sClientInvoiceAccountingDate": {
+  "codes": {
+   "0": "Invoice Date",
+   "1": "Billing Cutoff Date"
+  },
+  "table": "AxSettings",
+  "truncated": false
+ },
+ "sFiscalStartMonth": {
+  "codes": {
+   "0": "January",
+   "1": "February",
+   "10": "November",
+   "11": "December",
+   "2": "March",
+   "3": "April",
+   "4": "May",
+   "5": "June",
+   "6": "July",
+   "7": "August",
+   "8": "September",
+   "9": "October"
+  },
+  "table": "AxSettings",
+  "truncated": false
+ },
+ "sPayrollCostMethodType": {
+  "codes": {
+   "0": "Standard Cost",
+   "1": "Effective Cost"
+  },
+  "table": "AxSettings",
+  "truncated": false
+ },
+ "sPayrollDistributeDpeOhType": {
+  "codes": {
+   "0": "Use Fixed Rate",
+   "1": "Distribute By Cost",
+   "2": "Distribute By Hours"
+  },
+  "table": "AxSettings",
+  "truncated": false
+ },
+ "sPayrollServiceColumn1": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn10": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn11": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn12": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn13": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn14": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn15": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn16": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn17": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn18": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn19": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn2": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn20": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn3": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn4": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn5": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn6": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn7": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn8": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceColumn9": {
+  "codes": {
+   "0": "None",
+   "1": "Employee",
+   "10": "Premium 1 Factor",
+   "11": "Premium 2 Factor",
+   "12": "Premium 3 Factor",
+   "13": "Other 1 Hours",
+   "14": "Other 2 Hours",
+   "15": "Other 3 Hours",
+   "16": "Other 4 Hours",
+   "17": "Other 5 Hours",
+   "18": "Other 6 Hours",
+   "19": "Blank",
+   "2": "Department",
+   "3": "Pay Type",
+   "4": "Hours",
+   "5": "Regular Hours",
+   "6": "Salary Hours",
+   "7": "Premium 1 Hours",
+   "8": "Premium 2 Hours",
+   "9": "Premium 3 Hours"
+  },
+  "table": "AxSettings",
+  "truncated": true
+ },
+ "sPayrollServiceProvider": {
+  "codes": {
+   "0": "None",
+   "1": "QuickBooks",
+   "2": "ADP",
+   "3": "PayChex",
+   "4": "Other"
+  },
+  "table": "AxSettings",
+  "truncated": false
+ },
+ "sPayrollType": {
+  "codes": {
+   "0": "None",
+   "1": "Payroll Service",
+   "2": "Process Payroll"
+  },
+  "table": "AxSettings",
+  "truncated": false
+ },
+ "sSampleDataType": {
+  "codes": {
+   "0": "Architectural",
+   "1": "Engineering"
+  },
+  "table": "AxSettings",
+  "truncated": false
+ },
+ "sTimeHoursIncrement": {
+  "codes": {
+   "0": "None",
+   "1": "Quarter Hour",
+   "2": "Half Hour",
+   "3": "Full Hour"
+  },
+  "table": "AxSettings",
+  "truncated": false
+ },
+ "sTimeStartOfWeek": {
+  "codes": {
+   "0": "Sunday",
+   "1": "Monday",
+   "2": "Tuesday",
+   "3": "Wednesday",
+   "4": "Thursday",
+   "5": "Friday",
+   "6": "Saturday"
+  },
+  "table": "AxSettings",
+  "truncated": false
+ },
+ "sTrackConsultantBudgets": {
+  "codes": {
+   "0": "Do Not Track",
+   "1": "Warn If Over Invoiced",
+   "2": "Do Not Allow Over Invoicing"
+  },
+  "table": "AxSettings",
+  "truncated": false
+ },
+ "sUserLoginType": {
+  "codes": {
+   "0": "Username",
+   "1": "Email"
+  },
+  "table": "AxSettings",
+  "truncated": false
+ },
+ "sgPLMPActualDates": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPBillingRate": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPConstructionCost": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPContract": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPCost": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPCostRate": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPDescription": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPEstimatedDates": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPNotes": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPPercentComplete": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPPercentCompleteDate": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPPercentDist": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPReference": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPResource": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPType": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPLMPUnits": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMBeginningBalanceTab": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMBillingTab": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMBudgetTab": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMContactsTab": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMGeneralTab": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoBackupAttachments": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoBillingContact": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoBillingGroup": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoBillingManager": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoBillingType": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoCapWIP": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoClient": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoDepartment": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoDescription": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoEmailInvoiceTemplates": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoID": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoInvoiceFormat": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoInvoiceText": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoLocation": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoMarketingContact": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoPrincipalInCharge": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoProjectManager": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoProjectType": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoRateTable": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoRevenueMethod": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoSalesTax": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoScope": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInfoStatus": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMInvoiceTab": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMIsCertified": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMNotesTab": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMPermissionsTab": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMProjectInfoTab": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMRevenueTab": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMScheduleTab": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "sgPMWageTable": {
+  "codes": {
+   "0": "Hide",
+   "1": "Never Allow Changes",
+   "2": "Allow Changes Until Budget Final",
+   "3": "Allow Changes"
+  },
+  "table": "AxSecurityGroup",
+  "truncated": false
+ },
+ "ssTask": {
+  "codes": {
+   "0": "Time",
+   "1": "In House Expenses",
+   "10": "Client Receipts",
+   "11": "BB Vendor Paid",
+   "12": "BB Bank Accounts",
+   "13": "Bank Registers",
+   "14": "Payroll",
+   "15": "BB Vendor Invoices",
+   "16": "BB Client Invoices",
+   "17": "BB Unbilled WIP",
+   "18": "Setup Clients",
+   "19": "Process Payroll",
+   "2": "Vendor Invoices",
+   "20": "BB Process Payroll",
+   "21": "ExpenseEntry",
+   "22": "FinanceCharge",
+   "23": "RecurringVendorInvoice",
+   "24": "RecurringJournalEntries",
+   "25": "RecalculateTime",
+   "26": "SynchronizeCosdential",
+   "27": "RevenueRecognition",
+   "3": "Client Invoices",
+   "32": "Manage Timesheets",
+   "33": "Manage Expense Reports",
+   "4": "Journal Entries",
+   "5": "Company Budgets",
+   "6": "BB Trial Balance",
+   "7": "Company Close Year",
+   "8": "Setup Projects",
+   "9": "Vendor Payments"
+  },
+  "table": "AxSession",
+  "truncated": true
+ },
+ "tActivityType": {
+  "codes": {
+   "0": "None",
+   "1": "Labor",
+   "2": "Expense",
+   "3": "Consultant",
+   "4": "FinanceCharge"
+  },
+  "table": "AxTransaction",
+  "truncated": false
+ },
+ "tBeginningBalanceType": {
+  "codes": {
+   "0": "None",
+   "1": "Project Totals",
+   "2": "Unpaid Invoice",
+   "3": "Unbilled WIP",
+   "4": "Open Vendor Invoice"
+  },
+  "table": "AxTransaction",
+  "truncated": false
+ },
+ "tHoursType": {
+  "codes": {
+   "0": "Regular",
+   "1": "Premium 1",
+   "2": "Premium 2",
+   "3": "Premium 3"
+  },
+  "table": "AxTransaction",
+  "truncated": false
+ },
+ "tPayrollCalculationMethod": {
+  "codes": {
+   "0": "Hours Times Rate",
+   "1": "Hours",
+   "10": "Premium Hours Times Rate",
+   "11": "Percent Of Taxable",
+   "2": "Tables",
+   "3": "Flat Amount",
+   "4": "Percent Of Total Pay",
+   "5": "Percent Of Regular Pay",
+   "6": "Percent Of Premium Pay",
+   "7": "Percent Of Regular Plus Premium Pay",
+   "8": "Total Hours Times Rate",
+   "9": "Regular Hours Times Rate"
+  },
+  "table": "AxTransaction",
+  "truncated": true
+ },
+ "tStatus": {
+  "codes": {
+   "0": "Billable",
+   "1": "Defer",
+   "2": "Hold",
+   "3": "Nonbillable",
+   "4": "Write Off",
+   "5": "Expense Pending"
+  },
+  "table": "AxTransaction",
+  "truncated": false
+ },
+ "tType": {
+  "codes": {
+   "0": "Entry",
+   "1": "Worksheet",
+   "2": "Worksheet Entry",
+   "3": "Timesheet Placeholder",
+   "4": "Client Invoice Adjustment",
+   "5": "Unprocessed Expense",
+   "6": "Personal Expense",
+   "7": "Finance Charge"
+  },
+  "table": "AxTransaction",
+  "truncated": false
+ },
+ "togdStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxTimesheetOverheadGroupDetail",
+  "truncated": false
+ },
+ "utStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxUtilizationType",
+  "truncated": false
+ },
+ "vec1099FormType": {
+  "codes": {
+   "0": "Rents",
+   "1": "Royalties",
+   "2": "Other Income",
+   "3": "Medical Payments",
+   "4": "Nonemployee Compensation",
+   "5": "Substitute Payments",
+   "6": "Excess Golden Parachute Payments",
+   "7": "Gross Proceeds Paid To An Attorney"
+  },
+  "table": "AxVEC",
+  "truncated": false
+ },
+ "vecDaysType": {
+  "codes": {
+   "0": "None",
+   "1": "Number Of Days",
+   "2": "Day Of The Month"
+  },
+  "table": "AxVEC",
+  "truncated": false
+ },
+ "vecFederalFilingStatus": {
+  "codes": {
+   "0": "Single",
+   "1": "Married",
+   "10": "Claiming No Exemptions",
+   "11": "Optional Rate C",
+   "12": "Optional Rate D",
+   "13": "Optional Rate E",
+   "14": "Married Single Income",
+   "2": "Head Of household",
+   "3": "Married Filing Separately",
+   "4": "Married Dual Income",
+   "5": "Married Filing Jointly",
+   "6": "Do Not Withhold",
+   "7": "Flat Amount",
+   "8": "Percent Of Taxable",
+   "9": "Married Income GT 100500"
+  },
+  "table": "AxVEC",
+  "truncated": true
+ },
+ "vecGender": {
+  "codes": {
+   "0": "Male",
+   "1": "Female",
+   "2": "Nonbinary"
+  },
+  "table": "AxVEC",
+  "truncated": false
+ },
+ "vecInvoiceDeliveryPreference": {
+  "codes": {
+   "0": "Printed",
+   "1": "Email"
+  },
+  "table": "AxVEC",
+  "truncated": false
+ },
+ "vecStateFilingStatus": {
+  "codes": {
+   "0": "Single",
+   "1": "Married",
+   "10": "Claiming No Exemptions",
+   "11": "Optional Rate C",
+   "12": "Optional Rate D",
+   "13": "Optional Rate E",
+   "14": "Married Single Income",
+   "2": "Head Of household",
+   "3": "Married Filing Separately",
+   "4": "Married Dual Income",
+   "5": "Married Filing Jointly",
+   "6": "Do Not Withhold",
+   "7": "Flat Amount",
+   "8": "Percent Of Taxable",
+   "9": "Married Income GT 100500"
+  },
+  "table": "AxVEC",
+  "truncated": true
+ },
+ "vecStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxVEC",
+  "truncated": false
+ },
+ "vecW9BusinessType": {
+  "codes": {
+   "0": "Individual Or Sole Proprietor",
+   "1": "Corporation",
+   "2": "Parnership",
+   "3": "Other"
+  },
+  "table": "AxVEC",
+  "truncated": false
+ },
+ "viInvoiceType": {
+  "codes": {
+   "0": "Normal",
+   "1": "Payroll Service",
+   "2": "Beginning Balance",
+   "3": "Refund",
+   "4": "Expense Report"
+  },
+  "table": "AxVendorInvoice",
+  "truncated": false
+ },
+ "viStatus": {
+  "codes": {
+   "0": "Normal",
+   "1": "Voided"
+  },
+  "table": "AxVendorInvoice",
+  "truncated": false
+ },
+ "viaStatus": {
+  "codes": {
+   "0": "Not Applicable",
+   "1": "Approved",
+   "2": "Rejected",
+   "3": "In Review"
+  },
+  "table": "AxVendorInvoiceApproval",
+  "truncated": false
+ },
+ "viaType": {
+  "codes": {
+   "0": "None",
+   "1": "Project Manager",
+   "2": "Finance"
+  },
+  "table": "AxVendorInvoiceApproval",
+  "truncated": false
+ },
+ "vinType": {
+  "codes": {
+   "0": "General Liability",
+   "1": "Automobile",
+   "2": "Workers Compensation",
+   "3": "Umbrella",
+   "4": "Other 1",
+   "5": "Other 2"
+  },
+  "table": "AxVendorInsurance",
+  "truncated": false
+ },
+ "vriStatus": {
+  "codes": {
+   "0": "Active",
+   "1": "Inactive"
+  },
+  "table": "AxRecurringVendorInvoice",
+  "truncated": false
+ },
+ "vtStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxVendorType",
+  "truncated": false
+ },
+ "wrType": {
+  "codes": {
+   "0": "Widget",
+   "1": "Dashboard"
+  },
+  "table": "AxWebReport",
+  "truncated": false
+ },
+ "wrtActive": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxWebReportTicket",
+  "truncated": false
+ },
+ "wsSessionInvalidationReason": {
+  "codes": {
+   "0": "None",
+   "1": "Web Log Out",
+   "2": "Username or Password Change",
+   "3": "User Inactivated",
+   "4": "Import Dashboard",
+   "5": "Version Upgrade"
+  },
+  "table": "AxWebSession",
+  "truncated": false
+ },
+ "wsSessionType": {
+  "codes": {
+   "0": "Ajera",
+   "1": "MobileTimeEntry",
+   "2": "PasswordReset"
+  },
+  "table": "AxWebSession",
+  "truncated": false
+ },
+ "wtStatus": {
+  "codes": {
+   "0": "Inactive",
+   "1": "Active"
+  },
+  "table": "AxWageTable",
+  "truncated": false
+ }
+}

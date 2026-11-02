@@ -16,6 +16,7 @@ Ajera exposes a single JSON-RPC style endpoint; this package wraps it in an ergo
 - **Sync and async** - `AjeraClient` and `AsyncAjeraClient` expose the same methods over `httpx`.
 - **Sensible defaults** - handles session tokens and per-method API versions for you.
 - **Read and write** - list, get, update, and create across the supported APIs.
+- **ODBC** - `AjeraOdbc` reads the database through Deltek's read-only ODBC access, with typed models for every table, view, and function.
 
 ## Installation
 
@@ -57,6 +58,67 @@ client = AjeraClient(timeout=60, retries=3)
 ```
 
 `retries` retries only the connection stage (before any bytes reach the server), which is safe for the non-idempotent writes this client performs: a create whose response is merely lost is never resubmitted. The CLI reads `AJERA_API_TIMEOUT` (seconds) and `AJERA_API_RETRIES` (count) for the same behavior.
+
+### Open Database Connectivity (ODBC)
+
+Deltek supports read-only ODBC access to the Ajera database as a separate entitlement. Its documentation is [ODBC Read Only Access](https://learning.deltek.com/bundle/MaconomyEnterpriseCloudOnlineAdminGuide/page/ODBC_Read_Only_Access.html). `AjeraOdbc` reads the database and returns the same models as the REST client. It never writes. Install the extra:
+
+```bash
+pip install 'ajera[odbc]'
+```
+
+The reader also needs `unixODBC` and the Progress DataDirect Hybrid Data Pipeline ODBC driver, which Deltek ships for `x86_64` Linux and Windows only. On any other machine, including Apple Silicon, use the bundled `linux/amd64` image: `make odbc-image` downloads the driver, checks its checksum, and builds the image.
+
+| Variable | Description |
+| --- | --- |
+| `AJERA_ODBC_DATASOURCE` | Hybrid Data Pipeline data source, from Deltek's service request. |
+| `AJERA_ODBC_USERNAME` | ODBC logon ID. |
+| `AJERA_ODBC_PASSWORD` | ODBC password. |
+| `AJERA_ODBC_HOST` | Service host (default `ajera-hdp01.prd.mydeltek.com`). |
+| `AJERA_ODBC_PORT` | Service port (default `443`). |
+
+The database reaches much further than the REST API. It holds transaction-level detail, accounts receivable, receipts, the general ledger, revenue, payroll, purchase orders and rate values. Every table (165), view (60), and table-valued function (19) has a typed model in `ajera.schemas.database`, generated from the live catalog. Pass a model to `read`, `stream`, `get`, or `count`, or call a function through its typed method:
+
+```python
+from datetime import date
+
+from ajera.odbc import AjeraOdbc, between
+from ajera.schemas.database import ClientInvoiceRecord, GLDetailRecord, GLDetailType
+
+with AjeraOdbc() as db:
+    # Filter by field: a value means =, a list means IN, None means IS NULL.
+    invoices = db.read(ClientInvoiceRecord, where={"status": [1, 4]}, limit=100)
+
+    # Millions of rows, a batch at a time.
+    for row in db.stream(
+        GLDetailRecord,
+        where={
+            "type": GLDetailType.billed,
+            "accounting_date": between(date(2026, 1, 1), date(2026, 3, 31)),
+        },
+    ):
+        ...
+
+    # Ajera's own period-totals functions, with no per-project REST fan-out.
+    totals = db.project_totals(date(2026, 1, 1), date(2026, 3, 31))
+```
+
+- **Fields** use the REST naming. The table's column prefix is dropped, and keys end in `_key` (`tProject` is `project_key`). The column name works too.
+- **Code columns** validate to an `IntEnum` when Ajera documents the code, and stay a plain `int` otherwise.
+- **Custom fields** a tenant adds appear on `record.custom_fields`.
+- **Binary columns** (invoice snapshots, report designs) are skipped unless you pass `include_blobs=True`.
+- **Large reads are paged.** Deltek's pipeline refuses any result over 500,000 rows, so keyed sources are read in pages of 100,000 transparently.
+- **Filters** are in `ajera.odbc`: `eq`, `ne`, `lt`, `le`, `gt`, `ge`, `between`, `like`, `in_`, `not_in`, `is_null`, `not_null`.
+
+The CLI exposes the same reads:
+
+```console
+$ ajera odbc sources --kind function
+$ ajera odbc read AxClientInvoice -w status=1,4 -w "invoice_date>=2026-01-01" -n 50
+$ ajera odbc call ProjectTotals 2026-01-01 2026-03-31 -w project_key=1234
+```
+
+`make test-odbc` runs the live ODBC checks in the image. `make odbc-verify` validates every model against every live row. To pick up a new Ajera release, run `make odbc-catalog`, then `make odbc-enums XLSX=...` and `make odbc-generate`.
 
 ## Quick start
 
