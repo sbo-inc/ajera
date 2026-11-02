@@ -10,6 +10,8 @@ import importlib.util
 import inspect
 import json
 import keyword
+import re
+import threading
 import typing
 from collections.abc import Callable, Sequence
 from datetime import date, datetime
@@ -37,6 +39,7 @@ from ajera.odbc import (
     min_,
     sum_,
 )
+from ajera.odbc import arguments as odbc_arguments
 from ajera.odbc import connection as odbc_connection
 from ajera.odbc import reader as odbc_reader
 from ajera.odbc.queries import select as select_queries
@@ -1014,8 +1017,15 @@ def test_a_timed_out_call_discards_the_connection(
     second = FakeConnection((["Rows"], [(3,)]))
     connections = iter([first, second])
     discarded: list[object] = []
+
+    def discard(connection: object) -> threading.Thread:
+        discarded.append(connection)
+        thread = threading.Thread(target=lambda: None)
+        thread.start()
+        return thread
+
     monkeypatch.setattr(odbc_connection, "connect", lambda *a, **k: next(connections))
-    monkeypatch.setattr(odbc_reader, "_close_in_background", discarded.append)
+    monkeypatch.setattr(odbc_reader, "_close_in_background", discard)
     db = AjeraOdbc(datasource="ds", username="user", password="secret")
 
     with pytest.raises(RuntimeError, match="HYT00"):
@@ -1219,3 +1229,193 @@ def test_every_code_has_its_documented_label() -> None:
             }
 
     assert covered == set(CODE_LABELS)
+
+
+# =============================================================================
+# TEST: sessions still closing after a timeout
+# =============================================================================
+
+
+class SlowClose(FakeConnection):
+    """A connection whose close waits, as the driver's does after a timeout."""
+
+    def __init__(self, *responses: Any, release: threading.Event) -> None:
+        super().__init__(*responses)
+        self.release = release
+
+    def close(self) -> None:
+        self.release.wait(5)
+        super().close()
+
+
+def test_closing_sessions_are_counted_until_they_close(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    release = threading.Event()
+    first = SlowClose(RuntimeError("HYT00", "Query timeout expired"), release=release)
+    second = FakeConnection((["Rows"], [(3,)]))
+    connections = iter([first, second])
+    monkeypatch.setattr(odbc_connection, "connect", lambda *a, **k: next(connections))
+    db = AjeraOdbc(datasource="ds", username="user", password="secret")
+    assert (db.closing, db.sessions) == (0, 0)
+
+    with pytest.raises(RuntimeError, match="HYT00"):
+        db.count(Widget, timeout=1)
+
+    # The timed-out session is still held; the reader has no open one.
+    assert (db.closing, db.sessions) == (1, 1)
+    assert db.count(Widget) == 3
+    assert (db.closing, db.sessions) == (1, 2)
+    assert db.wait_closed(timeout=0.05) is False
+
+    release.set()
+
+    assert db.wait_closed() is True
+    assert first.closed
+    assert (db.closing, db.sessions) == (0, 1)
+    db.close()
+    assert db.sessions == 0
+
+
+# =============================================================================
+# TEST: function argument checks
+# =============================================================================
+
+
+@pytest.mark.parametrize(
+    "declaration, value, expected",
+    [
+        ("smalldatetime", None, None),
+        ("smalldatetime", date(2026, 3, 31), date(2026, 3, 31)),
+        ("smalldatetime", datetime(2026, 3, 31, 8), datetime(2026, 3, 31, 8)),
+        ("smalldatetime", "2026-03-31", date(2026, 3, 31)),
+        ("smalldatetime", "2026-03-31T08:00", datetime(2026, 3, 31, 8)),
+        ("tinyint", 2, 2),
+        ("tinyint", WidgetStatus.active, 1),
+        ("int", -5, -5),
+        ("bit", False, False),
+        ("bit", 1, True),
+        ("decimal(19,2)", Decimal("600.50"), Decimal("600.50")),
+        ("decimal(19,2)", 600, 600),
+        ("varchar(10)", "A", "A"),
+        ("varchar(max)", "x" * 50, "x" * 50),
+        ("uniqueidentifier", "anything", "anything"),
+    ],
+)
+def test_arguments_accepted(declaration: str, value: object, expected: object) -> None:
+    checked = odbc_arguments.check_argument("F", "P", declaration, value)
+
+    assert checked == expected
+    assert type(checked) is type(expected)
+
+
+@pytest.mark.parametrize(
+    "declaration, value, error, message",
+    [
+        ("smalldatetime", 2026, TypeError, "not int 2026"),
+        ("smalldatetime", True, TypeError, "not bool True"),
+        ("smalldatetime", "2026", ValueError, "ISO 8601"),
+        ("smalldatetime", "31/03/2026", ValueError, "ISO 8601"),
+        ("smalldatetime", date(1899, 12, 31), ValueError, "out of range"),
+        ("smalldatetime", "2026-03-31T08:00+02:00", ValueError, "no time zone"),
+        ("tinyint", Decimal("1.7"), TypeError, "takes an int, not Decimal 1.7"),
+        ("tinyint", True, TypeError, "not bool True"),
+        ("tinyint", "2", TypeError, "not str '2'"),
+        ("tinyint", 300, ValueError, "holds 0 to 255"),
+        ("bit", 5, ValueError, "True, False, 0, or 1"),
+        ("bit", "A", TypeError, "takes a bool"),
+        ("decimal(19,2)", Decimal("600.005"), ValueError, "would be rounded"),
+        ("decimal(19,2)", 10**17, ValueError, "at most 17 digits"),
+        ("decimal(19,2)", 0.5, TypeError, "a float cannot hold"),
+        ("decimal(19,2)", Decimal("NaN"), ValueError, "finite"),
+        ("varchar(10)", date(2026, 3, 31), TypeError, "takes a str"),
+        ("varchar(10)", "x" * 11, ValueError, "cut short"),
+    ],
+)
+def test_arguments_refused(
+    declaration: str, value: object, error: type[Exception], message: str
+) -> None:
+    with pytest.raises(error, match=f"F @P \\({re.escape(declaration)}\\).*{message}"):
+        odbc_arguments.check_argument("F", "P", declaration, value)
+
+
+def test_a_bad_argument_never_reaches_the_server(
+    connect: Callable[..., AjeraOdbc],
+) -> None:
+    fake = FakeConnection()
+    db = connect(fake)
+
+    with pytest.raises(TypeError, match=r"ProjectTotals @StartDate \(smalldatetime\)"):
+        db.project_totals(2026, date(2026, 3, 31))  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="ProjectTotals @StartDate"):
+        db.count(FUNCTIONS["ProjectTotals"], 2026, date(2026, 3, 31))
+
+    assert fake.reads == []
+
+
+def test_checked_arguments_are_bound_converted() -> None:
+    query = select(
+        FUNCTIONS["AxFinancials"],
+        ["glaKey"],
+        arguments=("2026-01-01", date(2026, 3, 31), 0, "A"),
+    )
+
+    assert query.parameters == (date(2026, 1, 1), date(2026, 3, 31), False, "A")
+
+
+def test_parameter_types_match_the_catalog(
+    generator: Any, catalog: dict[str, Any]
+) -> None:
+    for name, function in catalog["functions"].items():
+        source = FUNCTIONS[name].__source__
+        expected = tuple(generator.declaration(p) for p in function["parameters"])
+
+        assert source.parameter_types == expected, name
+        assert len(source.parameter_types) == len(source.parameters), name
+        assert describe(FUNCTIONS[name]).parameter_types == expected
+
+    assert FUNCTIONS["AxFinancials"].__source__.parameter_types == (
+        "smalldatetime",
+        "smalldatetime",
+        "bit",
+        "varchar(10)",
+    )
+    assert FUNCTIONS["Ax1099Totals"].__source__.parameter_types[0] == "decimal(19,2)"
+
+
+def test_cli_reads_arguments_by_sql_type() -> None:
+    model = FUNCTIONS["AxFinancials"]
+
+    values = odbc_cli._arguments(model, ("2026-01-01", "2026-03-31", "false", "A"))
+
+    assert values == [date(2026, 1, 1), date(2026, 3, 31), False, "A"]
+    assert odbc_cli._arguments(
+        FUNCTIONS["ReceiptTotals"], ("2026-01-01", "2026-03-31", "null", "7", "0")
+    )[2:] == [None, 7, False]
+
+
+@pytest.mark.parametrize(
+    "arguments, message",
+    [
+        (["2026", "2026-03-31"], "ISO 8601"),
+        (
+            ["2026-01-01"],
+            "takes 2 arguments: @StartDate smalldatetime, @EndDate smalldatetime",
+        ),
+    ],
+)
+def test_cli_refuses_bad_arguments(arguments: list[str], message: str) -> None:
+    result = CliRunner().invoke(cli, ["odbc", "call", "ProjectTotals", *arguments])
+
+    assert result.exit_code == 2
+    assert message in " ".join(result.output.split())
+
+
+def test_cli_describe_prints_parameter_types() -> None:
+    result = CliRunner().invoke(cli, ["odbc", "describe", "AxFinancials"])
+
+    assert result.exit_code == 0, result.output
+    assert (
+        "parameters: @StartDate smalldatetime, @EndDate smalldatetime, "
+        "@CloseYear bit, @AccrualCash varchar(10)"
+    ) in result.output

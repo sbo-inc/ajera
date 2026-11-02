@@ -422,3 +422,41 @@ def test_per_call_timeout_through_a_public_read(db: AjeraOdbc) -> None:
 
     assert db.count(model, timeout=30) == db.count(model) > 0
     assert len(db.rows(model, fields=["description"], limit=5, timeout=30)) == 5
+
+
+# =============================================================================
+# TEST: sessions still closing, and checked function arguments
+# =============================================================================
+
+
+def test_closing_session_is_counted_until_the_server_finishes() -> None:
+    with AjeraOdbc(timeout=(30, 60)) as reader:
+        with pytest.raises(Exception) as caught:
+            reader._run(waitfor(5), timeout=1)
+        assert caught.value.args[0] == "HYT00"
+
+        # Abandoned, but still held until the server finishes waiting.
+        assert (reader.closing, reader.sessions) == (1, 1)
+        assert reader.ping()
+        assert (reader.closing, reader.sessions) == (1, 2)
+
+        start = time.monotonic()
+        assert reader.wait_closed(timeout=30)
+        assert time.monotonic() - start < 10
+        assert (reader.closing, reader.sessions) == (0, 1)
+
+
+def test_checked_arguments_reach_the_function(db: AjeraOdbc) -> None:
+    start, end = date(date.today().year, 1, 1), date.today()
+
+    typed = db.vendor_totals(0, start, end)
+    from_text = db.call(
+        FUNCTIONS["VendorTotals"], 0, start.isoformat(), end.isoformat()
+    )
+
+    assert len(typed) == len(from_text) > 0
+
+
+def test_a_mistyped_argument_never_reaches_the_server(db: AjeraOdbc) -> None:
+    with pytest.raises(TypeError, match="VendorTotals @StartDate"):
+        db.vendor_totals(0, 2026, date.today())  # type: ignore[arg-type]

@@ -335,6 +335,16 @@ def render_model(
     module.body.append("")
 
 
+def declaration(parameter: dict[str, Any]) -> str:
+    """A parameter's SQL declaration: `smalldatetime`, `varchar(10)`, `decimal(19,2)`."""
+    if "length" in parameter:
+        length = parameter["length"]
+        return f"{parameter['type']}({'max' if length == -1 else length})"
+    if "precision" in parameter:
+        return f"{parameter['type']}({parameter['precision']},{parameter['scale']})"
+    return str(parameter["type"])
+
+
 def source_literal(**values: Any) -> str:
     parts = [f'kind="{values["kind"]}"', f'name="{values["name"]}"']
     if values.get("primary_key"):
@@ -349,6 +359,8 @@ def source_literal(**values: Any) -> str:
         parts.append(f"blobs={tuple(values['blobs'])!r}")
     if values.get("parameters"):
         parts.append(f"parameters={tuple(values['parameters'])!r}")
+    if values.get("parameter_types"):
+        parts.append(f"parameter_types={tuple(values['parameter_types'])!r}")
     for name in ("current_column", "deleted_column"):
         if values.get(name):
             parts.append(f'{name}="{values[name]}"')
@@ -544,6 +556,7 @@ def main() -> None:
                 kind="function",
                 name=name,
                 parameters=parameters,
+                parameter_types=[declaration(p) for p in function["parameters"]],
                 blobs=[
                     c["name"] for c in function["columns"] if c["type"] in BLOB_TYPES
                 ],

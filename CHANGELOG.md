@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0] - 2026-11-02
+
+- `AjeraOdbc.closing` counts the sessions still closing after a timeout, `AjeraOdbc.sessions` adds the open one, and `AjeraOdbc.wait_closed()` waits for them. A timed-out session stays held until Deltek's server finishes the abandoned statement, so a caller with few seats can now see and wait for it ([#32]).
+- **Breaking:** function arguments are checked against each parameter's SQL type before they are bound. SQL Server converted some mistakes silently: `2026` passed for a date ran as 1905-07-20, and a string longer than a `varchar` parameter was cut short. Such calls now raise `TypeError` or `ValueError`. Date parameters still take an ISO 8601 string ([#32]).
+- `Source.parameter_types` and `describe(model).parameter_types` give each function parameter's SQL declaration, such as `varchar(10)` or `decimal(19,2)`. `ajera odbc describe` prints them ([#32]).
+- **Fixed:** `ajera odbc call` and `ajera odbc count` read a number given for a date argument as a Unix timestamp, so `2026` became 1970-01-01. They now read each argument by its SQL type and refuse that ([#32]).
+
 ## [0.7.0] - 2026-11-01
 
 - `AjeraOdbc.aggregate` totals on the server with `GROUP BY`. The measures are `sum_`, `count`, `count_distinct`, `min_`, `max_`, and `avg`, and date fields group by `day`, `week`, `month`, `quarter`, or `year`. A monthly total no longer moves every row through Deltek's pipeline ([#30]).
@@ -83,3 +90,4 @@
 [#26]: https://github.com/sbo-inc/ajera/issues/26
 [#27]: https://github.com/sbo-inc/ajera/issues/27
 [#30]: https://github.com/sbo-inc/ajera/issues/30
+[#32]: https://github.com/sbo-inc/ajera/issues/32
