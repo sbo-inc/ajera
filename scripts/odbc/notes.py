@@ -94,6 +94,28 @@ _PROJECT_BALANCE = (
     "@EndDate changes it."
 )
 
+# `ProjectTotals`, checked live after #36 (#38), each column by its sum of
+# absolute values and a checksum over every project, with a start in 2000 and
+# ends at 2020-12-31, 2024-06-30, and 2026-09-30; two identical calls agreed:
+# - The receipts, billed-by-date, payment, vendor-invoiced, and adjustment
+#   columns held for every end, as for every start (`start_date_columns`).
+#   The labor payments were zero on every project, so they were not checked.
+# - The outstanding and aging columns moved with the end. The aging buckets
+#   that were zero on every project were not checked.
+# - Each billed-by-date column was negative on most projects and equal to the
+#   negative of the billed column on 91% to 99% of those with an amount,
+#   never to the billed column itself, but their totals differ.
+_PROJECT_TO_DATE = (
+    "A total to date, as the database holds it now: neither @StartDate nor "
+    "@EndDate changes it."
+)
+_PROJECT_BILLED_BY_DATE = (
+    f"{_PROJECT_TO_DATE} Signed the opposite way to the billed columns, so "
+    "ordinary billing is negative; on most projects it is the negative of "
+    "the matching billed amount over the whole history, but not on all."
+)
+_PROJECT_AS_OF_END = "Changes with @EndDate."
+
 # `GLFullAccountWithCutoff`, checked live at cutoffs from 2012 to 2024:
 # - `glfaBalance` matched the sum of `AxGLDetail.gldAmount` through the
 #   cutoff, by entity and account or by account alone, and
@@ -129,6 +151,72 @@ NOTES: dict[str, dict[str, str]] = {
                 "prjConsultantPayableBalance",
             ),
             _PROJECT_BALANCE,
+        ),
+        **dict.fromkeys(
+            (
+                "prjTotalReceipts",
+                "prjLaborReceipts",
+                "prjExpenseReceipts",
+                "prjConsultantReceipts",
+                "prjPayments",
+                "prjExpensePayments",
+                "prjConsultantPayments",
+                "prjVendorInvoiced",
+                "prjAdjustAmount",
+            ),
+            _PROJECT_TO_DATE,
+        ),
+        **dict.fromkeys(
+            (
+                "prjTotalBilledByDate",
+                "prjLaborBilledByDate",
+                "prjExpenseBilledByDate",
+                "prjConsultantBilledByDate",
+            ),
+            _PROJECT_BILLED_BY_DATE,
+        ),
+        **dict.fromkeys(
+            (
+                "prjBilledOutstanding",
+                "prjBilledAgingCurrent",
+                "prjBilledAging30",
+                "prjBilledAging60",
+                "prjBilledAging90",
+                "prjBilledAging120",
+                "prjBilledLaborOutstanding",
+                "prjBilledLaborAgingCurrent",
+                "prjBilledLaborAging30",
+                "prjBilledLaborAging60",
+                "prjBilledLaborAging90",
+                "prjBilledLaborAging120",
+                "prjBilledExpenseOutstanding",
+                "prjBilledExpenseAgingCurrent",
+                "prjBilledExpenseAging30",
+                "prjBilledExpenseAging120",
+                "prjBilledConsultantOutstanding",
+                "prjBilledConsultantAgingCurrent",
+                "prjBilledConsultantAging120",
+                "prjSpentOutstanding",
+                "prjSpentAgingCurrent",
+                "prjSpentAging30",
+                "prjSpentAging60",
+                "prjSpentAging90",
+                "prjSpentAging120",
+                "prjSpentLaborOutstanding",
+                "prjSpentLaborAgingCurrent",
+                "prjSpentLaborAging30",
+                "prjSpentLaborAging60",
+                "prjSpentLaborAging90",
+                "prjSpentLaborAging120",
+                "prjSpentExpenseOutstanding",
+                "prjSpentExpenseAgingCurrent",
+                "prjSpentExpenseAging30",
+                "prjSpentExpenseAging120",
+                "prjSpentConsultantOutstanding",
+                "prjSpentConsultantAgingCurrent",
+                "prjSpentConsultantAging120",
+            ),
+            _PROJECT_AS_OF_END,
         ),
     },
     "GLFullAccountWithCutoff": {

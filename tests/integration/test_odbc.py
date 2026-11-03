@@ -786,3 +786,45 @@ def test_retained_earnings_takes_earlier_income_after_the_current_year(
     assert own_ledger_before
     assert balanced_after
     assert not balanced_before
+
+
+def test_project_to_date_totals_ignore_the_end_and_aging_follows_it(
+    db: AjeraOdbc,
+) -> None:
+    model = FUNCTIONS["ProjectTotals"]
+    to_date = ("total_receipts", "total_billed_by_date", "payments", "vendor_invoiced")
+    measures = [sum_(f, alias=f) for f in (*to_date, "billed_outstanding")]
+
+    def totals_to(end: date) -> dict[str, object]:
+        return db.aggregate(model, date(2000, 1, 1), end, measures=measures)[0]
+
+    early, late = totals_to(date(2020, 12, 31)), totals_to(date(2026, 9, 30))
+
+    to_date_held = all(early[f] == late[f] for f in to_date)
+    aging_moved = early["billed_outstanding"] != late["billed_outstanding"]
+
+    assert to_date_held
+    assert aging_moved
+
+
+def test_billed_by_date_is_signed_against_billed(db: AjeraOdbc) -> None:
+    rows = db.rows(
+        FUNCTIONS["ProjectTotals"],
+        date(1990, 1, 1),
+        date.today(),
+        fields=["prjTotalBilled", "prjTotalBilledByDate"],
+    )
+    billed = [
+        (amount(r, "total_billed"), amount(r, "total_billed_by_date"))
+        for r in rows
+        if amount(r, "total_billed_by_date")
+    ]
+
+    mostly_negative = sum(by_date < 0 for _, by_date in billed) > 0.9 * len(billed)
+    mostly_opposite = sum(abs(b + d) < CENT for b, d in billed) > 0.9 * len(billed)
+    never_equal = not any(abs(b - d) < CENT for b, d in billed)
+
+    assert billed
+    assert mostly_negative
+    assert mostly_opposite
+    assert never_equal
