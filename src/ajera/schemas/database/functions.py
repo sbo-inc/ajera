@@ -285,38 +285,84 @@ class FinancialsRow(DatabaseRecord):
         None, alias="eOverheadPercent", json_schema_extra={"sql_type": "int"}
     )
     current_month: Decimal | None = Field(
-        None, alias="glaCurrentMonth", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaCurrentMonth",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "For an income or expense account, the activity from @StartDate through @EndDate: the range passed, not a calendar month. For an asset, liability, or equity account other than retained earnings, the balance at @EndDate, the same as `current_ytd_balance`. Signed as `AxGLDetail.gldAmount`.",
+        },
     )
     current_ytd_balance: Decimal | None = Field(
-        None, alias="glaCurrentYTDBalance", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaCurrentYTDBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "For an income or expense account, the activity from the first day of the fiscal year that holds @EndDate through @EndDate, whatever @StartDate is. For an asset, liability, or equity account, the balance at @EndDate: every ledger amount through it, not the change since the year began. Retained earnings also holds the income of the years before, so the accounts total zero, but only when @StartDate falls after `last_day_current_fiscal_year`; with an earlier @StartDate it holds its own ledger alone. Signed as `AxGLDetail.gldAmount`.",
+        },
     )
     prior_year_month: Decimal | None = Field(
-        None, alias="glaPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaPriorYearMonth",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "For an income or expense account, the activity from @StartDate through @EndDate, each moved back a year. For an asset, liability, or equity account other than retained earnings, the balance at @EndDate moved back a year.",
+        },
     )
     prior_year_ytd_balance: Decimal | None = Field(
-        None, alias="glaPriorYearYTDBalance", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaPriorYearYTDBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "For an income or expense account, the activity of the fiscal year before, through @EndDate moved back a year. For an asset, liability, or equity account other than retained earnings, the balance at @EndDate moved back a year. @StartDate does not change it.",
+        },
     )
     budget_current_month: Decimal | None = Field(
-        None, alias="glaBudgetCurrentMonth", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaBudgetCurrentMonth",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not checked: the database these notes were checked on holds no budgets.",
+        },
     )
     budget_ytd: Decimal | None = Field(
-        None, alias="glaBudgetYTD", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaBudgetYTD",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not checked: the database these notes were checked on holds no budgets.",
+        },
     )
     budget_prior_year_month: Decimal | None = Field(
-        None, alias="glaBudgetPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaBudgetPriorYearMonth",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not checked: the database these notes were checked on holds no budgets.",
+        },
     )
     budget_prior_ytd: Decimal | None = Field(
-        None, alias="glaBudgetPriorYTD", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaBudgetPriorYTD",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not checked: the database these notes were checked on holds no budgets.",
+        },
     )
     last_day_current_fiscal_year: datetime | None = Field(
         None,
         alias="LastDayCurrentFiscalYear",
-        json_schema_extra={"sql_type": "smalldatetime"},
+        json_schema_extra={
+            "sql_type": "smalldatetime",
+            "note": "Ajera's current fiscal year, which does not follow @EndDate: the year-to-date amounts start from the fiscal year that holds @EndDate.",
+        },
     )
     first_day_current_fiscal_year: datetime | None = Field(
         None,
         alias="FirstDayCurrentFiscalYear",
-        json_schema_extra={"sql_type": "smalldatetime"},
+        json_schema_extra={
+            "sql_type": "smalldatetime",
+            "note": "Ajera's current fiscal year, which does not follow @EndDate: the year-to-date amounts start from the fiscal year that holds @EndDate.",
+        },
     )
     any_fiscal_year_begin_date: datetime | None = Field(
         None,
@@ -420,38 +466,84 @@ class FinancialsMCRow(DatabaseRecord):
         None, alias="eOverheadPercent", json_schema_extra={"sql_type": "int"}
     )
     current_month: Decimal | None = Field(
-        None, alias="glaCurrentMonth", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaCurrentMonth",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "For an income or expense account, the activity from @StartDate through @EndDate: the range passed, not a calendar month. For an asset, liability, or equity account other than retained earnings, the balance at @EndDate, the same as `current_ytd_balance`. Signed as `AxGLDetail.gldAmount`.",
+        },
     )
     current_ytd_balance: Decimal | None = Field(
-        None, alias="glaCurrentYTDBalance", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaCurrentYTDBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "For an income or expense account, the activity from the first day of the fiscal year that holds @EndDate through @EndDate, whatever @StartDate is. For an asset, liability, or equity account, the balance at @EndDate: every ledger amount through it, not the change since the year began. Retained earnings also holds the income of the years before, so the accounts total zero, but only when @StartDate falls after `last_day_current_fiscal_year`; with an earlier @StartDate it holds its own ledger alone. Signed as `AxGLDetail.gldAmount`.",
+        },
     )
     prior_year_month: Decimal | None = Field(
-        None, alias="glaPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaPriorYearMonth",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "For an income or expense account, the activity from @StartDate through @EndDate, each moved back a year. For an asset, liability, or equity account other than retained earnings, the balance at @EndDate moved back a year.",
+        },
     )
     prior_year_ytd_balance: Decimal | None = Field(
-        None, alias="glaPriorYearYTDBalance", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaPriorYearYTDBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "For an income or expense account, the activity of the fiscal year before, through @EndDate moved back a year. For an asset, liability, or equity account other than retained earnings, the balance at @EndDate moved back a year. @StartDate does not change it.",
+        },
     )
     budget_current_month: Decimal | None = Field(
-        None, alias="glaBudgetCurrentMonth", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaBudgetCurrentMonth",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not checked: the database these notes were checked on holds no budgets.",
+        },
     )
     budget_ytd: Decimal | None = Field(
-        None, alias="glaBudgetYTD", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaBudgetYTD",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not checked: the database these notes were checked on holds no budgets.",
+        },
     )
     budget_prior_year_month: Decimal | None = Field(
-        None, alias="glaBudgetPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaBudgetPriorYearMonth",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not checked: the database these notes were checked on holds no budgets.",
+        },
     )
     budget_prior_ytd: Decimal | None = Field(
-        None, alias="glaBudgetPriorYTD", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaBudgetPriorYTD",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not checked: the database these notes were checked on holds no budgets.",
+        },
     )
     last_day_current_fiscal_year: datetime | None = Field(
         None,
         alias="LastDayCurrentFiscalYear",
-        json_schema_extra={"sql_type": "smalldatetime"},
+        json_schema_extra={
+            "sql_type": "smalldatetime",
+            "note": "Ajera's current fiscal year, which does not follow @EndDate: the year-to-date amounts start from the fiscal year that holds @EndDate.",
+        },
     )
     first_day_current_fiscal_year: datetime | None = Field(
         None,
         alias="FirstDayCurrentFiscalYear",
-        json_schema_extra={"sql_type": "smalldatetime"},
+        json_schema_extra={
+            "sql_type": "smalldatetime",
+            "note": "Ajera's current fiscal year, which does not follow @EndDate: the year-to-date amounts start from the fiscal year that holds @EndDate.",
+        },
     )
     any_fiscal_year_begin_date: datetime | None = Field(
         None,
@@ -561,38 +653,84 @@ class FinancialsMCTrialBalanceRow(DatabaseRecord):
         None, alias="eOverheadPercent", json_schema_extra={"sql_type": "int"}
     )
     current_month: Decimal | None = Field(
-        None, alias="glaCurrentMonth", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaCurrentMonth",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "For an income or expense account, the activity from @StartDate through @EndDate: the range passed, not a calendar month. For an asset, liability, or equity account other than retained earnings, the balance at @EndDate, the same as `current_ytd_balance`. Signed as `AxGLDetail.gldAmount`.",
+        },
     )
     current_ytd_balance: Decimal | None = Field(
-        None, alias="glaCurrentYTDBalance", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaCurrentYTDBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "For an income or expense account, the activity from the first day of the fiscal year that holds @EndDate through @EndDate, whatever @StartDate is. For an asset, liability, or equity account, the balance at @EndDate: every ledger amount through it, not the change since the year began. Retained earnings also holds the income of the years before, so the accounts total zero, but only when @StartDate falls after `last_day_current_fiscal_year`; with an earlier @StartDate it holds its own ledger alone. Signed as `AxGLDetail.gldAmount`.",
+        },
     )
     prior_year_month: Decimal | None = Field(
-        None, alias="glaPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaPriorYearMonth",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "For an income or expense account, the activity from @StartDate through @EndDate, each moved back a year. For an asset, liability, or equity account other than retained earnings, the balance at @EndDate moved back a year.",
+        },
     )
     prior_year_ytd_balance: Decimal | None = Field(
-        None, alias="glaPriorYearYTDBalance", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaPriorYearYTDBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "For an income or expense account, the activity of the fiscal year before, through @EndDate moved back a year. For an asset, liability, or equity account other than retained earnings, the balance at @EndDate moved back a year. @StartDate does not change it.",
+        },
     )
     budget_current_month: Decimal | None = Field(
-        None, alias="glaBudgetCurrentMonth", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaBudgetCurrentMonth",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not checked: the database these notes were checked on holds no budgets.",
+        },
     )
     budget_ytd: Decimal | None = Field(
-        None, alias="glaBudgetYTD", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaBudgetYTD",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not checked: the database these notes were checked on holds no budgets.",
+        },
     )
     budget_prior_year_month: Decimal | None = Field(
-        None, alias="glaBudgetPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaBudgetPriorYearMonth",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not checked: the database these notes were checked on holds no budgets.",
+        },
     )
     budget_prior_ytd: Decimal | None = Field(
-        None, alias="glaBudgetPriorYTD", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glaBudgetPriorYTD",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not checked: the database these notes were checked on holds no budgets.",
+        },
     )
     last_day_current_fiscal_year: datetime | None = Field(
         None,
         alias="LastDayCurrentFiscalYear",
-        json_schema_extra={"sql_type": "smalldatetime"},
+        json_schema_extra={
+            "sql_type": "smalldatetime",
+            "note": "Ajera's current fiscal year, which does not follow @EndDate: the year-to-date amounts start from the fiscal year that holds @EndDate.",
+        },
     )
     first_day_current_fiscal_year: datetime | None = Field(
         None,
         alias="FirstDayCurrentFiscalYear",
-        json_schema_extra={"sql_type": "smalldatetime"},
+        json_schema_extra={
+            "sql_type": "smalldatetime",
+            "note": "Ajera's current fiscal year, which does not follow @EndDate: the year-to-date amounts start from the fiscal year that holds @EndDate.",
+        },
     )
     any_fiscal_year_begin_date: datetime | None = Field(
         None,
@@ -3579,10 +3717,20 @@ class GLFullAccountWithCutoffRow(DatabaseRecord):
         alias="glfaInternal2", json_schema_extra={"sql_type": "int"}
     )
     glfa_balance: Decimal | None = Field(
-        None, alias="glfaBalance", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glfaBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Not the ledger balance at @CutoffDate: on most accounts with a balance, it matched neither the sum of `AxGLDetail.gldAmount` through the cutoff nor `AxFinancials`' balance, so what it holds is not established. Slow for a recent cutoff, taking minutes; for a balance sheet at a date, read `current_ytd_balance` from `AxFinancials`, which takes seconds.",
+        },
     )
     glfa_cash_basis_balance: Decimal | None = Field(
-        None, alias="glfaCashBasisBalance", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="glfaCashBasisBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The cash-basis counterpart of `balance`, checked no further.",
+        },
     )
 
 
@@ -3656,16 +3804,32 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjSalesTaxRate", json_schema_extra={"sql_type": "decimal"}
     )
     hours_cost_budget: Decimal = Field(
-        alias="prjHoursCostBudget", json_schema_extra={"sql_type": "decimal"}
+        alias="prjHoursCostBudget",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     labor_cost_budget: Decimal = Field(
-        alias="prjLaborCostBudget", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborCostBudget",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     expense_cost_budget: Decimal = Field(
-        alias="prjExpenseCostBudget", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseCostBudget",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     consultant_cost_budget: Decimal = Field(
-        alias="prjConsultantCostBudget", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantCostBudget",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billing_type: ProjectBillingType | int = Field(
         alias="prjBillingType",
@@ -3676,16 +3840,32 @@ class ProjectTotalsRow(DatabaseRecord):
         None, alias="prjRateTable", json_schema_extra={"sql_type": "int"}
     )
     total_contract_amount: Decimal = Field(
-        alias="prjTotalContractAmount", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalContractAmount",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     labor_contract_amount: Decimal = Field(
-        alias="prjLaborContractAmount", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborContractAmount",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     expense_contract_amount: Decimal = Field(
-        alias="prjExpenseContractAmount", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseContractAmount",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     consultant_contract_amount: Decimal = Field(
-        alias="prjConsultantContractAmount", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantContractAmount",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     bill_labor_as_te: bool = Field(
         alias="prjBillLaborAsTE", json_schema_extra={"sql_type": "bit"}
@@ -3778,7 +3958,11 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjSummarizeBillingGroup", json_schema_extra={"sql_type": "bit"}
     )
     percent_distribution: Decimal = Field(
-        alias="prjPercentDistribution", json_schema_extra={"sql_type": "decimal"}
+        alias="prjPercentDistribution",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     prj_project: int | None = Field(
         None, alias="prjProject", json_schema_extra={"sql_type": "int"}
@@ -3819,13 +4003,25 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjLaborCostRate", json_schema_extra={"sql_type": "decimal"}
     )
     labor_fee_rate: Decimal = Field(
-        alias="prjLaborFeeRate", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborFeeRate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     expense_markup_rate: Decimal = Field(
-        alias="prjExpenseMarkupRate", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseMarkupRate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     consultant_markup_rate: Decimal = Field(
-        alias="prjConsultantMarkupRate", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantMarkupRate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     marketing_phase_key: int | None = Field(
         None, alias="prjMarketingPhase", json_schema_extra={"sql_type": "int"}
@@ -3963,7 +4159,11 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjAdjustType", json_schema_extra={"sql_type": "tinyint"}
     )
     adjust_amount: Decimal = Field(
-        alias="prjAdjustAmount", json_schema_extra={"sql_type": "decimal"}
+        alias="prjAdjustAmount",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     adjust_account_key: int | None = Field(
         None, alias="prjAdjustAccount", json_schema_extra={"sql_type": "int"}
@@ -4451,25 +4651,29 @@ class ProjectTotalsRow(DatabaseRecord):
         None, alias="prjRateTableDescription", json_schema_extra={"sql_type": "varchar"}
     )
     labor_billed_percent: Decimal | None = Field(
-        None, alias="prjLaborBilledPercent", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborBilledPercent",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     labor_wip_billed_percent: Decimal | None = Field(
         None,
         alias="prjLaborWIPBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     labor_wip_to_bill_billed_percent: Decimal | None = Field(
         None,
         alias="prjLaborWIPToBillBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     labor_total_billed_percent: Decimal | None = Field(
         None,
         alias="prjLaborTotalBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     expense_billed_percent: Decimal | None = Field(
-        None, alias="prjExpenseBilledPercent", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseBilledPercent",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     expense_wip_billed_percent: Decimal | None = Field(
         None,
@@ -4484,17 +4688,17 @@ class ProjectTotalsRow(DatabaseRecord):
     expense_total_billed_percent: Decimal | None = Field(
         None,
         alias="prjExpenseTotalBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     consultant_billed_percent: Decimal | None = Field(
         None,
         alias="prjConsultantBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     consultant_wip_billed_percent: Decimal | None = Field(
         None,
         alias="prjConsultantWIPBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     consultant_wip_to_bill_billed_percent: Decimal | None = Field(
         None,
@@ -4504,52 +4708,112 @@ class ProjectTotalsRow(DatabaseRecord):
     consultant_total_billed_percent: Decimal | None = Field(
         None,
         alias="prjConsultantTotalBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     billed_outstanding: Decimal = Field(
-        alias="prjBilledOutstanding", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledOutstanding",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_aging_current: Decimal = Field(
-        alias="prjBilledAgingCurrent", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledAgingCurrent",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_aging30: Decimal = Field(
-        alias="prjBilledAging30", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledAging30",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_aging60: Decimal = Field(
-        alias="prjBilledAging60", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledAging60",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_aging90: Decimal = Field(
-        alias="prjBilledAging90", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledAging90",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_aging120: Decimal = Field(
-        alias="prjBilledAging120", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledAging120",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_labor_outstanding: Decimal = Field(
-        alias="prjBilledLaborOutstanding", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledLaborOutstanding",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_labor_aging_current: Decimal = Field(
-        alias="prjBilledLaborAgingCurrent", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledLaborAgingCurrent",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_labor_aging30: Decimal = Field(
-        alias="prjBilledLaborAging30", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledLaborAging30",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_labor_aging60: Decimal = Field(
-        alias="prjBilledLaborAging60", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledLaborAging60",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_labor_aging90: Decimal = Field(
-        alias="prjBilledLaborAging90", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledLaborAging90",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_labor_aging120: Decimal = Field(
-        alias="prjBilledLaborAging120", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledLaborAging120",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_expense_outstanding: Decimal = Field(
-        alias="prjBilledExpenseOutstanding", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledExpenseOutstanding",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_expense_aging_current: Decimal = Field(
-        alias="prjBilledExpenseAgingCurrent", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledExpenseAgingCurrent",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_expense_aging30: Decimal = Field(
-        alias="prjBilledExpenseAging30", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledExpenseAging30",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_expense_aging60: Decimal = Field(
         alias="prjBilledExpenseAging60", json_schema_extra={"sql_type": "decimal"}
@@ -4558,15 +4822,25 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjBilledExpenseAging90", json_schema_extra={"sql_type": "decimal"}
     )
     billed_expense_aging120: Decimal = Field(
-        alias="prjBilledExpenseAging120", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledExpenseAging120",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_consultant_outstanding: Decimal = Field(
         alias="prjBilledConsultantOutstanding",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_consultant_aging_current: Decimal = Field(
         alias="prjBilledConsultantAgingCurrent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     billed_consultant_aging30: Decimal = Field(
         alias="prjBilledConsultantAging30", json_schema_extra={"sql_type": "decimal"}
@@ -4578,52 +4852,116 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjBilledConsultantAging90", json_schema_extra={"sql_type": "decimal"}
     )
     billed_consultant_aging120: Decimal = Field(
-        alias="prjBilledConsultantAging120", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledConsultantAging120",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_outstanding: Decimal = Field(
-        alias="prjSpentOutstanding", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentOutstanding",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_aging_current: Decimal = Field(
-        alias="prjSpentAgingCurrent", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentAgingCurrent",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_aging30: Decimal = Field(
-        alias="prjSpentAging30", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentAging30",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_aging60: Decimal = Field(
-        alias="prjSpentAging60", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentAging60",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_aging90: Decimal = Field(
-        alias="prjSpentAging90", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentAging90",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_aging120: Decimal = Field(
-        alias="prjSpentAging120", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentAging120",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_labor_outstanding: Decimal = Field(
-        alias="prjSpentLaborOutstanding", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentLaborOutstanding",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_labor_aging_current: Decimal = Field(
-        alias="prjSpentLaborAgingCurrent", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentLaborAgingCurrent",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_labor_aging30: Decimal = Field(
-        alias="prjSpentLaborAging30", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentLaborAging30",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_labor_aging60: Decimal = Field(
-        alias="prjSpentLaborAging60", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentLaborAging60",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_labor_aging90: Decimal = Field(
-        alias="prjSpentLaborAging90", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentLaborAging90",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_labor_aging120: Decimal = Field(
-        alias="prjSpentLaborAging120", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentLaborAging120",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_expense_outstanding: Decimal = Field(
-        alias="prjSpentExpenseOutstanding", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentExpenseOutstanding",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_expense_aging_current: Decimal = Field(
-        alias="prjSpentExpenseAgingCurrent", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentExpenseAgingCurrent",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_expense_aging30: Decimal = Field(
-        alias="prjSpentExpenseAging30", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentExpenseAging30",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_expense_aging60: Decimal = Field(
         alias="prjSpentExpenseAging60", json_schema_extra={"sql_type": "decimal"}
@@ -4632,14 +4970,25 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjSpentExpenseAging90", json_schema_extra={"sql_type": "decimal"}
     )
     spent_expense_aging120: Decimal = Field(
-        alias="prjSpentExpenseAging120", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentExpenseAging120",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_consultant_outstanding: Decimal = Field(
-        alias="prjSpentConsultantOutstanding", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentConsultantOutstanding",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_consultant_aging_current: Decimal = Field(
         alias="prjSpentConsultantAgingCurrent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     spent_consultant_aging30: Decimal = Field(
         alias="prjSpentConsultantAging30", json_schema_extra={"sql_type": "decimal"}
@@ -4651,51 +5000,66 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjSpentConsultantAging90", json_schema_extra={"sql_type": "decimal"}
     )
     spent_consultant_aging120: Decimal = Field(
-        alias="prjSpentConsultantAging120", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentConsultantAging120",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     internal_totals: int = Field(
         alias="prjInternalTotals", json_schema_extra={"sql_type": "int"}
     )
     total_cost: Decimal = Field(
-        alias="prjTotalCost", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalCost",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     labor_cost: Decimal = Field(
-        alias="prjLaborCost", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborCost",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     expense_cost: Decimal = Field(
-        alias="prjExpenseCost", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseCost",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     consultant_cost: Decimal = Field(
-        alias="prjConsultantCost", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantCost",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     total_cost_with_premium: Decimal = Field(
-        alias="prjTotalCostWithPremium", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalCostWithPremium",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     labor_cost_with_premium: Decimal = Field(
-        alias="prjLaborCostWithPremium", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborCostWithPremium",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     total_burdened_cost: Decimal = Field(
-        alias="prjTotalBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalBurdenedCost",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     labor_burdened_cost: Decimal = Field(
-        alias="prjLaborBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborBurdenedCost",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     expense_burdened_cost: Decimal = Field(
-        alias="prjExpenseBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseBurdenedCost",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     consultant_burdened_cost: Decimal = Field(
-        alias="prjConsultantBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantBurdenedCost",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     total_burdened_cost_with_premium: Decimal = Field(
         alias="prjTotalBurdenedCostWithPremium",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     labor_burdened_cost_with_premium: Decimal = Field(
         alias="prjLaborBurdenedCostWithPremium",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     billed_hours: Decimal = Field(
-        alias="prjBilledHours", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledHours",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     unit_price_billed_units: Decimal = Field(
         alias="prjUnitPriceBilledUnits", json_schema_extra={"sql_type": "decimal"}
@@ -4704,16 +5068,20 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjUnitPriceToBillUnits", json_schema_extra={"sql_type": "decimal"}
     )
     wip_hours: Decimal = Field(
-        alias="prjWIPHours", json_schema_extra={"sql_type": "decimal"}
+        alias="prjWIPHours",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     wip_to_bill_hours: Decimal = Field(
-        alias="prjWIPToBillHours", json_schema_extra={"sql_type": "decimal"}
+        alias="prjWIPToBillHours",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     total_hours: Decimal = Field(
-        alias="prjTotalHours", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalHours",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     expense_billed_units: Decimal = Field(
-        alias="prjExpenseBilledUnits", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseBilledUnits",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     expense_wip_units: Decimal = Field(
         alias="prjExpenseWIPUnits", json_schema_extra={"sql_type": "decimal"}
@@ -4722,7 +5090,8 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjExpenseWIPToBillUnits", json_schema_extra={"sql_type": "decimal"}
     )
     consultant_billed_units: Decimal = Field(
-        alias="prjConsultantBilledUnits", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantBilledUnits",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     consultant_wip_units: Decimal = Field(
         alias="prjConsultantWIPUnits", json_schema_extra={"sql_type": "decimal"}
@@ -4731,34 +5100,44 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjConsultantWIPToBillUnits", json_schema_extra={"sql_type": "decimal"}
     )
     total_earned: Decimal = Field(
-        alias="prjTotalEarned", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalEarned",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     labor_earned: Decimal = Field(
-        alias="prjLaborEarned", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborEarned",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     expense_earned: Decimal = Field(
-        alias="prjExpenseEarned", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseEarned",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     consultant_earned: Decimal = Field(
-        alias="prjConsultantEarned", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantEarned",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     total_billed: Decimal = Field(
-        alias="prjTotalBilled", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalBilled",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     labor_billed: Decimal = Field(
-        alias="prjLaborBilled", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborBilled",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     expense_billed: Decimal = Field(
-        alias="prjExpenseBilled", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseBilled",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     consultant_billed: Decimal = Field(
-        alias="prjConsultantBilled", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantBilled",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     total_adjust_excluded: Decimal = Field(
-        alias="prjTotalAdjustExcluded", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalAdjustExcluded",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     labor_adjust_excluded: Decimal = Field(
-        alias="prjLaborAdjustExcluded", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborAdjustExcluded",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     expense_adjust_excluded: Decimal = Field(
         alias="prjExpenseAdjustExcluded", json_schema_extra={"sql_type": "decimal"}
@@ -4767,22 +5146,40 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjConsultantAdjustExcluded", json_schema_extra={"sql_type": "decimal"}
     )
     total_wip: Decimal = Field(
-        alias="prjTotalWIP", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalWIP",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The unbilled part of the work charged from @StartDate through @EndDate, not all the WIP at @EndDate. To take in all of it, start before the oldest unbilled work: earlier starts then give the same total, and a long range is no slower.",
+        },
     )
     labor_wip: Decimal = Field(
-        alias="prjLaborWIP", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborWIP",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The unbilled part of the work charged from @StartDate through @EndDate, not all the WIP at @EndDate. To take in all of it, start before the oldest unbilled work: earlier starts then give the same total, and a long range is no slower.",
+        },
     )
     expense_wip: Decimal = Field(
-        alias="prjExpenseWIP", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseWIP",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The unbilled part of the work charged from @StartDate through @EndDate, not all the WIP at @EndDate. To take in all of it, start before the oldest unbilled work: earlier starts then give the same total, and a long range is no slower.",
+        },
     )
     consultant_wip: Decimal = Field(
-        alias="prjConsultantWIP", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantWIP",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The unbilled part of the work charged from @StartDate through @EndDate, not all the WIP at @EndDate. To take in all of it, start before the oldest unbilled work: earlier starts then give the same total, and a long range is no slower.",
+        },
     )
     total_wip_to_bill: Decimal = Field(
-        alias="prjTotalWIPToBill", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalWIPToBill",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     labor_wip_to_bill: Decimal = Field(
-        alias="prjLaborWIPToBill", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborWIPToBill",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     expense_wip_to_bill: Decimal = Field(
         alias="prjExpenseWIPToBill", json_schema_extra={"sql_type": "decimal"}
@@ -4791,80 +5188,159 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjConsultantWIPToBill", json_schema_extra={"sql_type": "decimal"}
     )
     total_writeoff: Decimal = Field(
-        alias="prjTotalWriteoff", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalWriteoff",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     labor_writeoff: Decimal = Field(
-        alias="prjLaborWriteoff", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborWriteoff",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     expense_writeoff: Decimal = Field(
-        alias="prjExpenseWriteoff", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseWriteoff",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     consultant_writeoff: Decimal = Field(
-        alias="prjConsultantWriteoff", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantWriteoff",
+        json_schema_extra={"sql_type": "decimal", "note": "Changes with @StartDate."},
     )
     total_billed_by_date: Decimal = Field(
-        alias="prjTotalBilledByDate", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalBilledByDate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     labor_billed_by_date: Decimal = Field(
-        alias="prjLaborBilledByDate", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborBilledByDate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     expense_billed_by_date: Decimal = Field(
-        alias="prjExpenseBilledByDate", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseBilledByDate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     consultant_billed_by_date: Decimal = Field(
-        alias="prjConsultantBilledByDate", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantBilledByDate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     total_receipts: Decimal = Field(
-        alias="prjTotalReceipts", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalReceipts",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     labor_receipts: Decimal = Field(
-        alias="prjLaborReceipts", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborReceipts",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     expense_receipts: Decimal = Field(
-        alias="prjExpenseReceipts", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseReceipts",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     consultant_receipts: Decimal = Field(
-        alias="prjConsultantReceipts", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantReceipts",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     total_receivable_balance: Decimal = Field(
-        alias="prjTotalReceivableBalance", json_schema_extra={"sql_type": "decimal"}
+        alias="prjTotalReceivableBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The open balance as the database holds it now: neither @StartDate nor @EndDate changes it.",
+        },
     )
     labor_receivable_balance: Decimal = Field(
-        alias="prjLaborReceivableBalance", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborReceivableBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The open balance as the database holds it now: neither @StartDate nor @EndDate changes it.",
+        },
     )
     expense_receivable_balance: Decimal = Field(
-        alias="prjExpenseReceivableBalance", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpenseReceivableBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The open balance as the database holds it now: neither @StartDate nor @EndDate changes it.",
+        },
     )
     consultant_receivable_balance: Decimal = Field(
         alias="prjConsultantReceivableBalance",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The open balance as the database holds it now: neither @StartDate nor @EndDate changes it.",
+        },
     )
     vendor_invoiced: Decimal = Field(
-        alias="prjVendorInvoiced", json_schema_extra={"sql_type": "decimal"}
+        alias="prjVendorInvoiced",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     payments: Decimal = Field(
-        alias="prjPayments", json_schema_extra={"sql_type": "decimal"}
+        alias="prjPayments",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     labor_payments: Decimal = Field(
         alias="prjLaborPayments", json_schema_extra={"sql_type": "decimal"}
     )
     expense_payments: Decimal = Field(
-        alias="prjExpensePayments", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpensePayments",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     consultant_payments: Decimal = Field(
-        alias="prjConsultantPayments", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantPayments",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "@StartDate does not change it.",
+        },
     )
     payable_balance: Decimal = Field(
-        alias="prjPayableBalance", json_schema_extra={"sql_type": "decimal"}
+        alias="prjPayableBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The open balance as the database holds it now: neither @StartDate nor @EndDate changes it.",
+        },
     )
     labor_payable_balance: Decimal = Field(
         alias="prjLaborPayableBalance", json_schema_extra={"sql_type": "decimal"}
     )
     expense_payable_balance: Decimal = Field(
-        alias="prjExpensePayableBalance", json_schema_extra={"sql_type": "decimal"}
+        alias="prjExpensePayableBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The open balance as the database holds it now: neither @StartDate nor @EndDate changes it.",
+        },
     )
     consultant_payable_balance: Decimal = Field(
-        alias="prjConsultantPayableBalance", json_schema_extra={"sql_type": "decimal"}
+        alias="prjConsultantPayableBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The open balance as the database holds it now: neither @StartDate nor @EndDate changes it.",
+        },
     )
     prepayment_balance: Decimal = Field(
         alias="prjPrepaymentBalance", json_schema_extra={"sql_type": "decimal"}

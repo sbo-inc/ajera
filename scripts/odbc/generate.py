@@ -1,8 +1,10 @@
 """
 Generate the database models and function reads from the catalog snapshot.
 
-Inputs are `scripts/odbc/catalog.json` (from `harvest.py`, the live schema)
-and `scripts/odbc/enums.json` (from `enums.py`, the documented codes). Output:
+Inputs are `scripts/odbc/catalog.json` (from `harvest.py`, the live schema,
+and `probe.py`, how the functions behave), `scripts/odbc/enums.json` (from
+`enums.py`, the documented codes), and `scripts/odbc/notes.py` (what some
+columns hold, checked live). Output:
 
     src/ajera/schemas/database/enums.py      one IntEnum per documented code column
     src/ajera/schemas/database/tables.py     one model per table
@@ -27,6 +29,7 @@ Naming, so a field reads the same wherever its column appears:
 import json
 import keyword
 import re
+import runpy
 import subprocess
 import sys
 import textwrap
@@ -42,6 +45,11 @@ CATALOG = ROOT / "scripts" / "odbc" / "catalog.json"
 ENUMS = ROOT / "scripts" / "odbc" / "enums.json"
 SCHEMAS = ROOT / "src" / "ajera" / "schemas" / "database"
 READER = ROOT / "src" / "ajera" / "odbc" / "functions.py"
+# Loaded by path, so the tests can load this module without `scripts/odbc`
+# on the import path.
+NOTES: dict[str, dict[str, str]] = runpy.run_path(
+    str(ROOT / "scripts" / "odbc" / "notes.py")
+)["NOTES"]
 
 PY_TYPES = {
     "int": "int",
@@ -105,6 +113,13 @@ DELETED = re.compile(r"^[a-z]+IsDeleted$")
 # cannot serve as the view's row key. Found by `verify.py`.
 NON_UNIQUE_VIEW_KEYS: set[str] = {
     "ClientInvoice",  # 11,145 rows over 10,823 ciKey values
+}
+
+# The sentence each field note ends with, from `start_date_columns`: whether
+# changing only `StartDate` changed the column, with `EndDate` held.
+START_DATE = {
+    True: "Changes with @StartDate.",
+    False: "@StartDate does not change it.",
 }
 
 HEADER = '''"""
@@ -297,6 +312,7 @@ def render_model(
     columns: list[dict[str, Any]],
     names: dict[str, str],
     enum_for: dict[str, str],
+    notes: dict[str, str] | None = None,
 ) -> None:
     lines = [
         "",
@@ -325,7 +341,9 @@ def render_model(
         if SENSITIVE.search(column["name"]):
             arguments.append("repr=False")
             extra["sensitive"] = True
-        arguments.append(f"json_schema_extra={extra!r}".replace("'", '"'))
+        if notes and column["name"] in notes:
+            extra["note"] = notes[column["name"]]
+        arguments.append(f"json_schema_extra={python_dict(extra)}")
         if nullable:
             annotation += " | None"
             arguments.insert(0, "None")
@@ -334,6 +352,48 @@ def render_model(
         )
     module.body.extend(lines)
     module.body.append("")
+
+
+def python_dict(values: dict[str, Any]) -> str:
+    """A dict literal with double-quoted strings, which may hold any character."""
+    items = (
+        f"{json.dumps(key)}: {json.dumps(value) if isinstance(value, str) else repr(value)}"
+        for key, value in values.items()
+    )
+    return "{" + ", ".join(items) + "}"
+
+
+def column_notes(name: str, source: dict[str, Any]) -> dict[str, str]:
+    """
+    Each column's note: the hand-written one from `notes.py`, then the probe's.
+
+    The probe's sentence is left off a note that says itself how @StartDate
+    acts: `glaCurrentYTDBalance` moves with it only on retained earnings, which
+    a bare "Changes with @StartDate." would misstate.
+
+    Raises:
+        SystemExit: A note names a column the source does not have.
+    """
+    written = NOTES.get(name, {})
+    columns = {column["name"] for column in source["columns"]}
+    unknown = sorted(set(written) - columns)
+    if unknown:
+        raise SystemExit(f"notes.py: {name} has no column {', '.join(unknown)}")
+    probed: dict[str, bool] = source.get("start_date_columns", {})
+    return {
+        column: " ".join(
+            text
+            for text in (
+                written.get(column),
+                START_DATE[probed[column]]
+                if column in probed and "@StartDate" not in written.get(column, "")
+                else None,
+            )
+            if text
+        )
+        for column in sorted(columns, key=[c["name"] for c in source["columns"]].index)
+        if column in written or column in probed
+    }
 
 
 def declaration(parameter: dict[str, Any]) -> str:
@@ -422,6 +482,10 @@ def source_literal(**values: Any) -> str:
 def main() -> None:
     catalog = json.loads(CATALOG.read_text())
     documented = json.loads(ENUMS.read_text())
+    sources = {name for group in catalog.values() for name in group}
+    unknown = sorted(set(NOTES) - sources)
+    if unknown:
+        raise SystemExit(f"notes.py: no source named {', '.join(unknown)}")
 
     # -- enums ------------------------------------------------------------
     enum_for: dict[str, str] = {}
@@ -533,6 +597,7 @@ def main() -> None:
             columns=table["columns"],
             names=names,
             enum_for=enum_for,
+            notes=column_notes(name, table),
         )
 
     # -- views ------------------------------------------------------------
@@ -573,6 +638,7 @@ def main() -> None:
             columns=view["columns"],
             names=names,
             enum_for=enum_for,
+            notes=column_notes(name, view),
         )
 
     # -- functions --------------------------------------------------------
@@ -626,6 +692,7 @@ def main() -> None:
             columns=function["columns"],
             names=names,
             enum_for=enum_for,
+            notes=column_notes(name, function),
         )
 
         arguments = []

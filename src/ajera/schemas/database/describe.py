@@ -38,6 +38,9 @@ class FieldSchema:
         references: The (table, column) the database's foreign key points at.
         sensitive: Whether the column must never reach a log line.
         blob: Whether the column is binary, and left out of a read by default.
+        note: What the column holds, where its name does not say it: the
+            period an amount covers, and whether a function's `StartDate`
+            changes it. None for most columns.
     """
 
     name: str
@@ -50,6 +53,7 @@ class FieldSchema:
     references: tuple[str, str] | None
     sensitive: bool
     blob: bool
+    note: str | None = None
 
 
 # =============================================================================
@@ -139,6 +143,7 @@ def describe(model: type[DatabaseRecord]) -> SourceSchema:
                 references=source.foreign_keys.get(column),
                 sensitive=column in source.sensitive or bool(extra.get("sensitive")),
                 blob=column in source.blobs,
+                note=str(extra["note"]) if extra.get("note") else None,
             )
         )
     return SourceSchema(

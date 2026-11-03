@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.10.0] - 2026-11-02
+
+- `FieldSchema.note` says what a column holds where its name does not. `describe()` returns it, and `ajera odbc describe` prints it ([#36]).
+- Notes on the `AxFinancials` functions, `ProjectTotals`, and `GLFullAccountWithCutoff`: what period each amount covers, and whether `StartDate` changes it, as checked live ([#36]).
+
 ## [0.9.0] - 2026-11-02
 
 - Function models record the parameters a function ignores: `Source.ignored_parameters` always, `Source.ignored_when` under some codes, and `parameter_filters` for the field to filter on instead. `describe()`, `ajera odbc describe`, and the typed method docstrings show them ([#34]).
@@ -73,6 +78,7 @@
 
 - Initial release.
 
+[0.10.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.10.0
 [0.9.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.9.0
 [0.8.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.8.0
 [0.7.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.7.0
@@ -102,3 +108,4 @@
 [#30]: https://github.com/sbo-inc/ajera/issues/30
 [#32]: https://github.com/sbo-inc/ajera/issues/32
 [#34]: https://github.com/sbo-inc/ajera/issues/34
+[#36]: https://github.com/sbo-inc/ajera/issues/36

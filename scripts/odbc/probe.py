@@ -34,11 +34,21 @@ How a verdict is reached:
   So a difference counts only once it shows again on two fresh calls, back
   to back. An edit can make a result look changed, but never unchanged.
 
+Where a function applies `StartDate`, the probe also records which amount
+columns it changes with `EndDate` held: `AxFinancials.glaCurrentMonth` covers
+the range passed, and `glaCurrentYTDBalance` the fiscal year to `EndDate`
+whatever `StartDate` is. The two calls start at the beginning of the history
+and at the start of the last month, with a recent end (`PERIOD_STARTS`), so a
+column covering the range has history to lose. A column changes only if it
+moved on both of two pairs of calls, back to back, and holds only if it held
+on both and is not zero in every row. Nothing is recorded when `StartDate`
+changes the rows themselves, because then every column moves with them.
+
 The verdicts go into `catalog.json` as `ignored_parameters`,
 `unchecked_parameters`, and `ignored_when`, with `parameter_filters` and
-`parameter_notes` from
-`FILTERS` for the ignored ones. A filter is written only after it is shown to
-narrow the function's rows. Only the functions probed are rewritten.
+`parameter_notes` from `FILTERS` for the ignored ones, and the columns as
+`start_date_columns`. A filter is written only after it is shown to narrow
+the function's rows. Only the functions probed are rewritten.
 """
 
 import json
@@ -68,6 +78,13 @@ RANGES = {"RefundTotals": (date(2000, 1, 1), date(2026, 10, 31))}
 # filter that is applied returns nothing for it.
 OTHER_RANGE = (date(2023, 3, 1), date(2023, 3, 31))
 NO_KEY = 2**31 - 1
+# The two starts the amount columns are compared over, with one end: the whole
+# history, and the last month. A column covering the range passed moves
+# between them unless the history before that month holds nothing; a balance
+# at the end cannot. The end is recent, because some amounts exist only until
+# the work is billed or paid.
+PERIOD_END = date(2026, 9, 30)
+PERIOD_STARTS = (date(2000, 1, 1), date(2026, 9, 1))
 
 # Each parameter's base value and the values tried in its place, by name.
 # Dates come from `dates`.
@@ -118,6 +135,8 @@ NUMERIC = frozenset(
     {"int", "smallint", "tinyint", "bigint", "decimal", "numeric"}
     | {"money", "smallmoney", "float", "real"}
 )
+# The columns whose dependence on `StartDate` is recorded.
+AMOUNTS = frozenset({"decimal", "numeric", "money", "smallmoney"})
 
 # Column types BINARY_CHECKSUM refuses.
 UNCHECKSUMMED = frozenset({"text", "ntext", "image", "xml"})
@@ -131,21 +150,38 @@ type Fingerprint = tuple[Any, ...]
 
 
 def fingerprint_columns(model: type[DatabaseRecord]) -> list[tuple[str, str]]:
-    """Each column the fingerprint covers, with its aggregate: a sum or a checksum."""
+    """
+    Each column the fingerprint covers, with its aggregates.
+
+    A numeric column gets two: the sum of its absolute values, which is zero
+    only when every row is, and a checksum of its rows. A plain sum is not
+    enough, because debits and credits cancel in it: `AxFinancials` sums to
+    zero over every account, whatever the dates. Other columns get the
+    checksum alone.
+    """
     covered = []
     for name, info in model.model_fields.items():
         extra = (
             info.json_schema_extra if isinstance(info.json_schema_extra, dict) else {}
         )
         column = info.alias or name
+        checksum = f"CHECKSUM_AGG(BINARY_CHECKSUM({quote_name(column)}))"
         if extra.get("sql_type") in NUMERIC:
-            aggregate = f"SUM(CAST({quote_name(column)} AS decimal(38, 6)))"
-        elif extra.get("sql_type") in UNCHECKSUMMED:
-            continue
-        else:
-            aggregate = f"CHECKSUM_AGG(BINARY_CHECKSUM({quote_name(column)}))"
-        covered.append((column, aggregate))
+            total = f"SUM(ABS(CAST({quote_name(column)} AS decimal(38, 6))))"
+            covered += [(column, total), (column, checksum)]
+        elif extra.get("sql_type") not in UNCHECKSUMMED:
+            covered.append((column, checksum))
     return covered
+
+
+def amount_columns(model: type[DatabaseRecord]) -> list[str]:
+    """The decimal and money columns, whose period `start_date_columns` records."""
+    return [
+        info.alias or name
+        for name, info in model.model_fields.items()
+        if isinstance(info.json_schema_extra, dict)
+        and info.json_schema_extra.get("sql_type") in AMOUNTS
+    ]
 
 
 @dataclass
@@ -166,6 +202,7 @@ class Fingerprints:
 
     def __post_init__(self) -> None:
         self.columns = fingerprint_columns(self.model)
+        self.amounts = amount_columns(self.model)
 
     def raw(self, arguments: tuple[object, ...], fresh: bool = False) -> Fingerprint:
         if fresh or arguments not in self.seen:
@@ -208,8 +245,24 @@ class Fingerprints:
         if base[0] != other[0]:
             return f"rows {base[0]} -> {other[0]}"
         kept = [c for c, _ in self.columns if c not in self.volatile]
-        moved = [c for c, a, b in zip(kept, base[1:], other[1:], strict=True) if a != b]
+        moved = list(
+            dict.fromkeys(
+                c for c, a, b in zip(kept, base[1:], other[1:], strict=True) if a != b
+            )
+        )
         return f"same rows; {len(moved)} columns moved: {', '.join(moved[:6])}"
+
+    def by_column(
+        self, arguments: tuple[object, ...], fresh: bool = False
+    ) -> tuple[int, dict[str, tuple[Any, ...]]] | None:
+        """The row count and each column's aggregates; None when the call failed."""
+        raw = self.raw(arguments, fresh)
+        if raw[0] == "error":
+            return None
+        values: dict[str, tuple[Any, ...]] = {}
+        for (column, _), value in zip(self.columns, raw[1:], strict=True):
+            values[column] = (*values.get(column, ()), value)
+        return int(raw[0]), values
 
     def __call__(
         self, arguments: tuple[object, ...], fresh: bool = False
@@ -273,11 +326,14 @@ class Probed:
             context's rows. A code whose rows match another's at the base
             dates is not probed again: the base range is one year of many, so
             had that code applied the dates, its rows would differ.
+        start_date: Each amount column checked, to whether changing only
+            `StartDate` changed it, under any code that applies the dates.
     """
 
     evidence: dict[str, dict[str, Evidence]]
     code: str | None = None
     codes: dict[str, list[object]] = field(default_factory=dict)
+    start_date: dict[str, bool] = field(default_factory=dict)
 
 
 def compare(
@@ -304,6 +360,43 @@ def compare(
         evidence.empty.append(label)
     else:
         evidence.unchanged.append(label)
+
+
+def start_date_columns(
+    fingerprint: Fingerprints, base: tuple[object, ...], other: tuple[object, ...]
+) -> dict[str, bool] | None:
+    """
+    Which amount columns changed between two calls that differ in `StartDate`.
+
+    Both calls are made twice, back to back. A column changed only if it
+    moved on both pairs; one that moved on one pair only was edited in
+    between, and is left out. A column held only if it held on both and is
+    not zero in every row: a column of zeros proves nothing. None when the
+    row counts differ, because then every column moves with the rows.
+    """
+    pairs = [
+        (fingerprint.by_column(base), fingerprint.by_column(other)),
+        (
+            fingerprint.by_column(base, fresh=True),
+            fingerprint.by_column(other, fresh=True),
+        ),
+    ]
+    found: dict[str, bool] = {}
+    for column in fingerprint.amounts:
+        if column in fingerprint.volatile:
+            continue
+        moved: list[bool] = []
+        held: list[bool] = []
+        for before, after in pairs:
+            if before is None or after is None or before[0] != after[0]:
+                return None
+            a, b = before[1][column], after[1][column]
+            (moved if a != b else held).append(a[0] not in (None, 0))
+        if len(moved) == len(pairs):
+            found[column] = True
+        elif len(held) == len(pairs) and any(held):
+            found[column] = False
+    return found
 
 
 def add_live_values(db: AjeraOdbc) -> None:
@@ -444,6 +537,21 @@ def probe(
                     context,
                     other,
                 )
+        if all(n in parameters for n in DATE_RANGE) and found["StartDate"].changed:
+            long, short = (
+                replaced(
+                    parameters,
+                    replaced(parameters, context, "EndDate", PERIOD_END),
+                    "StartDate",
+                    start,
+                )
+                for start in PERIOD_STARTS
+            )
+            columns = start_date_columns(fingerprint, long, short)
+            if columns is None:
+                report(f"{label or 'base'}: @StartDate changes the rows; no columns")
+            for column, changed in (columns or {}).items():
+                probed.start_date[column] = probed.start_date.get(column) or changed
 
     if fingerprint(base, fresh=True) != first:
         # Every difference was confirmed on fresh calls, and an unchanged
@@ -556,6 +664,13 @@ def main(names: Sequence[str]) -> int:
             when = ignored_when(probed, verdicts)
             if when:
                 report(f"ignored under some codes: {when}")
+            if probed.start_date:
+                changed = [c for c, moved in probed.start_date.items() if moved]
+                report(
+                    f"@StartDate changes {len(changed)} of {len(probed.start_date)} "
+                    f"amount columns: {', '.join(changed[:8])}"
+                    + (" ..." if len(changed) > 8 else "")
+                )
             # Read again before writing, so runs in parallel keep each other's.
             catalog = json.loads(CATALOG.read_text())
             function = catalog["functions"][name]
@@ -576,6 +691,7 @@ def main(names: Sequence[str]) -> int:
                 {p: rule.note for p, rule in filters.items() if rule.note},
             )
             record(function, "ignored_when", when)
+            record(function, "start_date_columns", probed.start_date)
             CATALOG.write_text(dump(catalog))
             report(f"{time.monotonic() - started:.0f}s")
     return 0

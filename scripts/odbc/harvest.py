@@ -33,7 +33,10 @@ PROBED = (
     "parameter_filters",
     "parameter_notes",
     "ignored_when",
+    "start_date_columns",
 )
+# The probe results keyed by column rather than by parameter.
+BY_COLUMN = frozenset({"start_date_columns"})
 
 
 def fetch(cursor: Any, statement: str) -> list[dict[str, Any]]:
@@ -91,13 +94,15 @@ def dump(catalog: dict[str, dict[str, Any]]) -> str:
 
 
 def carry_probed(catalog: dict[str, dict[str, Any]], path: Path) -> None:
-    """Keep what probe.py found, for parameters each function still declares."""
+    """Keep what probe.py found, for the parameters and columns still declared."""
     if not path.exists():
         return
     previous = json.loads(path.read_text()).get("functions", {})
     for name, function in catalog["functions"].items():
-        declared = {parameter["name"] for parameter in function["parameters"]}
+        parameters = {parameter["name"] for parameter in function["parameters"]}
+        columns = {column["name"] for column in function["columns"]}
         for key in PROBED:
+            declared = columns if key in BY_COLUMN else parameters
             value = previous.get(name, {}).get(key)
             if isinstance(value, dict):
                 value = {k: v for k, v in value.items() if k in declared}

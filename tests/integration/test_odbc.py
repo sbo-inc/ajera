@@ -17,7 +17,7 @@ from decimal import Decimal
 import pytest
 
 from ajera.client import AjeraClient
-from ajera.odbc import PAGE_SIZE, AjeraOdbc, between, count, sum_
+from ajera.odbc import PAGE_SIZE, AjeraOdbc, between, count, filters, sum_
 from ajera.odbc.queries.generic import Query
 from ajera.odbc.queries.mirror import MIRRORS
 from ajera.schemas.database import (
@@ -581,3 +581,208 @@ def test_receipt_totals_ignores_its_dates(db: AjeraOdbc) -> None:
 
     assert same
     assert narrower
+
+
+# =============================================================================
+# TEST: the periods the amount columns cover
+# =============================================================================
+#
+# Each comparison runs on the server or in memory and is reduced to a bool
+# before it is asserted, so a failure never shows a ledger amount.
+
+FINANCIALS = ("AxFinancials", "AxFinancials_MC", "AxFinancials_MC_TrialBalance")
+# Asset, liability, and equity accounts. Retained earnings (5) also carries the
+# earlier years' income, so it is checked through the total instead.
+BALANCE_SHEET = frozenset(range(5))
+INCOME_STATEMENT = frozenset(range(6, 11))
+LAST_YEAR = date.today().year - 1
+CENT = Decimal("0.005")
+
+
+def financials(
+    db: AjeraOdbc, name: str, start: date, end: date
+) -> dict[tuple[object, object], dict[str, object]]:
+    """Each account's period columns, keyed by entity and account."""
+    arguments: list[object] = [start, end, False, "Accrual"]
+    if name != "AxFinancials":
+        company = db.rows(TABLES["AxCompany"], fields=["cmpKey"], limit=1)
+        arguments.append(company[0]["company_key"])
+    rows = db.rows(
+        FUNCTIONS[name],
+        *arguments,
+        fields=[
+            "eKey",
+            "glaKey",
+            "glaType",
+            "glaCurrentMonth",
+            "glaCurrentYTDBalance",
+            "LastDayCurrentFiscalYear",
+        ],
+    )
+    return {(row["entity_key"], row["gl_account_key"]): row for row in rows}
+
+
+def amount(row: dict[str, object], field: str) -> Decimal:
+    value = row[field]
+    return value if isinstance(value, Decimal) else Decimal(0)
+
+
+@pytest.mark.parametrize("name", FINANCIALS)
+def test_current_month_covers_the_range_and_ytd_does_not(
+    db: AjeraOdbc, name: str
+) -> None:
+    end = date(LAST_YEAR, 12, 31)
+    year = financials(db, name, date(LAST_YEAR, 1, 1), end)
+    half = financials(db, name, date(LAST_YEAR, 7, 1), end)
+    # A start in another fiscal year moves only retained earnings.
+    history = financials(db, name, date(2000, 1, 1), end)
+    income = [k for k, row in year.items() if row["type"] in INCOME_STATEMENT]
+    sheet = [k for k, row in year.items() if row["type"] in BALANCE_SHEET]
+
+    same_accounts = set(year) == set(half) == set(history)
+    ytd_held = all(
+        amount(year[k], "current_ytd_balance") == amount(half[k], "current_ytd_balance")
+        for k in year
+    ) and all(
+        amount(year[k], "current_ytd_balance")
+        == amount(history[k], "current_ytd_balance")
+        for k in income + sheet
+    )
+    month_moved = any(
+        amount(year[k], "current_month") != amount(half[k], "current_month")
+        for k in income
+    )
+    balances_held = all(
+        amount(year[k], "current_month") == amount(half[k], "current_month")
+        for k in sheet
+    )
+
+    assert income and sheet
+    assert same_accounts
+    assert ytd_held
+    assert month_moved
+    assert balances_held
+
+
+def test_one_month_is_the_difference_of_two_year_to_date_reads(db: AjeraOdbc) -> None:
+    # Inside one fiscal year: the firm's starts in January.
+    june = financials(db, "AxFinancials", date(LAST_YEAR, 6, 1), date(LAST_YEAR, 6, 30))
+    to_june = financials(
+        db, "AxFinancials", date(LAST_YEAR, 1, 1), date(LAST_YEAR, 6, 30)
+    )
+    to_may = financials(
+        db, "AxFinancials", date(LAST_YEAR, 1, 1), date(LAST_YEAR, 5, 31)
+    )
+    income = [k for k, row in june.items() if row["type"] in INCOME_STATEMENT]
+
+    equal = all(
+        amount(june[k], "current_month")
+        == amount(to_june[k], "current_ytd_balance")
+        - amount(to_may[k], "current_ytd_balance")
+        for k in income
+    )
+
+    assert income
+    assert equal
+
+
+def test_balance_sheet_accounts_hold_the_balance_at_the_end(db: AjeraOdbc) -> None:
+    end = date(LAST_YEAR, 12, 31)
+    rows = financials(db, "AxFinancials", date(LAST_YEAR, 7, 1), end)
+    # Every ledger row through the end, edited versions included: they net out.
+    ledger = db.aggregate(
+        TABLES["AxGLDetail"],
+        measures=[sum_("amount", alias="balance")],
+        group_by=["entity_key", "account_key"],
+        where={"accounting_date": filters.lt(end + timedelta(days=1))},
+    )
+    balances = {
+        (g["entity_key"], g["account_key"]): amount(g, "balance") for g in ledger
+    }
+    sheet = [k for k, row in rows.items() if row["type"] in BALANCE_SHEET]
+
+    balance = all(
+        abs(amount(rows[k], "current_ytd_balance") - balances.get(k, Decimal(0))) < CENT
+        for k in sheet
+    )
+    month_is_balance = all(
+        amount(rows[k], "current_month") == amount(rows[k], "current_ytd_balance")
+        for k in sheet
+    )
+    # Retained earnings holds the earlier years' income, so the accounts net out.
+    balanced = (
+        abs(sum((amount(r, "current_ytd_balance") for r in rows.values()), Decimal(0)))
+        < CENT
+    )
+
+    assert sheet
+    assert balance
+    assert month_is_balance
+    assert balanced
+
+
+def test_project_wip_covers_the_range_and_balances_do_not(db: AjeraOdbc) -> None:
+    end = date.today().replace(day=1) - timedelta(days=1)
+    model = FUNCTIONS["ProjectTotals"]
+    measures = [
+        sum_(field, alias=field)
+        for field in ("total_wip", "total_receivable_balance", "payable_balance")
+    ]
+
+    def totals_from(start: date) -> dict[str, object]:
+        return db.aggregate(model, start, end, measures=measures)[0]
+
+    history = totals_from(date(2000, 1, 1))
+    month = totals_from(end.replace(day=1))
+    earlier = totals_from(date(1990, 1, 1))
+
+    wip_moved = history["total_wip"] != month["total_wip"]
+    balances_held = all(
+        history[f] == month[f] for f in ("total_receivable_balance", "payable_balance")
+    )
+    # A start before the oldest unbilled work gives the whole of it.
+    wip_settled = history["total_wip"] == earlier["total_wip"]
+
+    assert wip_moved
+    assert balances_held
+    assert wip_settled
+
+
+def test_retained_earnings_takes_earlier_income_after_the_current_year(
+    db: AjeraOdbc,
+) -> None:
+    end = date(LAST_YEAR, 12, 31)
+    after = financials(db, "AxFinancials", date(LAST_YEAR, 7, 1), end)
+    last_day = next(iter(after.values()))["last_day_current_fiscal_year"]
+    assert isinstance(last_day, datetime)
+    if last_day.date() >= date(LAST_YEAR, 7, 1):
+        pytest.skip("every year before last is closed; no boundary to cross")
+    before = financials(db, "AxFinancials", last_day.date(), end)
+    ledger = db.aggregate(
+        TABLES["AxGLDetail"],
+        measures=[sum_("amount", alias="balance")],
+        group_by=["entity_key", "account_key"],
+        where={"accounting_date": filters.lt(end + timedelta(days=1))},
+    )
+    balances = {
+        (g["entity_key"], g["account_key"]): amount(g, "balance") for g in ledger
+    }
+    retained = [k for k, row in before.items() if row["type"] == 5]
+
+    def total(rows: dict[tuple[object, object], dict[str, object]]) -> Decimal:
+        return sum(
+            (amount(r, "current_ytd_balance") for r in rows.values()), Decimal(0)
+        )
+
+    own_ledger_before = all(
+        abs(amount(before[k], "current_ytd_balance") - balances.get(k, Decimal(0)))
+        < CENT
+        for k in retained
+    )
+    balanced_after = abs(total(after)) < CENT
+    balanced_before = abs(total(before)) < CENT
+
+    assert retained
+    assert own_ledger_before
+    assert balanced_after
+    assert not balanced_before
