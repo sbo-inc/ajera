@@ -115,7 +115,7 @@ DELETED = re.compile(r"^[a-z]+IsDeleted$")
 # Views whose leading table key repeats across rows (a join fans it out), so it
 # cannot serve as the view's row key. Found by `verify.py`.
 NON_UNIQUE_VIEW_KEYS: set[str] = {
-    "ClientInvoice",  # 11,145 rows over 10,823 ciKey values
+    "ClientInvoice",  # a row per invoice adjustment
 }
 
 # The sentence each field note ends with, from `start_date_columns`: whether

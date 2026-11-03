@@ -77,8 +77,8 @@ from ajera.schemas.database import FUNCTIONS, TABLES, DatabaseRecord
 
 CATALOG = Path(__file__).resolve().parent / "catalog.json"
 
-# The base date range is a closed year with activity. Refunds are rare, so
-# `RefundTotals` is probed over its whole history.
+# The base date range is a closed year. `RefundTotals` is probed over a long
+# history, so that it has rows to compare.
 RANGE = (date(2025, 1, 1), date(2025, 12, 31))
 RANGES = {"RefundTotals": (date(2000, 1, 1), date(2026, 10, 31))}
 # A range that does not overlap the base one, and a key no row holds: a

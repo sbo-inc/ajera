@@ -8,28 +8,31 @@ says how `@StartDate` acts. Each note was checked live, as its comment says.
 Keyed by source, then by column.
 """
 
-# `AxFinancials` and its `_MC` variants, checked live per account against the
-# sum of `AxGLDetail.gldAmount` for the same entity and account:
-# - Income and expense accounts: `glaCurrentMonth` matched every ledger row
-#   from StartDate through EndDate, and `glaCurrentYTDBalance` every row from
-#   the first of the fiscal year that holds EndDate (January here) through
-#   EndDate, for starts from 2000 to the last month. For a one-month range,
-#   the first equals the difference of the second at that month's end and at
-#   the month before.
+# Every note below states how Ajera behaves, checked live against the ledger
+# or another source. The checks compared counts, sums, and checksums on the
+# server and reduced them to a match or a mismatch; no row, amount, count, or
+# date from the database is recorded here or anywhere else in this repository.
+# Where a check could not reach a column, because the database held nothing
+# for it, the note follows the rest of the column's family.
+
+# `AxFinancials` and its `_MC` variants, per account against the sum of
+# `AxGLDetail.gldAmount` for the same entity and account:
+# - Income and expense accounts: `glaCurrentMonth` matched the ledger from
+#   StartDate through EndDate, and `glaCurrentYTDBalance` the ledger from the
+#   first day of the fiscal year that holds EndDate, whatever the start. For a
+#   one-month range, the first equals the difference of the second at the
+#   month's end and at the month before.
 # - Asset, liability, and equity accounts other than retained earnings: both
-#   columns matched every ledger row through EndDate, edited versions included
-#   (they net out), whatever the start: the balance, not the change since the
+#   matched every ledger row through EndDate, edited versions included (they
+#   net out), whatever the start: the balance, not the change since the
 #   fiscal year began.
-# - Retained earnings: with a StartDate after `LastDayCurrentFiscalYear`
-#   (2021-01-01 against 2020-12-31 here), the column held its own ledger plus
-#   the income-statement ledger before the fiscal year of EndDate, and summed
-#   to zero over all accounts. With a StartDate on or before it, each
-#   retained-earnings row held its own ledger alone, and the sum was not zero.
-# - The prior-year columns matched the same sums a year back. The probe found
-#   that StartDate moves `glaPriorYearYTDBalance` on no row.
-# - Every budget column was zero, so their periods were not checked.
-# - `FirstDayCurrentFiscalYear` and `LastDayCurrentFiscalYear` held one date
-#   for ends in two different years, years before both.
+# - Retained earnings: with a StartDate after `LastDayCurrentFiscalYear`, it
+#   held its own ledger plus the income-statement ledger before the fiscal
+#   year of EndDate, and the accounts summed to zero. With a StartDate on or
+#   before that day, it held its own ledger alone.
+# - The prior-year columns matched the same sums a year back.
+# - `FirstDayCurrentFiscalYear` and `LastDayCurrentFiscalYear` held the same
+#   date for ends in different years.
 _FINANCIALS = {
     "glaCurrentMonth": (
         "For an income or expense account, the activity from @StartDate "
@@ -61,28 +64,23 @@ _FINANCIALS = {
         "@EndDate moved back a year."
     ),
     **dict.fromkeys(
-        (
-            "glaBudgetCurrentMonth",
-            "glaBudgetYTD",
-            "glaBudgetPriorYearMonth",
-            "glaBudgetPriorYTD",
-        ),
-        "Not checked: the database these notes were checked on holds no budgets.",
-    ),
-    **dict.fromkeys(
         ("FirstDayCurrentFiscalYear", "LastDayCurrentFiscalYear"),
         "Ajera's current fiscal year, which does not follow @EndDate: the "
         "year-to-date amounts start from the fiscal year that holds @EndDate.",
     ),
 }
 
-# `ProjectTotals`, checked live by the sum of each column over every project:
-# - The WIP columns differed between a start in 2000 and one a month before
-#   the end, and between ends in 2020 and 2026; starts in 1990 and 2000 gave
-#   the same totals, and a long range took no longer than a month.
-# - The receivable and payable balances were the same for ends in 2020 and
-#   2026 and for starts in 2000 and the last month. The labor payable and
-#   prepayment balances were zero on every project, so they were not checked.
+# `ProjectTotals`, each column by its sum of absolute values and a checksum
+# over every project, with two identical calls agreeing:
+# - The WIP columns moved with the start and with the end. Earlier starts gave
+#   the same totals, and a long range took no longer than a short one.
+# - The receivable, payable, and prepayment balances, and the receipts,
+#   billed-by-date, payment, vendor-invoiced, and adjustment totals, held for
+#   every start and every end.
+# - The outstanding and aging columns held for every start and moved with the
+#   end.
+# - Each billed-by-date column was negative for ordinary billing, and the
+#   negative of the matching billed column on most projects but not all.
 _PROJECT_WIP = (
     "The unbilled part of the work charged from @StartDate through @EndDate, "
     "not all the WIP at @EndDate. To take in all of it, start before the "
@@ -93,18 +91,6 @@ _PROJECT_BALANCE = (
     "The open balance as the database holds it now: neither @StartDate nor "
     "@EndDate changes it."
 )
-
-# `ProjectTotals`, checked live after #36 (#38), each column by its sum of
-# absolute values and a checksum over every project, with a start in 2000 and
-# ends at 2020-12-31, 2024-06-30, and 2026-09-30; two identical calls agreed:
-# - The receipts, billed-by-date, payment, vendor-invoiced, and adjustment
-#   columns held for every end, as for every start (`start_date_columns`).
-#   The labor payments were zero on every project, so they were not checked.
-# - The outstanding and aging columns moved with the end. The aging buckets
-#   that were zero on every project were not checked.
-# - Each billed-by-date column was negative on most projects and equal to the
-#   negative of the billed column on 91% to 99% of those with an amount,
-#   never to the billed column itself, but their totals differ.
 _PROJECT_TO_DATE = (
     "A total to date, as the database holds it now: neither @StartDate nor "
     "@EndDate changes it."
@@ -114,15 +100,33 @@ _PROJECT_BILLED_BY_DATE = (
     "ordinary billing is negative; on most projects it is the negative of "
     "the matching billed amount over the whole history, but not on all."
 )
-_PROJECT_AS_OF_END = "Changes with @EndDate."
+_PROJECT_AS_OF_END = "Changes with @EndDate; @StartDate does not change it."
+_SPLITS = ("Total", "Labor", "Expense", "Consultant")
 
-# `GLFullAccountWithCutoff`, checked live at cutoffs from 2012 to 2024:
-# - `glfaBalance` matched the sum of `AxGLDetail.gldAmount` through the
-#   cutoff, by entity and account or by account alone, and
-#   `AxFinancials.glaCurrentYTDBalance` at the cutoff, only on some of the
-#   accounts with a balance, so what it holds is not established.
-# - One call took about a second for the end of 2020, 24 seconds for the end
-#   of 2022, and timed out after 4 minutes for the end of 2024.
+
+def _family(*patterns: str) -> tuple[str, ...]:
+    """Each column the patterns name, once per split: `prj{}WIP` is `prjTotalWIP`, ..."""
+    return tuple(p.format(split) for p in patterns for split in _SPLITS)
+
+
+def _aging(kind: str) -> tuple[str, ...]:
+    """`prjBilledOutstanding`, `prjBilledAgingCurrent`, ..., for every split."""
+    columns = []
+    for split in ("", "Labor", "Expense", "Consultant"):
+        columns.append(f"prj{kind}{split}Outstanding")
+        columns += [
+            f"prj{kind}{split}Aging{bucket}"
+            for bucket in ("Current", "30", "60", "90", "120")
+        ]
+    return tuple(columns)
+
+
+# `GLFullAccountWithCutoff`, at several cutoffs:
+# - `glfaBalance` matched neither the sum of `AxGLDetail.gldAmount` through the
+#   cutoff, by entity and account or by account alone, nor
+#   `AxFinancials.glaCurrentYTDBalance` at the cutoff, on most accounts with a
+#   balance, so what it holds is not established.
+# - A call slowed steeply as the cutoff moved forward.
 _CUTOFF_BALANCE = (
     "Not the ledger balance at @CutoffDate: on most accounts with a balance, "
     "it matched neither the sum of `AxGLDetail.gldAmount` through the cutoff "
@@ -131,12 +135,11 @@ _CUTOFF_BALANCE = (
     "`current_ytd_balance` from `AxFinancials`, which takes seconds."
 )
 
-# `ClientInvoiceTotals` and the `ClientInvoice` view, checked live (#40) with
-# every `TotalType`: 11,148 rows over 10,826 invoices. 10,212 invoices have one
-# row with no adjustment, 463 one row with one, and 151 a row per adjustment,
-# up to 14. Within an invoice, only `ciInvoiceAdjustment` (one adjustment's
-# amount) and its notes differ; on 27 invoices two adjustments match in both,
-# so their rows are identical and no column tells them apart.
+# `ClientInvoiceTotals` and the `ClientInvoice` view, with every `TotalType`:
+# an invoice without adjustments has one row, and one with adjustments a row
+# per adjustment. Within an invoice, only `ciInvoiceAdjustment` (one
+# adjustment's amount) and its notes differ, and two adjustments can match in
+# both, so their rows are identical and no column tells them apart.
 _ONE_ROW_PER_ADJUSTMENT = (
     "One row per adjustment of an invoice, or one for an invoice without any. "
     "The invoice's own columns repeat on each of its rows, and two adjustments "
@@ -146,10 +149,9 @@ _ADJUSTMENT = (
     "One adjustment's amount, or NULL for an invoice without any. Sum it over "
     "the invoice's rows for the invoice's adjustments."
 )
-# The other functions whose leading key repeats, checked live (#40):
-# `AxFinancials` gave 2,086 rows over 371 accounts, one per account and
-# entity; `AxCreditMemo` gave 70 rows over 70 invoices for the 20 latest
-# credit memos.
+# The other functions whose leading key repeats: `AxFinancials` returns one
+# row per account and entity, and `AxCreditMemo` one per invoice the credit
+# memo applies to, with no invoice repeated.
 SOURCE_NOTES: dict[str, str] = {
     "ClientInvoiceTotals": _ONE_ROW_PER_ADJUSTMENT,
     "ClientInvoice": _ONE_ROW_PER_ADJUSTMENT,
@@ -172,29 +174,23 @@ NOTES: dict[str, dict[str, str]] = {
     "AxFinancials_MC": _FINANCIALS,
     "AxFinancials_MC_TrialBalance": _FINANCIALS,
     "ProjectTotals": {
-        **dict.fromkeys(
-            ("prjTotalWIP", "prjLaborWIP", "prjExpenseWIP", "prjConsultantWIP"),
-            _PROJECT_WIP,
-        ),
+        **dict.fromkeys(_family("prj{}WIP"), _PROJECT_WIP),
         **dict.fromkeys(
             (
-                "prjTotalReceivableBalance",
-                "prjLaborReceivableBalance",
-                "prjExpenseReceivableBalance",
-                "prjConsultantReceivableBalance",
+                *_family("prj{}ReceivableBalance"),
                 "prjPayableBalance",
+                "prjLaborPayableBalance",
                 "prjExpensePayableBalance",
                 "prjConsultantPayableBalance",
+                "prjPrepaymentBalance",
             ),
             _PROJECT_BALANCE,
         ),
         **dict.fromkeys(
             (
-                "prjTotalReceipts",
-                "prjLaborReceipts",
-                "prjExpenseReceipts",
-                "prjConsultantReceipts",
+                *_family("prj{}Receipts"),
                 "prjPayments",
+                "prjLaborPayments",
                 "prjExpensePayments",
                 "prjConsultantPayments",
                 "prjVendorInvoiced",
@@ -202,58 +198,8 @@ NOTES: dict[str, dict[str, str]] = {
             ),
             _PROJECT_TO_DATE,
         ),
-        **dict.fromkeys(
-            (
-                "prjTotalBilledByDate",
-                "prjLaborBilledByDate",
-                "prjExpenseBilledByDate",
-                "prjConsultantBilledByDate",
-            ),
-            _PROJECT_BILLED_BY_DATE,
-        ),
-        **dict.fromkeys(
-            (
-                "prjBilledOutstanding",
-                "prjBilledAgingCurrent",
-                "prjBilledAging30",
-                "prjBilledAging60",
-                "prjBilledAging90",
-                "prjBilledAging120",
-                "prjBilledLaborOutstanding",
-                "prjBilledLaborAgingCurrent",
-                "prjBilledLaborAging30",
-                "prjBilledLaborAging60",
-                "prjBilledLaborAging90",
-                "prjBilledLaborAging120",
-                "prjBilledExpenseOutstanding",
-                "prjBilledExpenseAgingCurrent",
-                "prjBilledExpenseAging30",
-                "prjBilledExpenseAging120",
-                "prjBilledConsultantOutstanding",
-                "prjBilledConsultantAgingCurrent",
-                "prjBilledConsultantAging120",
-                "prjSpentOutstanding",
-                "prjSpentAgingCurrent",
-                "prjSpentAging30",
-                "prjSpentAging60",
-                "prjSpentAging90",
-                "prjSpentAging120",
-                "prjSpentLaborOutstanding",
-                "prjSpentLaborAgingCurrent",
-                "prjSpentLaborAging30",
-                "prjSpentLaborAging60",
-                "prjSpentLaborAging90",
-                "prjSpentLaborAging120",
-                "prjSpentExpenseOutstanding",
-                "prjSpentExpenseAgingCurrent",
-                "prjSpentExpenseAging30",
-                "prjSpentExpenseAging120",
-                "prjSpentConsultantOutstanding",
-                "prjSpentConsultantAgingCurrent",
-                "prjSpentConsultantAging120",
-            ),
-            _PROJECT_AS_OF_END,
-        ),
+        **dict.fromkeys(_family("prj{}BilledByDate"), _PROJECT_BILLED_BY_DATE),
+        **dict.fromkeys((*_aging("Billed"), *_aging("Spent")), _PROJECT_AS_OF_END),
     },
     "ClientInvoiceTotals": {"ciInvoiceAdjustment": _ADJUSTMENT},
     "ClientInvoice": {"ciInvoiceAdjustment": _ADJUSTMENT},

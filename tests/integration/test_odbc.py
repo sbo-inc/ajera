@@ -673,7 +673,7 @@ def test_current_month_covers_the_range_and_ytd_does_not(
 
 
 def test_one_month_is_the_difference_of_two_year_to_date_reads(db: AjeraOdbc) -> None:
-    # Inside one fiscal year: the firm's starts in January.
+    # June and May of one year, both inside one fiscal year.
     june = financials(db, "AxFinancials", date(LAST_YEAR, 6, 1), date(LAST_YEAR, 6, 30))
     to_june = financials(
         db, "AxFinancials", date(LAST_YEAR, 1, 1), date(LAST_YEAR, 6, 30)

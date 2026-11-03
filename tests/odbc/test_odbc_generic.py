@@ -1881,7 +1881,7 @@ def test_describe_returns_the_project_to_date_and_aging_notes() -> None:
         assert "neither @StartDate nor @EndDate changes it" in fields[name], name
     assert "Signed the opposite way" in fields["total_billed_by_date"]
     assert fields["billed_outstanding"] == (
-        "Changes with @EndDate. @StartDate does not change it."
+        "Changes with @EndDate; @StartDate does not change it."
     )
     assert "Signed" not in fields["total_billed"]
 

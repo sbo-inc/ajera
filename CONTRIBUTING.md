@@ -34,7 +34,7 @@ make odbc-verify  # validate every model against every live row (ARGS=name filte
 
 Set `AJERA_ODBC_DATASOURCE`, `AJERA_ODBC_USERNAME`, and `AJERA_ODBC_PASSWORD` first; the REST variables enable the tests that compare the two. The Makefile passes each variable to `docker run` by name, so no value appears on a command line. Never commit credentials, the driver, or the schema workbook.
 
-Deltek exposes only the production database. Keep live checks to metadata, counts, and timings, and never print row contents: reduce a comparison to a bool before asserting it, and run with `--tb=no` when a failure could show values.
+Deltek exposes only the production database, and this repository is public. Never print row contents: reduce a comparison to a bool before asserting it, and run with `--tb=no` when a failure could show values. Counts and timings are fine on your own terminal, but keep them, and anything else learned from the data, out of issues, pull requests, commits, comments, and code. Write what Ajera does (`ReceiptTotals` ignores its dates), never what the firm's data holds: no row counts, amounts, dates, timings, percentages, or which columns are empty.
 
 ### Refreshing the generated models
 
