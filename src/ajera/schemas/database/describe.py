@@ -12,7 +12,12 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import IntEnum
 
-from ajera.schemas.database.base import DatabaseRecord, SourceKind, annotation_members
+from ajera.schemas.database.base import (
+    UNSORTABLE_SQL_TYPES,
+    DatabaseRecord,
+    SourceKind,
+    annotation_members,
+)
 from ajera.schemas.database.enums import Code
 
 # =============================================================================
@@ -41,6 +46,12 @@ class FieldSchema:
         note: What the column holds, where its name does not say it: the
             period an amount covers, and whether a function's `StartDate`
             changes it. None for most columns.
+        binary: Whether the value is bytes: a file (`blob`) or a row version
+            (`timestamp`). Encode it before writing a row as JSON.
+        sortable: Whether SQL Server can compare the column. False for
+            `text`, `ntext`, `image`, and `xml`, which the reader refuses in
+            `order_by`, `group_by`, a `where` comparison, and a measure; `like`
+            and `is_null` still work.
     """
 
     name: str
@@ -54,6 +65,8 @@ class FieldSchema:
     sensitive: bool
     blob: bool
     note: str | None = None
+    binary: bool = False
+    sortable: bool = True
 
 
 # =============================================================================
@@ -83,6 +96,10 @@ class SourceSchema:
             with those codes.
         current_column: The column marking a row's current version, if any.
         deleted_column: The column marking a deleted row Ajera keeps, if any.
+        row_key: For a function, the leading key when it is unique per row.
+        repeated_key: The leading key when several rows share it; `note`
+            says what a row is, and the field notes which amounts repeat.
+        note: What a row is, where the name does not say it.
         fields: Every column the model declares, in database order.
     """
 
@@ -99,6 +116,9 @@ class SourceSchema:
     current_column: str | None
     deleted_column: str | None
     fields: tuple[FieldSchema, ...]
+    row_key: tuple[str, ...] = ()
+    repeated_key: str | None = None
+    note: str | None = None
 
 
 # =============================================================================
@@ -144,6 +164,8 @@ def describe(model: type[DatabaseRecord]) -> SourceSchema:
                 sensitive=column in source.sensitive or bool(extra.get("sensitive")),
                 blob=column in source.blobs,
                 note=str(extra["note"]) if extra.get("note") else None,
+                binary=bytes in members,
+                sortable=extra.get("sql_type") not in UNSORTABLE_SQL_TYPES,
             )
         )
     return SourceSchema(
@@ -162,6 +184,9 @@ def describe(model: type[DatabaseRecord]) -> SourceSchema:
         current_column=source.current_column,
         deleted_column=source.deleted_column,
         fields=tuple(fields),
+        row_key=source.row_key,
+        repeated_key=source.repeated_key,
+        note=source.note,
     )
 
 

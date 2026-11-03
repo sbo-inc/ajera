@@ -23,7 +23,11 @@ from ajera.odbc.arguments import check_arguments, warn_ignored
 from ajera.odbc.filters import Condition
 from ajera.odbc.measures import Measure
 from ajera.odbc.queries.generic import Query, Record, placeholders
-from ajera.schemas.database.base import DatabaseRecord, annotation_members
+from ajera.schemas.database.base import (
+    UNSORTABLE_SQL_TYPES,
+    DatabaseRecord,
+    annotation_members,
+)
 
 type Where = Mapping[str, object]
 type ColumnKind = Literal["code", "binary", "date", "numeric", "other"]
@@ -75,6 +79,8 @@ DATE_SQL = frozenset(
     {"date", "datetime", "datetime2", "smalldatetime", "datetimeoffset"}
 )
 BINARY_SQL = frozenset({"image", "varbinary", "binary", "timestamp"})
+# The only conditions SQL Server takes on a column it cannot compare.
+MATCHING = frozenset({"LIKE", "IS NULL", "IS NOT NULL"})
 
 
 # =============================================================================
@@ -204,6 +210,45 @@ def column_kind(
     return "other"
 
 
+def unsortable(
+    model: type[DatabaseRecord], column: str, live: Mapping[str, str] | None = None
+) -> str | None:
+    """
+    The column's SQL type when SQL Server cannot compare it, else None.
+
+    A `text`, `ntext`, `image`, or `xml` column cannot be sorted, grouped,
+    compared with `=` or `IN`, or aggregated (error 306); `LIKE` and
+    `IS NULL` work. A custom column has no field, so its live type decides.
+    """
+    declared = _fields_by_column(model).get(column)
+    if declared is None:
+        sql_type = (live or {}).get(column, "")
+    else:
+        extra = declared[1].json_schema_extra
+        sql_type = str(extra.get("sql_type", "")) if isinstance(extra, dict) else ""
+    return sql_type if sql_type in UNSORTABLE_SQL_TYPES else None
+
+
+def refuse_unsortable(
+    model: type[DatabaseRecord],
+    column: str,
+    name: str,
+    use: str,
+    live: Mapping[str, str] | None = None,
+) -> None:
+    """
+    Raise before SQL Server does, naming the field and what it cannot do.
+
+    Raises:
+        ValueError: The column is `text`, `ntext`, `image`, or `xml`.
+    """
+    sql_type = unsortable(model, column, live)
+    if sql_type:
+        raise ValueError(
+            f"cannot {use} {name!r}: SQL Server cannot compare a {sql_type} column"
+        )
+
+
 # =============================================================================
 # FUNCTION: with_current
 # =============================================================================
@@ -331,7 +376,12 @@ def _where(
     predicates: list[str] = []
     parameters: list[object] = []
     for name, value in where.items():
-        predicate, values = condition(resolve(model, name, live), value)
+        column = resolve(model, name, live)
+        if value is not None and not (
+            isinstance(value, Condition) and value.operator in MATCHING
+        ):
+            refuse_unsortable(model, column, name, "compare")
+        predicate, values = condition(column, value)
         predicates.append(predicate)
         parameters.extend(values)
     return " WHERE " + " AND ".join(predicates), parameters
@@ -376,11 +426,12 @@ def select[T: DatabaseRecord](
         filter_parameters.append(after)
 
     order = list(order_by or source.primary_key)
-    ordering = ", ".join(
-        f"{quote_name(resolve(model, name.removeprefix('-'), columns))}"
-        f"{' DESC' if name.startswith('-') else ''}"
-        for name in order
-    )
+    sorted_by = []
+    for name in order:
+        column = resolve(model, name.removeprefix("-"), columns)
+        refuse_unsortable(model, column, name.removeprefix("-"), "order by")
+        sorted_by.append(quote_name(column) + (" DESC" if name.startswith("-") else ""))
+    ordering = ", ".join(sorted_by)
 
     head: list[object] = []
     top = ""
@@ -540,6 +591,7 @@ def aggregate(
         expression = quote_name(column)
         if kind == "binary":
             raise ValueError(f"cannot group by binary field {name!r}")
+        refuse_unsortable(model, column, name, "group by", live)
         if bucket:
             if bucket not in BUCKETS:
                 raise ValueError(
@@ -567,6 +619,7 @@ def aggregate(
             kind = column_kind(model, column, live)
             if kind == "binary":
                 raise ValueError(f"cannot aggregate binary field {measure.field!r}")
+            refuse_unsortable(model, column, measure.field, "aggregate", live)
             if measure.function in ("SUM", "AVG") and kind != "numeric":
                 described = "a code column" if kind == "code" else "not numeric"
                 raise ValueError(

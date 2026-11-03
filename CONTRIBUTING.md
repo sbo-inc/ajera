@@ -41,9 +41,9 @@ Deltek exposes only the production database. Keep live checks to metadata, count
 The database models, enums, and typed function methods are generated; never edit them by hand. For a new Ajera release:
 
 1. `make odbc-catalog` snapshots the live catalog into `scripts/odbc/catalog.json`. Tenant custom fields are left out.
-2. `make odbc-probe` records which function parameters have no effect, always or under some `TotalType` codes, and which amount columns change with `StartDate`. A full run takes about 40 minutes, so pass a few functions at a time with `ARGS="ReceiptTotals ClientTotals"`. The two GL balance functions are too slow to probe.
+2. `make odbc-probe` records which function parameters have no effect, always or under some `TotalType` codes, and which amount columns change with `StartDate`. A full run takes about 40 minutes, so pass a few functions at a time with `ARGS="ReceiptTotals ClientTotals"`. The two GL balance functions are too slow to probe. `ARGS="--grain"` runs only the check of each function's row grain, in a few minutes.
 3. `make odbc-enums XLSX=path/to/AjeraSchema.xlsx` extracts the documented codes from the schema workbook, exported from Ajera under Setup > Utility > Ajera Schema.
-4. `make odbc-generate` regenerates the models and methods from the catalog, the codes, and the column notes in `scripts/odbc/notes.py`. Each note there says what a column holds and how that was checked live. The generator adds the probe's finding on `StartDate`, and it stops on a note for a column that no longer exists.
+4. `make odbc-generate` regenerates the models and methods from the catalog, the codes, and the column notes in `scripts/odbc/notes.py`. Each note there says what a column holds and how that was checked live. The generator adds the probe's finding on `StartDate`, and it stops on a note for a column that no longer exists. A source whose leading key repeats needs an entry in `SOURCE_NOTES` saying what a row is, and the generator stops without one; where `VARYING` lists the columns that differ between those rows, every other amount is noted as repeating.
 
 ## Releasing
 

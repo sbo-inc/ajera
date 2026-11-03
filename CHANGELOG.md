@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0] - 2026-11-02
+
+- `Source.repeated_key` and `note` say when several rows share the leading key, and what a row is. `ClientInvoiceTotals` and the `ClientInvoice` view have one row per invoice adjustment, and their amount notes say to count each once per invoice ([#40]).
+- `Source.row_key` names the key a function returns one row per, as probed live ([#40]).
+- `FieldSchema.binary` marks fields read as bytes, row versions included, and `FieldSchema.sortable` marks `text` and `image` columns ([#40]).
+- `order_by`, `group_by`, a `where` comparison, or a measure on a `text` or `image` column raises `ValueError` before the query is sent, instead of failing on the server ([#40]).
+
 ## [0.10.1] - 2026-11-02
 
 - `ProjectTotals` notes say which totals neither date changes (receipts, billed to date, payments, vendor invoiced), that the billed-by-date columns are signed against the billed ones, and that the outstanding and aging columns follow `EndDate` ([#38]).
@@ -82,6 +89,7 @@
 
 - Initial release.
 
+[0.11.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.11.0
 [0.10.1]: https://github.com/sbo-inc/ajera/releases/tag/v0.10.1
 [0.10.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.10.0
 [0.9.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.9.0
@@ -115,3 +123,4 @@
 [#34]: https://github.com/sbo-inc/ajera/issues/34
 [#36]: https://github.com/sbo-inc/ajera/issues/36
 [#38]: https://github.com/sbo-inc/ajera/issues/38
+[#40]: https://github.com/sbo-inc/ajera/issues/40

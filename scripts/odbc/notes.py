@@ -131,6 +131,42 @@ _CUTOFF_BALANCE = (
     "`current_ytd_balance` from `AxFinancials`, which takes seconds."
 )
 
+# `ClientInvoiceTotals` and the `ClientInvoice` view, checked live (#40) with
+# every `TotalType`: 11,148 rows over 10,826 invoices. 10,212 invoices have one
+# row with no adjustment, 463 one row with one, and 151 a row per adjustment,
+# up to 14. Within an invoice, only `ciInvoiceAdjustment` (one adjustment's
+# amount) and its notes differ; on 27 invoices two adjustments match in both,
+# so their rows are identical and no column tells them apart.
+_ONE_ROW_PER_ADJUSTMENT = (
+    "One row per adjustment of an invoice, or one for an invoice without any. "
+    "The invoice's own columns repeat on each of its rows, and two adjustments "
+    "of the same amount and notes give identical rows."
+)
+_ADJUSTMENT = (
+    "One adjustment's amount, or NULL for an invoice without any. Sum it over "
+    "the invoice's rows for the invoice's adjustments."
+)
+# The other functions whose leading key repeats, checked live (#40):
+# `AxFinancials` gave 2,086 rows over 371 accounts, one per account and
+# entity; `AxCreditMemo` gave 70 rows over 70 invoices for the 20 latest
+# credit memos.
+SOURCE_NOTES: dict[str, str] = {
+    "ClientInvoiceTotals": _ONE_ROW_PER_ADJUSTMENT,
+    "ClientInvoice": _ONE_ROW_PER_ADJUSTMENT,
+    "AxFinancials": (
+        "One row per account and entity: `gl_account_key` repeats once for each entity."
+    ),
+    "AxCreditMemo": (
+        "One row per client invoice the credit memo applies to (`client_invoice_key`)."
+    ),
+}
+# The columns that differ between rows sharing a repeated key. Every other
+# amount repeats on each of those rows, and its note says so.
+VARYING: dict[str, tuple[str, ...]] = {
+    "ClientInvoiceTotals": ("ciInvoiceAdjustment", "ciInvoiceAdjustmentNotes"),
+    "ClientInvoice": ("ciInvoiceAdjustment", "ciInvoiceAdjustmentNotes"),
+}
+
 NOTES: dict[str, dict[str, str]] = {
     "AxFinancials": _FINANCIALS,
     "AxFinancials_MC": _FINANCIALS,
@@ -219,6 +255,8 @@ NOTES: dict[str, dict[str, str]] = {
             _PROJECT_AS_OF_END,
         ),
     },
+    "ClientInvoiceTotals": {"ciInvoiceAdjustment": _ADJUSTMENT},
+    "ClientInvoice": {"ciInvoiceAdjustment": _ADJUSTMENT},
     "GLFullAccountWithCutoff": {
         "glfaBalance": _CUTOFF_BALANCE,
         "glfaCashBasisBalance": (
