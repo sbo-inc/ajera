@@ -4162,7 +4162,7 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjAdjustAmount",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it.",
         },
     )
     adjust_account_key: int | None = Field(
@@ -4714,105 +4714,105 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjBilledOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_aging_current: Decimal = Field(
         alias="prjBilledAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_aging30: Decimal = Field(
         alias="prjBilledAging30",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_aging60: Decimal = Field(
         alias="prjBilledAging60",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_aging90: Decimal = Field(
         alias="prjBilledAging90",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_aging120: Decimal = Field(
         alias="prjBilledAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_labor_outstanding: Decimal = Field(
         alias="prjBilledLaborOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_labor_aging_current: Decimal = Field(
         alias="prjBilledLaborAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_labor_aging30: Decimal = Field(
         alias="prjBilledLaborAging30",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_labor_aging60: Decimal = Field(
         alias="prjBilledLaborAging60",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_labor_aging90: Decimal = Field(
         alias="prjBilledLaborAging90",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_labor_aging120: Decimal = Field(
         alias="prjBilledLaborAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_expense_outstanding: Decimal = Field(
         alias="prjBilledExpenseOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_expense_aging_current: Decimal = Field(
         alias="prjBilledExpenseAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_expense_aging30: Decimal = Field(
         alias="prjBilledExpenseAging30",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_expense_aging60: Decimal = Field(
@@ -4825,21 +4825,21 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjBilledExpenseAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_consultant_outstanding: Decimal = Field(
         alias="prjBilledConsultantOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_consultant_aging_current: Decimal = Field(
         alias="prjBilledConsultantAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     billed_consultant_aging30: Decimal = Field(
@@ -4855,112 +4855,112 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjBilledConsultantAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_outstanding: Decimal = Field(
         alias="prjSpentOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_aging_current: Decimal = Field(
         alias="prjSpentAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_aging30: Decimal = Field(
         alias="prjSpentAging30",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_aging60: Decimal = Field(
         alias="prjSpentAging60",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_aging90: Decimal = Field(
         alias="prjSpentAging90",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_aging120: Decimal = Field(
         alias="prjSpentAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_labor_outstanding: Decimal = Field(
         alias="prjSpentLaborOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_labor_aging_current: Decimal = Field(
         alias="prjSpentLaborAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_labor_aging30: Decimal = Field(
         alias="prjSpentLaborAging30",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_labor_aging60: Decimal = Field(
         alias="prjSpentLaborAging60",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_labor_aging90: Decimal = Field(
         alias="prjSpentLaborAging90",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_labor_aging120: Decimal = Field(
         alias="prjSpentLaborAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_expense_outstanding: Decimal = Field(
         alias="prjSpentExpenseOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_expense_aging_current: Decimal = Field(
         alias="prjSpentExpenseAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_expense_aging30: Decimal = Field(
         alias="prjSpentExpenseAging30",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_expense_aging60: Decimal = Field(
@@ -4973,21 +4973,21 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjSpentExpenseAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_consultant_outstanding: Decimal = Field(
         alias="prjSpentConsultantOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_consultant_aging_current: Decimal = Field(
         alias="prjSpentConsultantAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     spent_consultant_aging30: Decimal = Field(
@@ -5003,7 +5003,7 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjSpentConsultantAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "Changes with @EndDate. @StartDate does not change it.",
         },
     )
     internal_totals: int = Field(
@@ -5207,56 +5207,56 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjTotalBilledByDate",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it. Signed the opposite way to the billed columns, so ordinary billing is negative; on most projects it is the negative of the matching billed amount over the whole history, but not on all.",
         },
     )
     labor_billed_by_date: Decimal = Field(
         alias="prjLaborBilledByDate",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it. Signed the opposite way to the billed columns, so ordinary billing is negative; on most projects it is the negative of the matching billed amount over the whole history, but not on all.",
         },
     )
     expense_billed_by_date: Decimal = Field(
         alias="prjExpenseBilledByDate",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it. Signed the opposite way to the billed columns, so ordinary billing is negative; on most projects it is the negative of the matching billed amount over the whole history, but not on all.",
         },
     )
     consultant_billed_by_date: Decimal = Field(
         alias="prjConsultantBilledByDate",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it. Signed the opposite way to the billed columns, so ordinary billing is negative; on most projects it is the negative of the matching billed amount over the whole history, but not on all.",
         },
     )
     total_receipts: Decimal = Field(
         alias="prjTotalReceipts",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it.",
         },
     )
     labor_receipts: Decimal = Field(
         alias="prjLaborReceipts",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it.",
         },
     )
     expense_receipts: Decimal = Field(
         alias="prjExpenseReceipts",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it.",
         },
     )
     consultant_receipts: Decimal = Field(
         alias="prjConsultantReceipts",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it.",
         },
     )
     total_receivable_balance: Decimal = Field(
@@ -5291,14 +5291,14 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjVendorInvoiced",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it.",
         },
     )
     payments: Decimal = Field(
         alias="prjPayments",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it.",
         },
     )
     labor_payments: Decimal = Field(
@@ -5308,14 +5308,14 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjExpensePayments",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it.",
         },
     )
     consultant_payments: Decimal = Field(
         alias="prjConsultantPayments",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "@StartDate does not change it.",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it.",
         },
     )
     payable_balance: Decimal = Field(

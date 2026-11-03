@@ -1,6 +1,6 @@
 [project]
 name = "ajera"
-version = "0.10.0"
+version = "0.10.1"
 description = "Deltek Ajera Python API Client"
 readme = "README.md"
 license = "MIT"

@@ -1864,3 +1864,18 @@ def test_cli_describe_prints_field_notes() -> None:
     assert result.exit_code == 0, result.output
     assert "The unbilled part of the work charged from @StartDate" in text
     assert "neither @StartDate nor @EndDate changes it" in text
+
+
+def test_describe_returns_the_project_to_date_and_aging_notes() -> None:
+    fields = {
+        f.name: " ".join((f.note or "").split())
+        for f in describe(FUNCTIONS["ProjectTotals"]).fields
+    }
+
+    for name in ("total_receipts", "total_billed_by_date", "payments"):
+        assert "neither @StartDate nor @EndDate changes it" in fields[name], name
+    assert "Signed the opposite way" in fields["total_billed_by_date"]
+    assert fields["billed_outstanding"] == (
+        "Changes with @EndDate. @StartDate does not change it."
+    )
+    assert "Signed" not in fields["total_billed"]

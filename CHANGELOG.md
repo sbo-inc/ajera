@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.10.1] - 2026-11-02
+
+- `ProjectTotals` notes say which totals neither date changes (receipts, billed to date, payments, vendor invoiced), that the billed-by-date columns are signed against the billed ones, and that the outstanding and aging columns follow `EndDate` ([#38]).
+
 ## [0.10.0] - 2026-11-02
 
 - `FieldSchema.note` says what a column holds where its name does not. `describe()` returns it, and `ajera odbc describe` prints it ([#36]).
@@ -78,6 +82,7 @@
 
 - Initial release.
 
+[0.10.1]: https://github.com/sbo-inc/ajera/releases/tag/v0.10.1
 [0.10.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.10.0
 [0.9.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.9.0
 [0.8.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.8.0
@@ -109,3 +114,4 @@
 [#32]: https://github.com/sbo-inc/ajera/issues/32
 [#34]: https://github.com/sbo-inc/ajera/issues/34
 [#36]: https://github.com/sbo-inc/ajera/issues/36
+[#38]: https://github.com/sbo-inc/ajera/issues/38
