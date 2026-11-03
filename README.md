@@ -170,6 +170,13 @@ schema = describe(TransactionRecord)
   - In `AxFinancials` and its `_MC` variants, `current_month` is the activity from `StartDate` through `EndDate`, not a calendar month, and `current_ytd_balance` is the fiscal year to `EndDate`. For an asset, liability, or equity account, both hold the balance at `EndDate`. For a balance sheet at a date, read these: `GLFullAccountWithCutoff` takes minutes for a recent cutoff, and its balance is not the ledger's.
   - In `ProjectTotals`, the WIP columns hold only the unbilled work charged within the range, so start years back for all of it. The receivable and payable balances are today's, whatever the dates.
   - On the functions probed, each amount's note also says whether `StartDate` changes it.
+- **What a row is.**
+  - `ClientInvoiceTotals` and the `ClientInvoice` view have one row per invoice adjustment. The invoice's own amounts repeat on each row, so count them once per `client_invoice_key`; summing them over the rows counts an adjusted invoice several times.
+  - `describe(model).repeated_key` names a leading key that several rows share, and `note` says what a row is.
+  - `row_key` names the key a function returns one row per, such as `rKey` for `ReceiptTotals`.
+- **Column types.**
+  - `FieldSchema.binary` marks the fields read as bytes, files and row versions alike: encode them before writing a row as JSON.
+  - `FieldSchema.sortable` is false for `text` and `image` columns, which SQL Server cannot sort, group, or compare. The reader refuses one in `order_by`, `group_by`, a `where` comparison, or a measure, before anything is sent; `like` and `is_null` still work.
 - **Schema facts** need no connection. `describe(model)` and `ajera odbc describe SOURCE` give a source's fields, SQL types, keys, and parameters. Each code has a `label` with Deltek's own text (`TransactionStatus.write_off.label` is `"Write Off"`). `Source.sensitive` and `SENSITIVE_COLUMNS` name the columns holding identity numbers, credentials, tokens, and banking details.
 
 The CLI exposes the same reads:

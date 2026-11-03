@@ -116,6 +116,8 @@ class CreditMemoRow(DatabaseRecord):
         name="AxCreditMemo",
         parameters=("Receipt",),
         parameter_types=("int",),
+        repeated_key="rKey",
+        note="One row per client invoice the credit memo applies to (`client_invoice_key`).",
     )
 
     receipt_key: int = Field(alias="rKey", json_schema_extra={"sql_type": "int"})
@@ -204,6 +206,8 @@ class FinancialsRow(DatabaseRecord):
         name="AxFinancials",
         parameters=("StartDate", "EndDate", "CloseYear", "AccrualCash"),
         parameter_types=("smalldatetime", "smalldatetime", "bit", "varchar(10)"),
+        repeated_key="glaKey",
+        note="One row per account and entity: `gl_account_key` repeats once for each entity.",
     )
 
     gl_account_key: int | None = Field(
@@ -317,36 +321,16 @@ class FinancialsRow(DatabaseRecord):
         },
     )
     budget_current_month: Decimal | None = Field(
-        None,
-        alias="glaBudgetCurrentMonth",
-        json_schema_extra={
-            "sql_type": "decimal",
-            "note": "Not checked: the database these notes were checked on holds no budgets.",
-        },
+        None, alias="glaBudgetCurrentMonth", json_schema_extra={"sql_type": "decimal"}
     )
     budget_ytd: Decimal | None = Field(
-        None,
-        alias="glaBudgetYTD",
-        json_schema_extra={
-            "sql_type": "decimal",
-            "note": "Not checked: the database these notes were checked on holds no budgets.",
-        },
+        None, alias="glaBudgetYTD", json_schema_extra={"sql_type": "decimal"}
     )
     budget_prior_year_month: Decimal | None = Field(
-        None,
-        alias="glaBudgetPriorYearMonth",
-        json_schema_extra={
-            "sql_type": "decimal",
-            "note": "Not checked: the database these notes were checked on holds no budgets.",
-        },
+        None, alias="glaBudgetPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
     )
     budget_prior_ytd: Decimal | None = Field(
-        None,
-        alias="glaBudgetPriorYTD",
-        json_schema_extra={
-            "sql_type": "decimal",
-            "note": "Not checked: the database these notes were checked on holds no budgets.",
-        },
+        None, alias="glaBudgetPriorYTD", json_schema_extra={"sql_type": "decimal"}
     )
     last_day_current_fiscal_year: datetime | None = Field(
         None,
@@ -498,36 +482,16 @@ class FinancialsMCRow(DatabaseRecord):
         },
     )
     budget_current_month: Decimal | None = Field(
-        None,
-        alias="glaBudgetCurrentMonth",
-        json_schema_extra={
-            "sql_type": "decimal",
-            "note": "Not checked: the database these notes were checked on holds no budgets.",
-        },
+        None, alias="glaBudgetCurrentMonth", json_schema_extra={"sql_type": "decimal"}
     )
     budget_ytd: Decimal | None = Field(
-        None,
-        alias="glaBudgetYTD",
-        json_schema_extra={
-            "sql_type": "decimal",
-            "note": "Not checked: the database these notes were checked on holds no budgets.",
-        },
+        None, alias="glaBudgetYTD", json_schema_extra={"sql_type": "decimal"}
     )
     budget_prior_year_month: Decimal | None = Field(
-        None,
-        alias="glaBudgetPriorYearMonth",
-        json_schema_extra={
-            "sql_type": "decimal",
-            "note": "Not checked: the database these notes were checked on holds no budgets.",
-        },
+        None, alias="glaBudgetPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
     )
     budget_prior_ytd: Decimal | None = Field(
-        None,
-        alias="glaBudgetPriorYTD",
-        json_schema_extra={
-            "sql_type": "decimal",
-            "note": "Not checked: the database these notes were checked on holds no budgets.",
-        },
+        None, alias="glaBudgetPriorYTD", json_schema_extra={"sql_type": "decimal"}
     )
     last_day_current_fiscal_year: datetime | None = Field(
         None,
@@ -685,36 +649,16 @@ class FinancialsMCTrialBalanceRow(DatabaseRecord):
         },
     )
     budget_current_month: Decimal | None = Field(
-        None,
-        alias="glaBudgetCurrentMonth",
-        json_schema_extra={
-            "sql_type": "decimal",
-            "note": "Not checked: the database these notes were checked on holds no budgets.",
-        },
+        None, alias="glaBudgetCurrentMonth", json_schema_extra={"sql_type": "decimal"}
     )
     budget_ytd: Decimal | None = Field(
-        None,
-        alias="glaBudgetYTD",
-        json_schema_extra={
-            "sql_type": "decimal",
-            "note": "Not checked: the database these notes were checked on holds no budgets.",
-        },
+        None, alias="glaBudgetYTD", json_schema_extra={"sql_type": "decimal"}
     )
     budget_prior_year_month: Decimal | None = Field(
-        None,
-        alias="glaBudgetPriorYearMonth",
-        json_schema_extra={
-            "sql_type": "decimal",
-            "note": "Not checked: the database these notes were checked on holds no budgets.",
-        },
+        None, alias="glaBudgetPriorYearMonth", json_schema_extra={"sql_type": "decimal"}
     )
     budget_prior_ytd: Decimal | None = Field(
-        None,
-        alias="glaBudgetPriorYTD",
-        json_schema_extra={
-            "sql_type": "decimal",
-            "note": "Not checked: the database these notes were checked on holds no budgets.",
-        },
+        None, alias="glaBudgetPriorYTD", json_schema_extra={"sql_type": "decimal"}
     )
     last_day_current_fiscal_year: datetime | None = Field(
         None,
@@ -1134,6 +1078,7 @@ class BankEntriesRow(DatabaseRecord):
         name="BankEntries",
         parameters=("CutoffDate",),
         parameter_types=("smalldatetime",),
+        row_key=("beKey",),
     )
 
     bank_entry_key: int = Field(alias="beKey", json_schema_extra={"sql_type": "int"})
@@ -1249,6 +1194,8 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
             "StartDate": {"TotalType": (0, None)},
             "EndDate": {"TotalType": (0, None)},
         },
+        repeated_key="ciKey",
+        note="One row per adjustment of an invoice, or one for an invoice without any. The invoice's own columns repeat on each of its rows, and two adjustments of the same amount and notes give identical rows.",
     )
 
     client_invoice_key: int = Field(
@@ -1286,7 +1233,11 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         None, alias="ciAccountingDate", json_schema_extra={"sql_type": "smalldatetime"}
     )
     prepayment_amount: Decimal = Field(
-        alias="ciPrepaymentAmount", json_schema_extra={"sql_type": "decimal"}
+        alias="ciPrepaymentAmount",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_header_text: str = Field(
         alias="ciHeaderText", json_schema_extra={"sql_type": "text"}
@@ -1551,19 +1502,44 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         None, alias="prjSalesTaxCode", json_schema_extra={"sql_type": "varchar"}
     )
     sales_tax_rate: Decimal | None = Field(
-        None, alias="prjSalesTaxRate", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjSalesTaxRate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     hours_cost_budget: Decimal | None = Field(
-        None, alias="prjHoursCostBudget", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjHoursCostBudget",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_cost_budget: Decimal | None = Field(
-        None, alias="prjLaborCostBudget", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborCostBudget",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_cost_budget: Decimal | None = Field(
-        None, alias="prjExpenseCostBudget", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseCostBudget",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_cost_budget: Decimal | None = Field(
-        None, alias="prjConsultantCostBudget", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjConsultantCostBudget",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     billing_type: ProjectBillingType | int | None = Field(
         None,
@@ -1575,20 +1551,36 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         None, alias="prjRateTable", json_schema_extra={"sql_type": "int"}
     )
     total_contract_amount: Decimal | None = Field(
-        None, alias="prjTotalContractAmount", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalContractAmount",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_contract_amount: Decimal | None = Field(
-        None, alias="prjLaborContractAmount", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborContractAmount",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_contract_amount: Decimal | None = Field(
         None,
         alias="prjExpenseContractAmount",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_contract_amount: Decimal | None = Field(
         None,
         alias="prjConsultantContractAmount",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     bill_labor_as_te: bool | None = Field(
         None, alias="prjBillLaborAsTE", json_schema_extra={"sql_type": "bit"}
@@ -1600,21 +1592,39 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         None, alias="prjBillConsultantAsTE", json_schema_extra={"sql_type": "bit"}
     )
     units: Decimal | None = Field(
-        None, alias="prjUnits", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjUnits",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     unit_rate: Decimal | None = Field(
-        None, alias="prjUnitRate", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjUnitRate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     unit_description: str | None = Field(
         None, alias="prjUnitDescription", json_schema_extra={"sql_type": "varchar"}
     )
     construction_cost: Decimal | None = Field(
-        None, alias="prjConstructionCost", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjConstructionCost",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     percent_of_construction_cost: Decimal | None = Field(
         None,
         alias="prjPercentOfConstructionCost",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     billing_description: str | None = Field(
         None, alias="prjBillingDescription", json_schema_extra={"sql_type": "varchar"}
@@ -1689,7 +1699,12 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         None, alias="prjSummarizeBillingGroup", json_schema_extra={"sql_type": "bit"}
     )
     percent_distribution: Decimal | None = Field(
-        None, alias="prjPercentDistribution", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjPercentDistribution",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     prj_project: int | None = Field(
         None, alias="prjProject", json_schema_extra={"sql_type": "int"}
@@ -1731,16 +1746,36 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         json_schema_extra={"sql_type": "tinyint"},
     )
     labor_cost_rate: Decimal | None = Field(
-        None, alias="prjLaborCostRate", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborCostRate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_fee_rate: Decimal | None = Field(
-        None, alias="prjLaborFeeRate", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborFeeRate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_markup_rate: Decimal | None = Field(
-        None, alias="prjExpenseMarkupRate", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseMarkupRate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_markup_rate: Decimal | None = Field(
-        None, alias="prjConsultantMarkupRate", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjConsultantMarkupRate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     marketing_phase_key: int | None = Field(
         None, alias="prjMarketingPhase", json_schema_extra={"sql_type": "int"}
@@ -1778,23 +1813,44 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         None, alias="prjMarketingScopeOfWork", json_schema_extra={"sql_type": "text"}
     )
     marketing_total_cost: Decimal | None = Field(
-        None, alias="prjMarketingTotalCost", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjMarketingTotalCost",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     marketing_construction_cost: Decimal | None = Field(
         None,
         alias="prjMarketingConstructionCost",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     marketing_total_fee: Decimal | None = Field(
-        None, alias="prjMarketingTotalFee", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjMarketingTotalFee",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     marketing_firm_fee: Decimal | None = Field(
-        None, alias="prjMarketingFirmFee", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjMarketingFirmFee",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     marketing_consultant_fee: Decimal | None = Field(
         None,
         alias="prjMarketingConsultantFee",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     marketing_final_disposition_key: int | None = Field(
         None,
@@ -1896,7 +1952,12 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         None, alias="prjAdjustType", json_schema_extra={"sql_type": "tinyint"}
     )
     adjust_amount: Decimal | None = Field(
-        None, alias="prjAdjustAmount", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjAdjustAmount",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     adjust_account_key: int | None = Field(
         None, alias="prjAdjustAccount", json_schema_extra={"sql_type": "int"}
@@ -2433,7 +2494,10 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
     reported_percent_complete: Decimal | None = Field(
         None,
         alias="prjReportedPercentComplete",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     reported_percent_complete_date: datetime | None = Field(
         None,
@@ -2441,63 +2505,108 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         json_schema_extra={"sql_type": "smalldatetime"},
     )
     labor_billed_percent: Decimal | None = Field(
-        None, alias="prjLaborBilledPercent", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborBilledPercent",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_wip_billed_percent: Decimal | None = Field(
         None,
         alias="prjLaborWIPBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_wip_to_bill_billed_percent: Decimal | None = Field(
         None,
         alias="prjLaborWIPToBillBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_total_billed_percent: Decimal | None = Field(
         None,
         alias="prjLaborTotalBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_billed_percent: Decimal | None = Field(
-        None, alias="prjExpenseBilledPercent", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseBilledPercent",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_wip_billed_percent: Decimal | None = Field(
         None,
         alias="prjExpenseWIPBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_wip_to_bill_billed_percent: Decimal | None = Field(
         None,
         alias="prjExpenseWIPToBillBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_total_billed_percent: Decimal | None = Field(
         None,
         alias="prjExpenseTotalBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_billed_percent: Decimal | None = Field(
         None,
         alias="prjConsultantBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_wip_billed_percent: Decimal | None = Field(
         None,
         alias="prjConsultantWIPBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_wip_to_bill_billed_percent: Decimal | None = Field(
         None,
         alias="prjConsultantWIPToBillBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_total_billed_percent: Decimal | None = Field(
         None,
         alias="prjConsultantTotalBilledPercent",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     marketing_weighted_fee: Decimal | None = Field(
-        None, alias="prjMarketingWeightedFee", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjMarketingWeightedFee",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     marketing_latest_stage: int | None = Field(
         None, alias="prjMarketingLatestStage", json_schema_extra={"sql_type": "int"}
@@ -2526,244 +2635,564 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         None, alias="prjInternalTotals", json_schema_extra={"sql_type": "int"}
     )
     total_cost: Decimal | None = Field(
-        None, alias="prjTotalCost", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalCost",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_cost: Decimal | None = Field(
-        None, alias="prjLaborCost", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborCost",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_cost: Decimal | None = Field(
-        None, alias="prjExpenseCost", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseCost",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_cost: Decimal | None = Field(
-        None, alias="prjConsultantCost", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjConsultantCost",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_cost_with_premium: Decimal | None = Field(
-        None, alias="prjTotalCostWithPremium", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalCostWithPremium",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_cost_with_premium: Decimal | None = Field(
-        None, alias="prjLaborCostWithPremium", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborCostWithPremium",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_burdened_cost: Decimal | None = Field(
-        None, alias="prjTotalBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalBurdenedCost",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_burdened_cost: Decimal | None = Field(
-        None, alias="prjLaborBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborBurdenedCost",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_burdened_cost: Decimal | None = Field(
-        None, alias="prjExpenseBurdenedCost", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseBurdenedCost",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_burdened_cost: Decimal | None = Field(
         None,
         alias="prjConsultantBurdenedCost",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_burdened_cost_with_premium: Decimal | None = Field(
         None,
         alias="prjTotalBurdenedCostWithPremium",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_burdened_cost_with_premium: Decimal | None = Field(
         None,
         alias="prjLaborBurdenedCostWithPremium",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     billed_hours: Decimal | None = Field(
-        None, alias="prjBilledHours", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjBilledHours",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     wip_hours: Decimal | None = Field(
-        None, alias="prjWIPHours", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjWIPHours",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     wip_to_bill_hours: Decimal | None = Field(
-        None, alias="prjWIPToBillHours", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjWIPToBillHours",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_hours: Decimal | None = Field(
-        None, alias="prjTotalHours", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalHours",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     unit_price_billed_units: Decimal | None = Field(
-        None, alias="prjUnitPriceBilledUnits", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjUnitPriceBilledUnits",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     unit_price_to_bill_units: Decimal | None = Field(
-        None, alias="prjUnitPriceToBillUnits", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjUnitPriceToBillUnits",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_billed_units: Decimal | None = Field(
-        None, alias="prjExpenseBilledUnits", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseBilledUnits",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_wip_units: Decimal | None = Field(
-        None, alias="prjExpenseWIPUnits", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseWIPUnits",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_wip_to_bill_units: Decimal | None = Field(
         None,
         alias="prjExpenseWIPToBillUnits",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_billed_units: Decimal | None = Field(
         None,
         alias="prjConsultantBilledUnits",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_wip_units: Decimal | None = Field(
-        None, alias="prjConsultantWIPUnits", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjConsultantWIPUnits",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_wip_to_bill_units: Decimal | None = Field(
         None,
         alias="prjConsultantWIPToBillUnits",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_earned: Decimal | None = Field(
-        None, alias="prjTotalEarned", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalEarned",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_earned: Decimal | None = Field(
-        None, alias="prjLaborEarned", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborEarned",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_earned: Decimal | None = Field(
-        None, alias="prjExpenseEarned", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseEarned",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_earned: Decimal | None = Field(
-        None, alias="prjConsultantEarned", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjConsultantEarned",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_billed: Decimal | None = Field(
-        None, alias="prjTotalBilled", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalBilled",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_billed: Decimal | None = Field(
-        None, alias="prjLaborBilled", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborBilled",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_billed: Decimal | None = Field(
-        None, alias="prjExpenseBilled", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseBilled",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_billed: Decimal | None = Field(
-        None, alias="prjConsultantBilled", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjConsultantBilled",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_adjust_excluded: Decimal | None = Field(
-        None, alias="prjTotalAdjustExcluded", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalAdjustExcluded",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_adjust_excluded: Decimal | None = Field(
-        None, alias="prjLaborAdjustExcluded", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborAdjustExcluded",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_adjust_excluded: Decimal | None = Field(
         None,
         alias="prjExpenseAdjustExcluded",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_adjust_excluded: Decimal | None = Field(
         None,
         alias="prjConsultantAdjustExcluded",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_wip: Decimal | None = Field(
-        None, alias="prjTotalWIP", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalWIP",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_wip: Decimal | None = Field(
-        None, alias="prjLaborWIP", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborWIP",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_wip: Decimal | None = Field(
-        None, alias="prjExpenseWIP", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseWIP",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_wip: Decimal | None = Field(
-        None, alias="prjConsultantWIP", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjConsultantWIP",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_wip_to_bill: Decimal | None = Field(
-        None, alias="prjTotalWIPToBill", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalWIPToBill",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_wip_to_bill: Decimal | None = Field(
-        None, alias="prjLaborWIPToBill", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborWIPToBill",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_wip_to_bill: Decimal | None = Field(
-        None, alias="prjExpenseWIPToBill", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseWIPToBill",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_wip_to_bill: Decimal | None = Field(
-        None, alias="prjConsultantWIPToBill", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjConsultantWIPToBill",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_writeoff: Decimal | None = Field(
-        None, alias="prjTotalWriteoff", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalWriteoff",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_writeoff: Decimal | None = Field(
-        None, alias="prjLaborWriteoff", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborWriteoff",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_writeoff: Decimal | None = Field(
-        None, alias="prjExpenseWriteoff", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseWriteoff",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_writeoff: Decimal | None = Field(
-        None, alias="prjConsultantWriteoff", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjConsultantWriteoff",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_billed_by_date: Decimal | None = Field(
-        None, alias="prjTotalBilledByDate", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalBilledByDate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_billed_by_date: Decimal | None = Field(
-        None, alias="prjLaborBilledByDate", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborBilledByDate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_billed_by_date: Decimal | None = Field(
-        None, alias="prjExpenseBilledByDate", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseBilledByDate",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_billed_by_date: Decimal | None = Field(
         None,
         alias="prjConsultantBilledByDate",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_receipts: Decimal | None = Field(
-        None, alias="prjTotalReceipts", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjTotalReceipts",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_receipts: Decimal | None = Field(
-        None, alias="prjLaborReceipts", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborReceipts",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_receipts: Decimal | None = Field(
-        None, alias="prjExpenseReceipts", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpenseReceipts",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_receipts: Decimal | None = Field(
-        None, alias="prjConsultantReceipts", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjConsultantReceipts",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     total_receivable_balance: Decimal | None = Field(
         None,
         alias="prjTotalReceivableBalance",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_receivable_balance: Decimal | None = Field(
         None,
         alias="prjLaborReceivableBalance",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_receivable_balance: Decimal | None = Field(
         None,
         alias="prjExpenseReceivableBalance",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_receivable_balance: Decimal | None = Field(
         None,
         alias="prjConsultantReceivableBalance",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     vendor_invoiced: Decimal | None = Field(
-        None, alias="prjVendorInvoiced", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjVendorInvoiced",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     payments: Decimal | None = Field(
-        None, alias="prjPayments", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjPayments",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_payments: Decimal | None = Field(
-        None, alias="prjLaborPayments", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborPayments",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_payments: Decimal | None = Field(
-        None, alias="prjExpensePayments", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjExpensePayments",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_payments: Decimal | None = Field(
-        None, alias="prjConsultantPayments", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjConsultantPayments",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     payable_balance: Decimal | None = Field(
-        None, alias="prjPayableBalance", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjPayableBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     labor_payable_balance: Decimal | None = Field(
-        None, alias="prjLaborPayableBalance", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjLaborPayableBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     expense_payable_balance: Decimal | None = Field(
         None,
         alias="prjExpensePayableBalance",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     consultant_payable_balance: Decimal | None = Field(
         None,
         alias="prjConsultantPayableBalance",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     prepayment_balance: Decimal | None = Field(
-        None, alias="prjPrepaymentBalance", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="prjPrepaymentBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_status_description: str | None = Field(
         None, alias="ciStatusDescription", json_schema_extra={"sql_type": "varchar"}
@@ -2805,7 +3234,12 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         None, alias="ciActiveReceipts", json_schema_extra={"sql_type": "bit"}
     )
     ci_total_payments: Decimal | None = Field(
-        None, alias="ciTotalPayments", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciTotalPayments",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_payments_exist: bool | None = Field(
         None, alias="ciPaymentsExist", json_schema_extra={"sql_type": "bit"}
@@ -2817,36 +3251,79 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         None, alias="ciCanFinalBill", json_schema_extra={"sql_type": "bit"}
     )
     ci_invoice_amount: Decimal | None = Field(
-        None, alias="ciInvoiceAmount", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInvoiceAmount",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_labor_invoice_amount: Decimal | None = Field(
-        None, alias="ciLaborInvoiceAmount", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciLaborInvoiceAmount",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_expense_invoice_amount: Decimal | None = Field(
-        None, alias="ciExpenseInvoiceAmount", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciExpenseInvoiceAmount",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_consultant_invoice_amount: Decimal | None = Field(
         None,
         alias="ciConsultantInvoiceAmount",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_total_sales_tax: Decimal | None = Field(
-        None, alias="ciTotalSalesTax", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciTotalSalesTax",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_labor_sales_tax: Decimal | None = Field(
-        None, alias="ciLaborSalesTax", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciLaborSalesTax",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_expense_sales_tax: Decimal | None = Field(
-        None, alias="ciExpenseSalesTax", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciExpenseSalesTax",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_consultant_sales_tax: Decimal | None = Field(
-        None, alias="ciConsultantSalesTax", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciConsultantSalesTax",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal3: int | None = Field(
         None, alias="ciInternal3", json_schema_extra={"sql_type": "int"}
     )
     ci_invoice_adjustment: Decimal | None = Field(
-        None, alias="ciInvoiceAdjustment", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInvoiceAdjustment",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "One adjustment's amount, or NULL for an invoice without any. Sum it over the invoice's rows for the invoice's adjustments.",
+        },
     )
     ci_invoice_adjustment_notes: str | None = Field(
         None, alias="ciInvoiceAdjustmentNotes", json_schema_extra={"sql_type": "text"}
@@ -2855,99 +3332,231 @@ class ClientInvoiceTotalsRow(DatabaseRecord):
         None, alias="ciInternal1", json_schema_extra={"sql_type": "int"}
     )
     ci_internal_itt: Decimal | None = Field(
-        None, alias="ciInternalITT", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalITT",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_itl: Decimal | None = Field(
-        None, alias="ciInternalITL", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalITL",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_ite: Decimal | None = Field(
-        None, alias="ciInternalITE", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalITE",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_itc: Decimal | None = Field(
-        None, alias="ciInternalITC", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalITC",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_stt: Decimal | None = Field(
-        None, alias="ciInternalSTT", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalSTT",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_stl: Decimal | None = Field(
-        None, alias="ciInternalSTL", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalSTL",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_ste: Decimal | None = Field(
-        None, alias="ciInternalSTE", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalSTE",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_stc: Decimal | None = Field(
-        None, alias="ciInternalSTC", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalSTC",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_total_writeoff: Decimal | None = Field(
-        None, alias="ciTotalWriteoff", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciTotalWriteoff",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_labor_writeoff: Decimal | None = Field(
-        None, alias="ciLaborWriteoff", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciLaborWriteoff",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_expense_writeoff: Decimal | None = Field(
-        None, alias="ciExpenseWriteoff", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciExpenseWriteoff",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_consultant_writeoff: Decimal | None = Field(
-        None, alias="ciConsultantWriteoff", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciConsultantWriteoff",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal2: int | None = Field(
         None, alias="ciInternal2", json_schema_extra={"sql_type": "int"}
     )
     ci_internal_igt: Decimal | None = Field(
-        None, alias="ciInternalIGT", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalIGT",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_igl: Decimal | None = Field(
-        None, alias="ciInternalIGL", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalIGL",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_ige: Decimal | None = Field(
-        None, alias="ciInternalIGE", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalIGE",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_igc: Decimal | None = Field(
-        None, alias="ciInternalIGC", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalIGC",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_sgt: Decimal | None = Field(
-        None, alias="ciInternalSGT", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalSGT",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_sgl: Decimal | None = Field(
-        None, alias="ciInternalSGL", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalSGL",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_sge: Decimal | None = Field(
-        None, alias="ciInternalSGE", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalSGE",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_internal_sgc: Decimal | None = Field(
-        None, alias="ciInternalSGC", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciInternalSGC",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_total_receipts: Decimal | None = Field(
-        None, alias="ciTotalReceipts", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciTotalReceipts",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_labor_receipts: Decimal | None = Field(
-        None, alias="ciLaborReceipts", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciLaborReceipts",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_expense_receipts: Decimal | None = Field(
-        None, alias="ciExpenseReceipts", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciExpenseReceipts",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_consultant_receipts: Decimal | None = Field(
-        None, alias="ciConsultantReceipts", json_schema_extra={"sql_type": "decimal"}
+        None,
+        alias="ciConsultantReceipts",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_total_receivable_balance: Decimal | None = Field(
         None,
         alias="ciTotalReceivableBalance",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_labor_receivable_balance: Decimal | None = Field(
         None,
         alias="ciLaborReceivableBalance",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_expense_receivable_balance: Decimal | None = Field(
         None,
         alias="ciExpenseReceivableBalance",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
     ci_consultant_receivable_balance: Decimal | None = Field(
         None,
         alias="ciConsultantReceivableBalance",
-        json_schema_extra={"sql_type": "decimal"},
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Repeats on every row of one `client_invoice_key`: count it once per key, not once per row.",
+        },
     )
 
 
@@ -3742,6 +4351,7 @@ class ProjectTotalsRow(DatabaseRecord):
         name="ProjectTotals",
         parameters=("StartDate", "EndDate"),
         parameter_types=("smalldatetime", "smalldatetime"),
+        row_key=("prjKey",),
     )
 
     project_key: int = Field(alias="prjKey", json_schema_extra={"sql_type": "int"})
@@ -4714,296 +5324,336 @@ class ProjectTotalsRow(DatabaseRecord):
         alias="prjBilledOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_aging_current: Decimal = Field(
         alias="prjBilledAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_aging30: Decimal = Field(
         alias="prjBilledAging30",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_aging60: Decimal = Field(
         alias="prjBilledAging60",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_aging90: Decimal = Field(
         alias="prjBilledAging90",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_aging120: Decimal = Field(
         alias="prjBilledAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_labor_outstanding: Decimal = Field(
         alias="prjBilledLaborOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_labor_aging_current: Decimal = Field(
         alias="prjBilledLaborAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_labor_aging30: Decimal = Field(
         alias="prjBilledLaborAging30",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_labor_aging60: Decimal = Field(
         alias="prjBilledLaborAging60",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_labor_aging90: Decimal = Field(
         alias="prjBilledLaborAging90",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_labor_aging120: Decimal = Field(
         alias="prjBilledLaborAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_expense_outstanding: Decimal = Field(
         alias="prjBilledExpenseOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_expense_aging_current: Decimal = Field(
         alias="prjBilledExpenseAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_expense_aging30: Decimal = Field(
         alias="prjBilledExpenseAging30",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_expense_aging60: Decimal = Field(
-        alias="prjBilledExpenseAging60", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledExpenseAging60",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
+        },
     )
     billed_expense_aging90: Decimal = Field(
-        alias="prjBilledExpenseAging90", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledExpenseAging90",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
+        },
     )
     billed_expense_aging120: Decimal = Field(
         alias="prjBilledExpenseAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_consultant_outstanding: Decimal = Field(
         alias="prjBilledConsultantOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_consultant_aging_current: Decimal = Field(
         alias="prjBilledConsultantAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     billed_consultant_aging30: Decimal = Field(
-        alias="prjBilledConsultantAging30", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledConsultantAging30",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
+        },
     )
     billed_consultant_aging60: Decimal = Field(
-        alias="prjBilledConsultantAging60", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledConsultantAging60",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
+        },
     )
     billed_consultant_aging90: Decimal = Field(
-        alias="prjBilledConsultantAging90", json_schema_extra={"sql_type": "decimal"}
+        alias="prjBilledConsultantAging90",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
+        },
     )
     billed_consultant_aging120: Decimal = Field(
         alias="prjBilledConsultantAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_outstanding: Decimal = Field(
         alias="prjSpentOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_aging_current: Decimal = Field(
         alias="prjSpentAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_aging30: Decimal = Field(
         alias="prjSpentAging30",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_aging60: Decimal = Field(
         alias="prjSpentAging60",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_aging90: Decimal = Field(
         alias="prjSpentAging90",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_aging120: Decimal = Field(
         alias="prjSpentAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_labor_outstanding: Decimal = Field(
         alias="prjSpentLaborOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_labor_aging_current: Decimal = Field(
         alias="prjSpentLaborAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_labor_aging30: Decimal = Field(
         alias="prjSpentLaborAging30",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_labor_aging60: Decimal = Field(
         alias="prjSpentLaborAging60",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_labor_aging90: Decimal = Field(
         alias="prjSpentLaborAging90",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_labor_aging120: Decimal = Field(
         alias="prjSpentLaborAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_expense_outstanding: Decimal = Field(
         alias="prjSpentExpenseOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_expense_aging_current: Decimal = Field(
         alias="prjSpentExpenseAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_expense_aging30: Decimal = Field(
         alias="prjSpentExpenseAging30",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_expense_aging60: Decimal = Field(
-        alias="prjSpentExpenseAging60", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentExpenseAging60",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
+        },
     )
     spent_expense_aging90: Decimal = Field(
-        alias="prjSpentExpenseAging90", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentExpenseAging90",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
+        },
     )
     spent_expense_aging120: Decimal = Field(
         alias="prjSpentExpenseAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_consultant_outstanding: Decimal = Field(
         alias="prjSpentConsultantOutstanding",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_consultant_aging_current: Decimal = Field(
         alias="prjSpentConsultantAgingCurrent",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     spent_consultant_aging30: Decimal = Field(
-        alias="prjSpentConsultantAging30", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentConsultantAging30",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
+        },
     )
     spent_consultant_aging60: Decimal = Field(
-        alias="prjSpentConsultantAging60", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentConsultantAging60",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
+        },
     )
     spent_consultant_aging90: Decimal = Field(
-        alias="prjSpentConsultantAging90", json_schema_extra={"sql_type": "decimal"}
+        alias="prjSpentConsultantAging90",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
+        },
     )
     spent_consultant_aging120: Decimal = Field(
         alias="prjSpentConsultantAging120",
         json_schema_extra={
             "sql_type": "decimal",
-            "note": "Changes with @EndDate. @StartDate does not change it.",
+            "note": "Changes with @EndDate; @StartDate does not change it.",
         },
     )
     internal_totals: int = Field(
@@ -5302,7 +5952,11 @@ class ProjectTotalsRow(DatabaseRecord):
         },
     )
     labor_payments: Decimal = Field(
-        alias="prjLaborPayments", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborPayments",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "A total to date, as the database holds it now: neither @StartDate nor @EndDate changes it.",
+        },
     )
     expense_payments: Decimal = Field(
         alias="prjExpensePayments",
@@ -5326,7 +5980,11 @@ class ProjectTotalsRow(DatabaseRecord):
         },
     )
     labor_payable_balance: Decimal = Field(
-        alias="prjLaborPayableBalance", json_schema_extra={"sql_type": "decimal"}
+        alias="prjLaborPayableBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The open balance as the database holds it now: neither @StartDate nor @EndDate changes it.",
+        },
     )
     expense_payable_balance: Decimal = Field(
         alias="prjExpensePayableBalance",
@@ -5343,7 +6001,11 @@ class ProjectTotalsRow(DatabaseRecord):
         },
     )
     prepayment_balance: Decimal = Field(
-        alias="prjPrepaymentBalance", json_schema_extra={"sql_type": "decimal"}
+        alias="prjPrepaymentBalance",
+        json_schema_extra={
+            "sql_type": "decimal",
+            "note": "The open balance as the database holds it now: neither @StartDate nor @EndDate changes it.",
+        },
     )
 
 
@@ -5357,6 +6019,7 @@ class ReceiptTotalsRow(DatabaseRecord):
         parameter_types=("smalldatetime", "smalldatetime", "int", "int", "bit"),
         ignored_parameters=("StartDate", "EndDate"),
         parameter_filters={"StartDate": "rDate", "EndDate": "rDate"},
+        row_key=("rKey",),
     )
 
     receipt_key: int = Field(alias="rKey", json_schema_extra={"sql_type": "int"})
@@ -5463,6 +6126,7 @@ class RefundTotalsRow(DatabaseRecord):
         name="RefundTotals",
         parameters=("StartDate", "EndDate", "Client", "Project"),
         parameter_types=("smalldatetime", "smalldatetime", "int", "int"),
+        row_key=("viKey",),
     )
 
     vendor_invoice_key: int = Field(
@@ -5504,6 +6168,7 @@ class VendorInvoiceTotalsRow(DatabaseRecord):
             "StartDate": {"TotalType": (0, 1, None)},
             "EndDate": {"TotalType": (0, 1, None)},
         },
+        row_key=("viKey",),
     )
 
     vendor_invoice_key: int = Field(

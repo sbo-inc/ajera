@@ -10,6 +10,11 @@ from ajera.schemas.generic import GenericBaseModel
 
 type SourceKind = Literal["table", "view", "function"]
 
+# SQL Server cannot compare these: `ORDER BY`, `GROUP BY`, `=`, `IN`, `MIN`,
+# `MAX`, and `COUNT(DISTINCT)` on one fail with error 306. `LIKE` and
+# `IS NULL` work.
+UNSORTABLE_SQL_TYPES = frozenset({"text", "ntext", "image", "xml"})
+
 # =============================================================================
 # CLASS: Source
 # =============================================================================
@@ -61,6 +66,14 @@ class Source:
             numbers, credentials, tokens, and banking details. Classified by
             column name alone, so this is a fact about the name rather than a
             policy about who may read it.
+        row_key: For a function, the leading key when it is unique on every
+            row: `rKey` for `ReceiptTotals`, one row per receipt. Probed live.
+        repeated_key: The leading key when several rows share it, probed live:
+            `ciKey` for `ClientInvoiceTotals`, which has a row per invoice
+            adjustment. `note` says what a row is, and where the key's own
+            amounts repeat on each of its rows, their field notes say so:
+            count those once per key, not once per row.
+        note: What a row is, where the source's name does not say it.
     """
 
     kind: SourceKind
@@ -79,6 +92,9 @@ class Source:
     current_column: str | None = None
     deleted_column: str | None = None
     sensitive: tuple[str, ...] = ()
+    row_key: tuple[str, ...] = ()
+    repeated_key: str | None = None
+    note: str | None = None
 
 
 # =============================================================================

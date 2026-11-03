@@ -44,6 +44,13 @@ moved on both of two pairs of calls, back to back, and holds only if it held
 on both and is not zero in every row. Nothing is recorded when `StartDate`
 changes the rows themselves, because then every column moves with them.
 
+The probe also finds each function's grain: when its leading column is a
+table's key, it counts rows against distinct keys under the base arguments
+and every code. Unique everywhere, the key is recorded as `row_key`; repeated
+anywhere, as `repeated_key`. `--grain` runs this step alone, in seconds:
+
+    make odbc-probe ARGS="--grain"
+
 The verdicts go into `catalog.json` as `ignored_parameters`,
 `unchecked_parameters`, and `ignored_when`, with `parameter_filters` and
 `parameter_notes` from `FILTERS` for the ignored ones, and the columns as
@@ -70,8 +77,8 @@ from ajera.schemas.database import FUNCTIONS, TABLES, DatabaseRecord
 
 CATALOG = Path(__file__).resolve().parent / "catalog.json"
 
-# The base date range is a closed year with activity. Refunds are rare, so
-# `RefundTotals` is probed over its whole history.
+# The base date range is a closed year. `RefundTotals` is probed over a long
+# history, so that it has rows to compare.
 RANGE = (date(2025, 1, 1), date(2025, 12, 31))
 RANGES = {"RefundTotals": (date(2000, 1, 1), date(2026, 10, 31))}
 # A range that does not overlap the base one, and a key no row holds: a
@@ -561,6 +568,61 @@ def probe(
     return probed
 
 
+def grain(
+    db: AjeraOdbc, model: type[DatabaseRecord], report: Callable[[str], None]
+) -> tuple[list[str], str | None]:
+    """
+    The function's row key, or the key its rows repeat.
+
+    Only a leading column that is some table's single-column key is checked:
+    it names what a row should be one of (`ciKey`, an invoice). Counted under
+    the base arguments and each code, since a code can change the rows.
+
+    Returns:
+        tuple[list[str], str | None]: `[lead]` and None when the key is
+        unique on every call with rows, `[]` and the key when it repeats on
+        any, and `[]` and None when there is nothing to check.
+    """
+    lead = next(iter(model.model_fields.values())).alias or ""
+    keys = {
+        table.__source__.primary_key[0]
+        for table in TABLES.values()
+        if len(table.__source__.primary_key) == 1
+    }
+    values = plan(model)
+    if lead not in keys or values is None:
+        return [], None
+    parameters = model.__source__.parameters
+    base = tuple(value for value, _ in values.values())
+    calls = [base] + [
+        replaced(parameters, base, code, value)
+        for code in (n for n in parameters if n in CODES)
+        for value in values[code][1]
+    ]
+    rows_seen = 0
+    for arguments in calls:
+        target, bound = source_clause(model, arguments)
+        cursor = db.connection.cursor()
+        try:
+            cursor.execute(
+                f"SELECT COUNT_BIG(*), COUNT_BIG(DISTINCT {quote_name(lead)}) "
+                f"FROM {target}",
+                *bound,
+            )
+            total, distinct = (int(n) for n in cursor.fetchall()[0])
+        finally:
+            cursor.close()
+        rows_seen += total
+        if total > distinct:
+            report(f"grain: {total} rows over {distinct} {lead}; {lead} repeats")
+            return [], lead
+    if not rows_seen:
+        report("grain: no rows; unchecked")
+        return [], None
+    report(f"grain: one row per {lead}")
+    return [lead], None
+
+
 def verdict(by_context: dict[str, Evidence]) -> str:
     """Applied if it changed the rows under any code, else as the evidence says."""
     evidence = Evidence(
@@ -624,9 +686,23 @@ def ignored_when(probed: Probed, verdicts: dict[str, str]) -> dict[str, Any]:
     return when
 
 
+def record_grain(name: str, row_key: list[str], repeated: str | None) -> None:
+    # Read again before writing, so runs in parallel keep each other's.
+    catalog = json.loads(CATALOG.read_text())
+    function = catalog["functions"][name]
+    record(function, "row_key", row_key)
+    if repeated:
+        function["repeated_key"] = repeated
+    else:
+        function.pop("repeated_key", None)
+    CATALOG.write_text(dump(catalog))
+
+
 def main(names: Sequence[str]) -> int:
     # The probe passes values to ignored parameters on purpose.
     logging.getLogger("ajera.odbc.arguments").setLevel(logging.ERROR)
+    only_grain = "--grain" in names
+    names = [n for n in names if n != "--grain"]
     chosen = [n for n in FUNCTIONS if not names or n in names]
     unknown = sorted(set(names) - set(FUNCTIONS))
     if unknown:
@@ -644,6 +720,10 @@ def main(names: Sequence[str]) -> int:
             def report(line: str) -> None:
                 print(f"  {line}", flush=True)
 
+            if name not in SLOW:
+                record_grain(name, *grain(db, model, report))
+            if only_grain:
+                continue
             if name in SLOW:
                 report("too slow to probe; unchecked")
                 probed = Probed({p: {"": Evidence()} for p in parameters})

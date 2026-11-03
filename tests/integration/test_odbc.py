@@ -17,7 +17,15 @@ from decimal import Decimal
 import pytest
 
 from ajera.client import AjeraClient
-from ajera.odbc import PAGE_SIZE, AjeraOdbc, between, count, filters, sum_
+from ajera.odbc import (
+    PAGE_SIZE,
+    AjeraOdbc,
+    between,
+    count,
+    count_distinct,
+    filters,
+    sum_,
+)
 from ajera.odbc.queries.generic import Query
 from ajera.odbc.queries.mirror import MIRRORS
 from ajera.schemas.database import (
@@ -665,7 +673,7 @@ def test_current_month_covers_the_range_and_ytd_does_not(
 
 
 def test_one_month_is_the_difference_of_two_year_to_date_reads(db: AjeraOdbc) -> None:
-    # Inside one fiscal year: the firm's starts in January.
+    # June and May of one year, both inside one fiscal year.
     june = financials(db, "AxFinancials", date(LAST_YEAR, 6, 1), date(LAST_YEAR, 6, 30))
     to_june = financials(
         db, "AxFinancials", date(LAST_YEAR, 1, 1), date(LAST_YEAR, 6, 30)
@@ -828,3 +836,63 @@ def test_billed_by_date_is_signed_against_billed(db: AjeraOdbc) -> None:
     assert mostly_negative
     assert mostly_opposite
     assert never_equal
+
+
+# =============================================================================
+# TEST: row grain
+# =============================================================================
+
+
+@pytest.mark.parametrize(
+    "target", ["ClientInvoiceTotals(0, NULL, NULL)", "ClientInvoice"]
+)
+def test_client_invoices_repeat_once_per_adjustment(db: AjeraOdbc, target: str) -> None:
+    rows, invoices, invoice_level = (
+        scalar(db, f"SELECT {measure} FROM {target}")
+        for measure in (
+            "COUNT_BIG(*)",
+            "COUNT_BIG(DISTINCT ciKey)",
+            # The invoice's own amounts: the same on every row of one invoice.
+            "COUNT_BIG(DISTINCT CONCAT(ciKey, ':', ciInvoiceAmount, ':', "
+            "ciTotalReceipts, ':', ciTotalReceivableBalance))",
+        )
+    )
+    adjusted = scalar(
+        db,
+        "SELECT COUNT(*) FROM (SELECT ciKey FROM "
+        f"{target} GROUP BY ciKey HAVING COUNT(*) > 1 "
+        "AND COUNT(*) > SUM(CASE WHEN ciInvoiceAdjustment IS NULL THEN 0 ELSE 1 END)"
+        ") g",
+    )
+
+    assert isinstance(rows, int) and isinstance(invoices, int)
+    assert rows > invoices
+    assert invoice_level == invoices
+    # Every repeated row carries an adjustment.
+    assert adjusted == 0
+
+
+ROW_KEYED = sorted(n for n, m in FUNCTIONS.items() if m.__source__.row_key)
+
+
+@pytest.mark.parametrize("name", ROW_KEYED)
+def test_row_keyed_functions_return_one_row_per_key(db: AjeraOdbc, name: str) -> None:
+    model = FUNCTIONS[name]
+    (key,) = model.__source__.row_key
+    totals = db.aggregate(
+        model,
+        *function_arguments(db, name),
+        measures=[count(), count_distinct(key, alias="keys")],
+    )[0]
+
+    assert totals["count"] == totals["keys"]
+
+
+def test_text_columns_still_take_like_and_null_checks(db: AjeraOdbc) -> None:
+    model = TABLES["AxProject"]
+    matched = db.count(model, where={"notes": filters.like("%a%")})
+    empty = db.count(model, where={"notes": None})
+
+    assert matched >= 0 and empty >= 0
+    with pytest.raises(ValueError, match="cannot order by 'notes'"):
+        db.rows(model, fields=["project_key"], order_by=["notes"], limit=1)

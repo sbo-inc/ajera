@@ -1815,7 +1815,12 @@ def test_notes_match_the_catalog(generator: Any, catalog: dict[str, Any]) -> Non
     for group in catalog.values():
         for name, source in group.items():
             model = SOURCES[name]
-            expected = generator.column_notes(name, source)
+            names = {
+                info.alias or field: field for field, info in model.model_fields.items()
+            }
+            expected = generator.column_notes(
+                name, source, model.__source__.repeated_key, names
+            )
             notes = {
                 info.alias: info.json_schema_extra.get("note")
                 for info in model.model_fields.values()
@@ -1876,6 +1881,209 @@ def test_describe_returns_the_project_to_date_and_aging_notes() -> None:
         assert "neither @StartDate nor @EndDate changes it" in fields[name], name
     assert "Signed the opposite way" in fields["total_billed_by_date"]
     assert fields["billed_outstanding"] == (
-        "Changes with @EndDate. @StartDate does not change it."
+        "Changes with @EndDate; @StartDate does not change it."
     )
     assert "Signed" not in fields["total_billed"]
+
+
+# =============================================================================
+# TEST: row grain and column types
+# =============================================================================
+
+
+def test_describe_returns_the_client_invoice_grain() -> None:
+    for model in (FUNCTIONS["ClientInvoiceTotals"], VIEWS["ClientInvoice"]):
+        schema = describe(model)
+        fields = {f.name: " ".join((f.note or "").split()) for f in schema.fields}
+
+        assert schema.repeated_key == "ciKey", schema.name
+        assert schema.row_key == (), schema.name
+        assert "One row per adjustment of an invoice" in (schema.note or "")
+        assert fields["ci_invoice_amount"] == (
+            "Repeats on every row of one `client_invoice_key`: count it once per "
+            "key, not once per row."
+        )
+        assert fields["ci_invoice_adjustment"].startswith("One adjustment's amount")
+        # The key itself and the columns that differ do not repeat.
+        assert not fields["client_invoice_key"]
+
+
+def test_describe_returns_the_probed_row_keys() -> None:
+    assert describe(FUNCTIONS["ReceiptTotals"]).row_key == ("rKey",)
+    assert describe(FUNCTIONS["ProjectTotals"]).row_key == ("prjKey",)
+    financials = describe(FUNCTIONS["AxFinancials"])
+    assert financials.repeated_key == "glaKey"
+    assert "One row per account and entity" in (financials.note or "")
+
+
+def test_describe_marks_row_versions_binary_and_text_unsortable() -> None:
+    fields = {f.column: f for f in describe(TABLES["AxProject"]).fields}
+
+    assert fields["prjRowVersion"].binary and not fields["prjRowVersion"].blob
+    assert fields["prjRowVersion"].sortable
+    assert not fields["prjNotes"].sortable and not fields["prjNotes"].binary
+    assert fields["prjKey"].sortable and not fields["prjKey"].binary
+
+
+@pytest.mark.parametrize(
+    ("build", "message"),
+    [
+        (
+            lambda: select(TABLES["AxProject"], ["prjKey"], order_by=["-notes"]),
+            "cannot order by 'notes': SQL Server cannot compare a text column",
+        ),
+        (
+            lambda: select(TABLES["AxProject"], ["prjKey"], where={"notes": "x"}),
+            "cannot compare 'notes'",
+        ),
+        (
+            lambda: select(
+                TABLES["AxProject"], ["prjKey"], where={"prjNotes": ["a", "b"]}
+            ),
+            "cannot compare 'prjNotes'",
+        ),
+        (
+            lambda: select_queries.aggregate(
+                TABLES["AxProject"], [count()], group_by=["notes"]
+            ),
+            "cannot group by 'notes'",
+        ),
+        (
+            lambda: select_queries.aggregate(TABLES["AxProject"], [max_("notes")]),
+            "cannot aggregate 'notes'",
+        ),
+    ],
+)
+def test_uncomparable_columns_are_refused_before_any_sql(
+    build: Callable[[], object], message: str
+) -> None:
+    with pytest.raises(ValueError, match=re.escape(message)):
+        build()
+
+
+def test_uncomparable_columns_still_take_like_and_null_checks() -> None:
+    query = select(
+        TABLES["AxProject"],
+        ["prjKey"],
+        where={"notes": filters.like("%roof%"), "marketing_notes": None},
+    )
+
+    assert "[prjNotes] LIKE ?" in query.statement
+    assert "[prjMarketingNotes] IS NULL" in query.statement
+
+
+def test_generator_renders_the_grain_into_the_source(generator: Any) -> None:
+    literal = generator.source_literal(
+        kind="function",
+        name="F",
+        row_key=["fKey"],
+        repeated_key="gKey",
+        note='One "row" per thing.',
+    )
+
+    assert "row_key=('fKey',)" in literal
+    assert 'repeated_key="gKey"' in literal
+    assert 'note="One \\"row\\" per thing."' in literal
+
+
+def test_generator_notes_repeats_only_where_varying_columns_are_known(
+    generator: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(generator, "NOTES", {})
+    monkeypatch.setattr(generator, "VARYING", {"F": ("fAdjustment",)})
+    columns = [
+        {"name": "fKey", "type": "int"},
+        {"name": "fAmount", "type": "decimal"},
+        {"name": "fAdjustment", "type": "decimal"},
+    ]
+
+    noted = generator.column_notes("F", {"columns": columns}, "fKey", {"fKey": "f_key"})
+    unlisted = generator.column_notes("G", {"columns": columns}, "fKey")
+
+    assert noted == {
+        "fAmount": "Repeats on every row of one `f_key`: count it once per key, "
+        "not once per row."
+    }
+    assert unlisted == {}
+
+
+class ScriptedCursor:
+    def __init__(self, results: list[tuple[int, int]]) -> None:
+        self.results = results
+        self.statements: list[str] = []
+
+    def execute(self, statement: str, *parameters: object) -> None:
+        self.statements.append(statement)
+
+    def fetchall(self) -> list[tuple[int, int]]:
+        return [self.results.pop(0)]
+
+    def close(self) -> None:
+        pass
+
+
+class ScriptedDb:
+    """Stands in for `AjeraOdbc`: `db.connection.cursor()` gives one cursor."""
+
+    def __init__(self, *results: tuple[int, int]) -> None:
+        self.scripted = ScriptedCursor(list(results))
+        self.connection = self
+
+    def cursor(self) -> ScriptedCursor:
+        return self.scripted
+
+
+@pytest.mark.parametrize(
+    ("results", "expected"),
+    [
+        # Unique under the base arguments and every other TotalType.
+        ([(9, 9), (5, 5), (0, 0), (7, 7)], (["ciKey"], None)),
+        # Repeated under the first other code: stop there.
+        ([(9, 9), (6, 5)], ([], "ciKey")),
+        ([(0, 0)] * 4, ([], None)),
+    ],
+)
+def test_probe_finds_a_function_grain(
+    probe: Any, results: list[tuple[int, int]], expected: tuple[object, object]
+) -> None:
+    db = ScriptedDb(*results)
+
+    found = probe.grain(db, FUNCTIONS["ClientInvoiceTotals"], lambda line: None)
+
+    assert found == expected
+    assert "COUNT_BIG(DISTINCT [ciKey])" in db.scripted.statements[0]
+
+
+def test_harvest_keeps_a_repeated_key_the_function_still_returns(
+    tmp_path: Path,
+) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "odbc_harvest", SCRIPTS / "harvest.py"
+    )
+    assert spec and spec.loader
+    harvest = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(harvest)
+    previous = tmp_path / "catalog.json"
+    previous.write_text(
+        json.dumps(
+            {
+                "functions": {
+                    "F": {"repeated_key": "fKey", "row_key": ["fKey"]},
+                    "G": {"repeated_key": "gGone"},
+                }
+            }
+        )
+    )
+    columns = [{"name": "fKey"}]
+    fresh = {
+        "functions": {
+            "F": {"parameters": [], "columns": columns},
+            "G": {"parameters": [], "columns": columns},
+        }
+    }
+
+    harvest.carry_probed(fresh, previous)
+
+    assert fresh["functions"]["F"]["repeated_key"] == "fKey"
+    assert fresh["functions"]["F"]["row_key"] == ["fKey"]
+    assert "repeated_key" not in fresh["functions"]["G"]

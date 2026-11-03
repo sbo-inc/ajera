@@ -7834,7 +7834,8 @@
         {"name": "tTotalThisCredit", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "tTotalReceivableBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "tTotalFromThisReceipt", "type": "decimal", "nullable": true, "precision": 38, "scale": 2}
-      ]
+      ],
+      "repeated_key": "rKey"
     },
     "AxFinancials": {
       "parameters": [
@@ -7878,7 +7879,8 @@
         {"name": "FirstDayCurrentFiscalYear", "type": "smalldatetime", "nullable": true},
         {"name": "AnyFiscalYearBeginDate", "type": "smalldatetime", "nullable": true}
       ],
-      "start_date_columns": {"glaCurrentMonth": true, "glaCurrentYTDBalance": true, "glaPriorYearMonth": true, "glaPriorYearYTDBalance": false}
+      "start_date_columns": {"glaCurrentMonth": true, "glaCurrentYTDBalance": true, "glaPriorYearMonth": true, "glaPriorYearYTDBalance": false},
+      "repeated_key": "glaKey"
     },
     "AxFinancials_MC": {
       "parameters": [
@@ -8156,7 +8158,8 @@
         {"name": "beIsPayrollCheck", "type": "bit", "nullable": true},
         {"name": "beNumberOfReceipts", "type": "int", "nullable": false},
         {"name": "beTransferBankAccount", "type": "int", "nullable": true}
-      ]
+      ],
+      "row_key": ["beKey"]
     },
     "ClientInvoiceTotals": {
       "parameters": [
@@ -8650,7 +8653,8 @@
         {"name": "ciExpenseReceivableBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2},
         {"name": "ciConsultantReceivableBalance", "type": "decimal", "nullable": true, "precision": 38, "scale": 2}
       ],
-      "ignored_when": {"StartDate": {"TotalType": [0, null]}, "EndDate": {"TotalType": [0, null]}}
+      "ignored_when": {"StartDate": {"TotalType": [0, null]}, "EndDate": {"TotalType": [0, null]}},
+      "repeated_key": "ciKey"
     },
     "ClientTotals": {
       "parameters": [
@@ -9337,7 +9341,8 @@
         {"name": "prjConsultantPayableBalance", "type": "decimal", "nullable": false, "precision": 38, "scale": 2},
         {"name": "prjPrepaymentBalance", "type": "decimal", "nullable": false, "precision": 38, "scale": 2}
       ],
-      "start_date_columns": {"prjHoursCostBudget": false, "prjLaborCostBudget": false, "prjExpenseCostBudget": false, "prjConsultantCostBudget": false, "prjTotalContractAmount": false, "prjLaborContractAmount": false, "prjExpenseContractAmount": false, "prjConsultantContractAmount": false, "prjPercentDistribution": false, "prjLaborFeeRate": false, "prjExpenseMarkupRate": false, "prjConsultantMarkupRate": false, "prjAdjustAmount": false, "prjLaborBilledPercent": true, "prjLaborWIPBilledPercent": true, "prjLaborWIPToBillBilledPercent": true, "prjLaborTotalBilledPercent": true, "prjExpenseBilledPercent": true, "prjExpenseTotalBilledPercent": true, "prjConsultantBilledPercent": true, "prjConsultantWIPBilledPercent": true, "prjConsultantTotalBilledPercent": true, "prjBilledOutstanding": false, "prjBilledAgingCurrent": false, "prjBilledAging30": false, "prjBilledAging60": false, "prjBilledAging90": false, "prjBilledAging120": false, "prjBilledLaborOutstanding": false, "prjBilledLaborAgingCurrent": false, "prjBilledLaborAging30": false, "prjBilledLaborAging60": false, "prjBilledLaborAging90": false, "prjBilledLaborAging120": false, "prjBilledExpenseOutstanding": false, "prjBilledExpenseAgingCurrent": false, "prjBilledExpenseAging30": false, "prjBilledExpenseAging120": false, "prjBilledConsultantOutstanding": false, "prjBilledConsultantAgingCurrent": false, "prjBilledConsultantAging120": false, "prjSpentOutstanding": false, "prjSpentAgingCurrent": false, "prjSpentAging30": false, "prjSpentAging60": false, "prjSpentAging90": false, "prjSpentAging120": false, "prjSpentLaborOutstanding": false, "prjSpentLaborAgingCurrent": false, "prjSpentLaborAging30": false, "prjSpentLaborAging60": false, "prjSpentLaborAging90": false, "prjSpentLaborAging120": false, "prjSpentExpenseOutstanding": false, "prjSpentExpenseAgingCurrent": false, "prjSpentExpenseAging30": false, "prjSpentExpenseAging120": false, "prjSpentConsultantOutstanding": false, "prjSpentConsultantAgingCurrent": false, "prjSpentConsultantAging120": false, "prjTotalCost": true, "prjLaborCost": true, "prjExpenseCost": true, "prjConsultantCost": true, "prjTotalCostWithPremium": true, "prjLaborCostWithPremium": true, "prjTotalBurdenedCost": true, "prjLaborBurdenedCost": true, "prjExpenseBurdenedCost": true, "prjConsultantBurdenedCost": true, "prjTotalBurdenedCostWithPremium": true, "prjLaborBurdenedCostWithPremium": true, "prjBilledHours": true, "prjWIPHours": true, "prjWIPToBillHours": true, "prjTotalHours": true, "prjExpenseBilledUnits": true, "prjConsultantBilledUnits": true, "prjTotalEarned": true, "prjLaborEarned": true, "prjExpenseEarned": true, "prjConsultantEarned": true, "prjTotalBilled": true, "prjLaborBilled": true, "prjExpenseBilled": true, "prjConsultantBilled": true, "prjTotalAdjustExcluded": true, "prjLaborAdjustExcluded": true, "prjTotalWIP": true, "prjLaborWIP": true, "prjExpenseWIP": true, "prjConsultantWIP": true, "prjTotalWIPToBill": true, "prjLaborWIPToBill": true, "prjTotalWriteoff": true, "prjLaborWriteoff": true, "prjExpenseWriteoff": true, "prjConsultantWriteoff": true, "prjTotalBilledByDate": false, "prjLaborBilledByDate": false, "prjExpenseBilledByDate": false, "prjConsultantBilledByDate": false, "prjTotalReceipts": false, "prjLaborReceipts": false, "prjExpenseReceipts": false, "prjConsultantReceipts": false, "prjTotalReceivableBalance": false, "prjLaborReceivableBalance": false, "prjExpenseReceivableBalance": false, "prjConsultantReceivableBalance": false, "prjVendorInvoiced": false, "prjPayments": false, "prjExpensePayments": false, "prjConsultantPayments": false, "prjPayableBalance": false, "prjExpensePayableBalance": false, "prjConsultantPayableBalance": false}
+      "start_date_columns": {"prjHoursCostBudget": false, "prjLaborCostBudget": false, "prjExpenseCostBudget": false, "prjConsultantCostBudget": false, "prjTotalContractAmount": false, "prjLaborContractAmount": false, "prjExpenseContractAmount": false, "prjConsultantContractAmount": false, "prjPercentDistribution": false, "prjLaborFeeRate": false, "prjExpenseMarkupRate": false, "prjConsultantMarkupRate": false, "prjAdjustAmount": false, "prjLaborBilledPercent": true, "prjLaborWIPBilledPercent": true, "prjLaborWIPToBillBilledPercent": true, "prjLaborTotalBilledPercent": true, "prjExpenseBilledPercent": true, "prjExpenseTotalBilledPercent": true, "prjConsultantBilledPercent": true, "prjConsultantWIPBilledPercent": true, "prjConsultantTotalBilledPercent": true, "prjBilledOutstanding": false, "prjBilledAgingCurrent": false, "prjBilledAging30": false, "prjBilledAging60": false, "prjBilledAging90": false, "prjBilledAging120": false, "prjBilledLaborOutstanding": false, "prjBilledLaborAgingCurrent": false, "prjBilledLaborAging30": false, "prjBilledLaborAging60": false, "prjBilledLaborAging90": false, "prjBilledLaborAging120": false, "prjBilledExpenseOutstanding": false, "prjBilledExpenseAgingCurrent": false, "prjBilledExpenseAging30": false, "prjBilledExpenseAging120": false, "prjBilledConsultantOutstanding": false, "prjBilledConsultantAgingCurrent": false, "prjBilledConsultantAging120": false, "prjSpentOutstanding": false, "prjSpentAgingCurrent": false, "prjSpentAging30": false, "prjSpentAging60": false, "prjSpentAging90": false, "prjSpentAging120": false, "prjSpentLaborOutstanding": false, "prjSpentLaborAgingCurrent": false, "prjSpentLaborAging30": false, "prjSpentLaborAging60": false, "prjSpentLaborAging90": false, "prjSpentLaborAging120": false, "prjSpentExpenseOutstanding": false, "prjSpentExpenseAgingCurrent": false, "prjSpentExpenseAging30": false, "prjSpentExpenseAging120": false, "prjSpentConsultantOutstanding": false, "prjSpentConsultantAgingCurrent": false, "prjSpentConsultantAging120": false, "prjTotalCost": true, "prjLaborCost": true, "prjExpenseCost": true, "prjConsultantCost": true, "prjTotalCostWithPremium": true, "prjLaborCostWithPremium": true, "prjTotalBurdenedCost": true, "prjLaborBurdenedCost": true, "prjExpenseBurdenedCost": true, "prjConsultantBurdenedCost": true, "prjTotalBurdenedCostWithPremium": true, "prjLaborBurdenedCostWithPremium": true, "prjBilledHours": true, "prjWIPHours": true, "prjWIPToBillHours": true, "prjTotalHours": true, "prjExpenseBilledUnits": true, "prjConsultantBilledUnits": true, "prjTotalEarned": true, "prjLaborEarned": true, "prjExpenseEarned": true, "prjConsultantEarned": true, "prjTotalBilled": true, "prjLaborBilled": true, "prjExpenseBilled": true, "prjConsultantBilled": true, "prjTotalAdjustExcluded": true, "prjLaborAdjustExcluded": true, "prjTotalWIP": true, "prjLaborWIP": true, "prjExpenseWIP": true, "prjConsultantWIP": true, "prjTotalWIPToBill": true, "prjLaborWIPToBill": true, "prjTotalWriteoff": true, "prjLaborWriteoff": true, "prjExpenseWriteoff": true, "prjConsultantWriteoff": true, "prjTotalBilledByDate": false, "prjLaborBilledByDate": false, "prjExpenseBilledByDate": false, "prjConsultantBilledByDate": false, "prjTotalReceipts": false, "prjLaborReceipts": false, "prjExpenseReceipts": false, "prjConsultantReceipts": false, "prjTotalReceivableBalance": false, "prjLaborReceivableBalance": false, "prjExpenseReceivableBalance": false, "prjConsultantReceivableBalance": false, "prjVendorInvoiced": false, "prjPayments": false, "prjExpensePayments": false, "prjConsultantPayments": false, "prjPayableBalance": false, "prjExpensePayableBalance": false, "prjConsultantPayableBalance": false},
+      "row_key": ["prjKey"]
     },
     "ReceiptTotals": {
       "parameters": [
@@ -9379,7 +9384,8 @@
         {"name": "rClientPayee", "type": "varchar", "nullable": true, "length": 255}
       ],
       "ignored_parameters": ["StartDate", "EndDate"],
-      "parameter_filters": {"StartDate": "rDate", "EndDate": "rDate"}
+      "parameter_filters": {"StartDate": "rDate", "EndDate": "rDate"},
+      "row_key": ["rKey"]
     },
     "RefundTotals": {
       "parameters": [
@@ -9398,7 +9404,8 @@
         {"name": "viAmount", "type": "decimal", "nullable": false, "precision": 38, "scale": 2},
         {"name": "viAmountPaid", "type": "decimal", "nullable": false, "precision": 38, "scale": 2},
         {"name": "viNotes", "type": "nvarchar", "nullable": true, "length": -1}
-      ]
+      ],
+      "row_key": ["viKey"]
     },
     "VendorInvoiceTotals": {
       "parameters": [
@@ -9444,7 +9451,8 @@
         {"name": "viCheckSum", "type": "bigint", "nullable": true},
         {"name": "viNeedsReApproval", "type": "bit", "nullable": true}
       ],
-      "ignored_when": {"StartDate": {"TotalType": [0, 1, null]}, "EndDate": {"TotalType": [0, 1, null]}}
+      "ignored_when": {"StartDate": {"TotalType": [0, 1, null]}, "EndDate": {"TotalType": [0, 1, null]}},
+      "row_key": ["viKey"]
     },
     "VendorTotals": {
       "parameters": [

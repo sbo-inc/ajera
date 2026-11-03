@@ -34,16 +34,16 @@ make odbc-verify  # validate every model against every live row (ARGS=name filte
 
 Set `AJERA_ODBC_DATASOURCE`, `AJERA_ODBC_USERNAME`, and `AJERA_ODBC_PASSWORD` first; the REST variables enable the tests that compare the two. The Makefile passes each variable to `docker run` by name, so no value appears on a command line. Never commit credentials, the driver, or the schema workbook.
 
-Deltek exposes only the production database. Keep live checks to metadata, counts, and timings, and never print row contents: reduce a comparison to a bool before asserting it, and run with `--tb=no` when a failure could show values.
+Deltek exposes only the production database, and this repository is public. Never print row contents: reduce a comparison to a bool before asserting it, and run with `--tb=no` when a failure could show values. Counts and timings are fine on your own terminal, but keep them, and anything else learned from the data, out of issues, pull requests, commits, comments, and code. Write what Ajera does (`ReceiptTotals` ignores its dates), never what the firm's data holds: no row counts, amounts, dates, timings, percentages, or which columns are empty.
 
 ### Refreshing the generated models
 
 The database models, enums, and typed function methods are generated; never edit them by hand. For a new Ajera release:
 
 1. `make odbc-catalog` snapshots the live catalog into `scripts/odbc/catalog.json`. Tenant custom fields are left out.
-2. `make odbc-probe` records which function parameters have no effect, always or under some `TotalType` codes, and which amount columns change with `StartDate`. A full run takes about 40 minutes, so pass a few functions at a time with `ARGS="ReceiptTotals ClientTotals"`. The two GL balance functions are too slow to probe.
+2. `make odbc-probe` records which function parameters have no effect, always or under some `TotalType` codes, and which amount columns change with `StartDate`. A full run takes about 40 minutes, so pass a few functions at a time with `ARGS="ReceiptTotals ClientTotals"`. The two GL balance functions are too slow to probe. `ARGS="--grain"` runs only the check of each function's row grain, in a few minutes.
 3. `make odbc-enums XLSX=path/to/AjeraSchema.xlsx` extracts the documented codes from the schema workbook, exported from Ajera under Setup > Utility > Ajera Schema.
-4. `make odbc-generate` regenerates the models and methods from the catalog, the codes, and the column notes in `scripts/odbc/notes.py`. Each note there says what a column holds and how that was checked live. The generator adds the probe's finding on `StartDate`, and it stops on a note for a column that no longer exists.
+4. `make odbc-generate` regenerates the models and methods from the catalog, the codes, and the column notes in `scripts/odbc/notes.py`. Each note there says what a column holds and how that was checked live. The generator adds the probe's finding on `StartDate`, and it stops on a note for a column that no longer exists. A source whose leading key repeats needs an entry in `SOURCE_NOTES` saying what a row is, and the generator stops without one; where `VARYING` lists the columns that differ between those rows, every other amount is noted as repeating.
 
 ## Releasing
 

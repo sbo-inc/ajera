@@ -218,11 +218,15 @@ def describe_source(source: str, as_json: bool) -> None:
             ),
         ),
         ("ignored", (ignored_text,) if ignored_text else ()),
+        ("row key", schema.row_key),
+        ("repeats", (schema.repeated_key,) if schema.repeated_key else ()),
         ("current", (schema.current_column,) if schema.current_column else ()),
         ("deleted", (schema.deleted_column,) if schema.deleted_column else ()),
     ):
         if values:
             click.echo(f"{label}: {', '.join(values)}")
+    if schema.note:
+        click.echo(textwrap.fill(f"row: {schema.note}", width=100))
     for field in schema.fields:
         notes = [
             note
@@ -231,6 +235,8 @@ def describe_source(source: str, as_json: bool) -> None:
                 (f"-> {'.'.join(field.references or ())}", field.references),
                 ("sensitive", field.sensitive),
                 ("blob", field.blob),
+                ("binary", field.binary and not field.blob),
+                ("unsortable", not field.sortable),
                 (field.enum or "", field.enum),
             )
             if present

@@ -47,9 +47,12 @@ SCHEMAS = ROOT / "src" / "ajera" / "schemas" / "database"
 READER = ROOT / "src" / "ajera" / "odbc" / "functions.py"
 # Loaded by path, so the tests can load this module without `scripts/odbc`
 # on the import path.
-NOTES: dict[str, dict[str, str]] = runpy.run_path(
-    str(ROOT / "scripts" / "odbc" / "notes.py")
-)["NOTES"]
+_NOTES = runpy.run_path(str(ROOT / "scripts" / "odbc" / "notes.py"))
+NOTES: dict[str, dict[str, str]] = _NOTES["NOTES"]
+SOURCE_NOTES: dict[str, str] = _NOTES["SOURCE_NOTES"]
+VARYING: dict[str, tuple[str, ...]] = _NOTES["VARYING"]
+# The amount types whose columns note that they repeat with a repeated key.
+AMOUNT_TYPES = frozenset({"decimal", "numeric", "money", "smallmoney"})
 
 PY_TYPES = {
     "int": "int",
@@ -112,7 +115,7 @@ DELETED = re.compile(r"^[a-z]+IsDeleted$")
 # Views whose leading table key repeats across rows (a join fans it out), so it
 # cannot serve as the view's row key. Found by `verify.py`.
 NON_UNIQUE_VIEW_KEYS: set[str] = {
-    "ClientInvoice",  # 11,145 rows over 10,823 ciKey values
+    "ClientInvoice",  # a row per invoice adjustment
 }
 
 # The sentence each field note ends with, from `start_date_columns`: whether
@@ -363,23 +366,44 @@ def python_dict(values: dict[str, Any]) -> str:
     return "{" + ", ".join(items) + "}"
 
 
-def column_notes(name: str, source: dict[str, Any]) -> dict[str, str]:
+def column_notes(
+    name: str,
+    source: dict[str, Any],
+    repeated_key: str | None = None,
+    names: dict[str, str] | None = None,
+) -> dict[str, str]:
     """
-    Each column's note: the hand-written one from `notes.py`, then the probe's.
+    Each column's note: the hand-written one, the probe's, then any repeat.
 
     The probe's sentence is left off a note that says itself how @StartDate
     acts: `glaCurrentYTDBalance` moves with it only on retained earnings, which
-    a bare "Changes with @StartDate." would misstate.
+    a bare "Changes with @StartDate." would misstate. Where `VARYING` lists
+    the columns that differ between rows sharing the repeated key, every
+    other amount repeats with the key, and says so.
 
     Raises:
         SystemExit: A note names a column the source does not have.
     """
     written = NOTES.get(name, {})
-    columns = {column["name"] for column in source["columns"]}
-    unknown = sorted(set(written) - columns)
+    order = [c["name"] for c in source["columns"]]
+    columns = set(order)
+    unknown = sorted((set(written) | set(VARYING.get(name, ()))) - columns)
     if unknown:
         raise SystemExit(f"notes.py: {name} has no column {', '.join(unknown)}")
     probed: dict[str, bool] = source.get("start_date_columns", {})
+    repeats: set[str] = set()
+    repeat = ""
+    if repeated_key and name in VARYING:
+        key = (names or {}).get(repeated_key, repeated_key)
+        repeat = (
+            f"Repeats on every row of one `{key}`: count it once per key, "
+            "not once per row."
+        )
+        repeats = {
+            c["name"]
+            for c in source["columns"]
+            if c["type"] in AMOUNT_TYPES and c["name"] not in VARYING[name]
+        }
     return {
         column: " ".join(
             text
@@ -388,11 +412,12 @@ def column_notes(name: str, source: dict[str, Any]) -> dict[str, str]:
                 START_DATE[probed[column]]
                 if column in probed and "@StartDate" not in written.get(column, "")
                 else None,
+                repeat if column in repeats else None,
             )
             if text
         )
-        for column in sorted(columns, key=[c["name"] for c in source["columns"]].index)
-        if column in written or column in probed
+        for column in sorted(columns, key=order.index)
+        if column in written or column in probed or column in repeats
     }
 
 
@@ -471,6 +496,12 @@ def source_literal(**values: Any) -> str:
             parts.append(f'{name}="{values[name]}"')
     if values.get("sensitive"):
         parts.append(f"sensitive={tuple(values['sensitive'])!r}")
+    if values.get("row_key"):
+        parts.append(f"row_key={tuple(values['row_key'])!r}")
+    if values.get("repeated_key"):
+        parts.append(f'repeated_key="{values["repeated_key"]}"')
+    if values.get("note"):
+        parts.append(f"note={json.dumps(values['note'])}")
     return ", ".join(parts)
 
 
@@ -483,7 +514,19 @@ def main() -> None:
     catalog = json.loads(CATALOG.read_text())
     documented = json.loads(ENUMS.read_text())
     sources = {name for group in catalog.values() for name in group}
-    unknown = sorted(set(NOTES) - sources)
+    unknown = sorted((set(NOTES) | set(SOURCE_NOTES) | set(VARYING)) - sources)
+    unexplained = sorted(
+        name
+        for group in catalog.values()
+        for name, source in group.items()
+        if (source.get("repeated_key") or name in NON_UNIQUE_VIEW_KEYS)
+        and name not in SOURCE_NOTES
+    )
+    if unexplained:
+        raise SystemExit(
+            "notes.py: say in SOURCE_NOTES what a row is for the sources whose "
+            f"leading key repeats: {', '.join(unexplained)}"
+        )
     if unknown:
         raise SystemExit(f"notes.py: no source named {', '.join(unknown)}")
 
@@ -614,6 +657,7 @@ def main() -> None:
         view_key = (
             [lead] if lead in table_keys and name not in NON_UNIQUE_VIEW_KEYS else []
         )
+        repeated = lead if name in NON_UNIQUE_VIEW_KEYS else None
         names = field_names(
             view["columns"],
             entity_snake=snake(entity(name)),
@@ -634,11 +678,13 @@ def main() -> None:
                 primary_key=view_key,
                 blobs=[c["name"] for c in view["columns"] if c["type"] in BLOB_TYPES],
                 **markers(name, view["columns"]),
+                repeated_key=repeated,
+                note=SOURCE_NOTES.get(name),
             ),
             columns=view["columns"],
             names=names,
             enum_for=enum_for,
-            notes=column_notes(name, view),
+            notes=column_notes(name, view, repeated, names),
         )
 
     # -- functions --------------------------------------------------------
@@ -688,11 +734,14 @@ def main() -> None:
                     c["name"] for c in function["columns"] if c["type"] in BLOB_TYPES
                 ],
                 **markers(name, function["columns"]),
+                row_key=function.get("row_key", []),
+                repeated_key=function.get("repeated_key"),
+                note=SOURCE_NOTES.get(name),
             ),
             columns=function["columns"],
             names=names,
             enum_for=enum_for,
-            notes=column_notes(name, function),
+            notes=column_notes(name, function, function.get("repeated_key"), names),
         )
 
         arguments = []

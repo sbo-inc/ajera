@@ -34,9 +34,11 @@ PROBED = (
     "parameter_notes",
     "ignored_when",
     "start_date_columns",
+    "row_key",
+    "repeated_key",
 )
-# The probe results keyed by column rather than by parameter.
-BY_COLUMN = frozenset({"start_date_columns"})
+# The probe results that name columns rather than parameters.
+BY_COLUMN = frozenset({"start_date_columns", "row_key", "repeated_key"})
 
 
 def fetch(cursor: Any, statement: str) -> list[dict[str, Any]]:
@@ -108,6 +110,8 @@ def carry_probed(catalog: dict[str, dict[str, Any]], path: Path) -> None:
                 value = {k: v for k, v in value.items() if k in declared}
             elif isinstance(value, list):
                 value = [v for v in value if v in declared]
+            elif isinstance(value, str) and value not in declared:
+                value = None
             if value:
                 function[key] = value
 
