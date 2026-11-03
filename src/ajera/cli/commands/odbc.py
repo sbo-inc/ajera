@@ -10,6 +10,7 @@ type before they are sent, always as bound parameters.
 import dataclasses
 import json
 import re
+import textwrap
 
 import click
 from pydantic import TypeAdapter
@@ -238,6 +239,15 @@ def describe_source(source: str, as_json: bool) -> None:
             f"  {field.name:40} {field.column:36} {field.sql_type:16} "
             f"{' '.join(notes)}".rstrip()
         )
+        if field.note:
+            click.echo(
+                textwrap.fill(
+                    field.note,
+                    width=100,
+                    initial_indent=" " * 6,
+                    subsequent_indent=" " * 6,
+                )
+            )
         for code, text in field.codes.items():
             click.echo(f"      {code:>4} {text}")
 

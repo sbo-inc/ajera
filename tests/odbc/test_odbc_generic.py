@@ -6,6 +6,7 @@ read produces can be asserted exactly; a fake DB-API connection answers the
 live-column lookup and then a scripted sequence of results.
 """
 
+import ast
 import importlib.util
 import inspect
 import json
@@ -1661,20 +1662,30 @@ def test_harvest_keeps_probe_results_for_declared_parameters(tmp_path: Path) -> 
                         "ignored_parameters": ["StartDate", "Gone"],
                         "parameter_filters": {"StartDate": "fDate", "Gone": "fDate"},
                         "unchecked_parameters": ["Gone"],
+                        "start_date_columns": {"fAmount": True, "fGone": False},
                     }
                 }
             }
         )
     )
-    fresh = {"functions": {"F": {"parameters": [{"name": "StartDate"}], "columns": []}}}
+    fresh = {
+        "functions": {
+            "F": {
+                "parameters": [{"name": "StartDate"}],
+                "columns": [{"name": "fAmount"}],
+            }
+        }
+    }
 
     harvest.carry_probed(fresh, previous)
 
     assert fresh["functions"]["F"] == {
         "parameters": [{"name": "StartDate"}],
-        "columns": [],
+        "columns": [{"name": "fAmount"}],
         "ignored_parameters": ["StartDate"],
         "parameter_filters": {"StartDate": "fDate"},
+        # Keyed by column, so kept for the columns the function still returns.
+        "start_date_columns": {"fAmount": True},
     }
 
 
@@ -1689,3 +1700,167 @@ def test_none_function_arguments_are_written_as_null() -> None:
 
     assert "FROM [dbo].[ReceiptTotals](NULL, NULL, NULL, ?, ?) WHERE" in query.statement
     assert query.parameters == (7, False, START, END)
+
+
+# =============================================================================
+# TEST: column notes
+# =============================================================================
+
+
+@pytest.fixture
+def probe(monkeypatch: pytest.MonkeyPatch) -> Any:
+    monkeypatch.syspath_prepend(str(SCRIPTS))
+    spec = importlib.util.spec_from_file_location("odbc_probe", SCRIPTS / "probe.py")
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+class ScriptedFingerprints:
+    """Returns each `by_column` result in turn: base, other, then both again."""
+
+    def __init__(self, *results: tuple[int, dict[str, tuple[object, ...]]]) -> None:
+        self.results = iter(results)
+        self.amounts = ["month", "year", "budget", "edited"]
+        self.volatile: list[str] = []
+
+    def by_column(
+        self, arguments: tuple[object, ...], fresh: bool = False
+    ) -> tuple[int, dict[str, tuple[object, ...]]]:
+        return next(self.results)
+
+
+def test_probe_records_the_columns_start_date_changes(probe: Any) -> None:
+    # Each column's aggregates: the sum of absolute values, then a checksum.
+    base = {"month": (10, 1), "year": (5, 1), "budget": (0, 0), "edited": (3, 1)}
+    other = {"month": (7, 2), "year": (5, 1), "budget": (0, 0), "edited": (4, 2)}
+    # Between the pairs, a row of `edited` was changed, so it moved only once.
+    again = {**base, "edited": (4, 2)}
+    fingerprint = ScriptedFingerprints((9, base), (9, other), (9, again), (9, other))
+
+    found = probe.start_date_columns(fingerprint, (), ())
+
+    # `budget` is zero in every row and proves nothing.
+    assert found == {"month": True, "year": False}
+
+
+def test_probe_records_no_columns_when_start_date_changes_the_rows(
+    probe: Any,
+) -> None:
+    columns = {"month": (1, 1), "year": (1, 1), "budget": (1, 1), "edited": (1, 1)}
+    fingerprint = ScriptedFingerprints(
+        (9, columns), (8, columns), (9, columns), (8, columns)
+    )
+
+    assert probe.start_date_columns(fingerprint, (), ()) is None
+
+
+def test_fingerprint_sums_absolute_values_and_checksums_numbers(probe: Any) -> None:
+    covered = probe.fingerprint_columns(FUNCTIONS["AxFinancials"])
+    aggregates = [a for column, a in covered if column == "glaCurrentMonth"]
+
+    # Debits and credits cancel in a plain sum.
+    assert aggregates == [
+        "SUM(ABS(CAST([glaCurrentMonth] AS decimal(38, 6))))",
+        "CHECKSUM_AGG(BINARY_CHECKSUM([glaCurrentMonth]))",
+    ]
+    assert "glaCurrentMonth" in probe.amount_columns(FUNCTIONS["AxFinancials"])
+    assert "glaKey" not in probe.amount_columns(FUNCTIONS["AxFinancials"])
+
+
+def test_generated_dicts_keep_quotes_and_apostrophes(generator: Any) -> None:
+    extra = {"sql_type": "decimal", "note": 'The account\'s "balance".', "x": True}
+
+    assert ast.literal_eval(generator.python_dict(extra)) == extra
+
+
+def test_generator_appends_the_probe_finding_to_each_note(
+    generator: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    written = {
+        "fName": "A name.",
+        "fMonth": "The range.",
+        "fRange": "From @StartDate through @EndDate.",
+    }
+    monkeypatch.setattr(generator, "NOTES", {"F": written})
+    columns = ("fName", "fMonth", "fRange", "fYear", "fOther")
+    source = {
+        "columns": [{"name": c} for c in columns],
+        "start_date_columns": {"fYear": False, "fMonth": True, "fRange": True},
+    }
+
+    notes = generator.column_notes("F", source)
+
+    assert notes == {
+        "fName": "A name.",
+        "fMonth": "The range. Changes with @StartDate.",
+        # A note that says how @StartDate acts is left as written.
+        "fRange": "From @StartDate through @EndDate.",
+        "fYear": "@StartDate does not change it.",
+    }
+    assert list(notes) == ["fName", "fMonth", "fRange", "fYear"]
+
+
+def test_generator_refuses_a_note_on_a_missing_column(
+    generator: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(generator, "NOTES", {"F": {"fGone": "Gone."}})
+
+    with pytest.raises(SystemExit, match="F has no column fGone"):
+        generator.column_notes("F", {"columns": [{"name": "fName"}]})
+
+
+def test_notes_match_the_catalog(generator: Any, catalog: dict[str, Any]) -> None:
+    for group in catalog.values():
+        for name, source in group.items():
+            model = SOURCES[name]
+            expected = generator.column_notes(name, source)
+            notes = {
+                info.alias: info.json_schema_extra.get("note")
+                for info in model.model_fields.values()
+                if isinstance(info.json_schema_extra, dict)
+                and info.json_schema_extra.get("note")
+            }
+
+            assert notes == expected, name
+            for column, moved in source.get("start_date_columns", {}).items():
+                written = generator.NOTES.get(name, {}).get(column, "")
+                assert "@StartDate" in written or notes[column].endswith(
+                    generator.START_DATE[moved]
+                ), name
+
+
+def test_describe_has_no_note_for_a_plain_column() -> None:
+    fields = {f.column: f for f in describe(TransactionRecord).fields}
+
+    assert fields["tStatus"].note is None
+
+
+def test_describe_returns_the_financials_period_notes() -> None:
+    fields = {f.name: f for f in describe(FUNCTIONS["AxFinancials"]).fields}
+    month = " ".join((fields["current_month"].note or "").split())
+    year = " ".join((fields["current_ytd_balance"].note or "").split())
+
+    assert "the activity from @StartDate through @EndDate" in month
+    assert "not a calendar month" in month
+    assert "the fiscal year that holds @EndDate" in year
+    assert "the balance at @EndDate" in year
+    assert "`last_day_current_fiscal_year`" in year
+    # The probe's sentence, on a column the hand-written note leaves to it.
+    assert (fields["prior_year_ytd_balance"].note or "").endswith(
+        "@StartDate does not change it."
+    )
+    # The `_MC` variants were checked live to behave the same.
+    for name in ("AxFinancials_MC", "AxFinancials_MC_TrialBalance"):
+        variant = {f.name: f.note for f in describe(FUNCTIONS[name]).fields}
+        assert all(variant[f.name] == f.note for f in fields.values()), name
+
+
+def test_cli_describe_prints_field_notes() -> None:
+    result = CliRunner().invoke(cli, ["odbc", "describe", "ProjectTotals"])
+    text = " ".join(result.output.split())
+
+    assert result.exit_code == 0, result.output
+    assert "The unbilled part of the work charged from @StartDate" in text
+    assert "neither @StartDate nor @EndDate changes it" in text
