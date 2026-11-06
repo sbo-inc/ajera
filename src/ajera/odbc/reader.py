@@ -77,7 +77,6 @@ class AjeraOdbc(FunctionReads, RestReads):
         port: int | None = None,
         driver: str | None = None,
         timeout: int | tuple[int, int] | None = DEFAULT_TIMEOUT,
-        log: bool = False,
     ) -> None:
         """
         Resolve configuration, falling back to the `AJERA_ODBC_*` environment.
@@ -93,10 +92,7 @@ class AjeraOdbc(FunctionReads, RestReads):
             driver: The registered ODBC driver name (Environment: `AJERA_ODBC_DRIVER`)
             timeout: Seconds for the login and for each query, as one value
                 or a `(login, query)` pair; None waits indefinitely.
-            log: Enables statement logging at INFO level
         """
-        logger.setLevel(logging.INFO if log else logging.CRITICAL)
-
         self.settings = OdbcSettings.from_environment(
             datasource=datasource,
             username=username,
@@ -213,7 +209,7 @@ class AjeraOdbc(FunctionReads, RestReads):
     # -------------------------------------------------------------------------
 
     def _execute[T](self, query: Query[T], timeout: int | None = None) -> Cursor:
-        logger.info("%s %s", query.statement, query.parameters)
+        logger.debug("%s %s", query.statement, query.parameters)
         connection = self.connection
         if timeout is None:
             return self._open_cursor(connection, query)

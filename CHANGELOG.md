@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.12.0] - 2026-11-05
+
+- **Breaking:** logging follows the library pattern. Importing `ajera` attaches only a `NullHandler`, and nothing sets a logger level, so records appear only where the application's logging sends them. The `log` argument of `AjeraClient`, `AsyncAjeraClient`, and `AjeraOdbc` is removed; configure the `ajera` logger instead. ODBC statements log at DEBUG, connection events at INFO, and ignored-parameter warnings at WARNING. The CLI's `--log` prints them to stderr.
+
 ## [0.11.0] - 2026-11-02
 
 - `Source.repeated_key` and `note` say when several rows share the leading key, and what a row is. `ClientInvoiceTotals` and the `ClientInvoice` view have one row per invoice adjustment, and their amount notes say to count each once per invoice ([#40]).
@@ -89,6 +93,7 @@
 
 - Initial release.
 
+[0.12.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.12.0
 [0.11.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.11.0
 [0.10.1]: https://github.com/sbo-inc/ajera/releases/tag/v0.10.1
 [0.10.0]: https://github.com/sbo-inc/ajera/releases/tag/v0.10.0

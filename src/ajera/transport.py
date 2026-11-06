@@ -7,10 +7,10 @@ import httpx
 
 from ajera.schemas.session import CreateAPISession
 
+# The package logger. A library only attaches a NullHandler: whether, where,
+# and at what level its records appear is the application's choice.
 logger = logging.getLogger("ajera")
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(logging.Formatter("ajera: %(message)s"))
-logger.addHandler(console_handler)
+logger.addHandler(logging.NullHandler())
 
 # Default (connect, read) timeout in seconds applied to every request. Without
 # one, a stalled connection or an unresponsive server would block the caller
@@ -49,7 +49,6 @@ class BaseAjeraClient:
         url: str | None = None,
         username: str | None = None,
         password: str | None = None,
-        log: bool = False,
         timeout: float | tuple[float, float] | None = DEFAULT_TIMEOUT,
     ) -> None:
         """
@@ -59,14 +58,8 @@ class BaseAjeraClient:
             url: The base URL of the API (Environment: `AJERA_API_URL`)
             username: The username to authenticate with (Environment: `AJERA_API_USERNAME`)
             password: The password to authenticate with (Environment: `AJERA_API_PASSWORD`)
-            log: Enables request logging at INFO level
             timeout: Per-request timeout in seconds applied to every call.
         """
-        if log:
-            logger.setLevel(logging.INFO)
-        else:
-            logger.setLevel(logging.CRITICAL)
-
         self.url = url or os.environ.get("AJERA_API_URL")
         self.username = username or os.environ.get("AJERA_API_USERNAME")
         self.password = password or os.environ.get("AJERA_API_PASSWORD")

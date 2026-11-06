@@ -1476,8 +1476,7 @@ def test_a_value_for_an_ignored_parameter_is_logged_and_the_call_runs(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     fake = FakeConnection(GADGET_RESPONSES[read])
-    # The reader quiets the `ajera` logger unless asked to log statements;
-    # this warning is about the rows, so it is logged regardless.
+    # This warning is about the rows, so it is logged at WARNING.
     db = connect(fake)
 
     result = GADGET_READS[read](db, (3, START, END, 7))
