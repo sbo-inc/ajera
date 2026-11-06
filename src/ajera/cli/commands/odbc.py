@@ -128,7 +128,7 @@ def group(ctx: click.Context) -> None:
     - AJERA_ODBC_DATASOURCE, AJERA_ODBC_USERNAME, AJERA_ODBC_PASSWORD
     - optionally AJERA_ODBC_HOST and AJERA_ODBC_PORT
     """
-    reader = AjeraOdbc(log=bool(getattr(ctx.obj, "_log", False)))
+    reader = AjeraOdbc()
     ctx.obj = ctx.with_resource(reader)
 
 

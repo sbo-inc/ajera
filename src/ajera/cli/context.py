@@ -14,8 +14,7 @@ class ClientContext:
     Lazy client holder attached to the Click context object.
     """
 
-    def __init__(self, log: bool = False) -> None:
-        self._log = log
+    def __init__(self) -> None:
         self._client: AjeraClient | None = None
 
     @property
@@ -44,5 +43,5 @@ class ClientContext:
             if retries:
                 kwargs["retries"] = int(retries)
 
-            self._client = AjeraClient(log=self._log, headers=headers, **kwargs)
+            self._client = AjeraClient(headers=headers, **kwargs)
         return self._client

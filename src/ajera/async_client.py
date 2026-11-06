@@ -97,7 +97,6 @@ class AsyncAjeraClient(BaseAjeraClient):
         username: str | None = None,
         password: str | None = None,
         headers: dict[str, str] = {},
-        log: bool = False,
         timeout: float | tuple[float, float] | None = DEFAULT_TIMEOUT,
         retries: int | None = None,
     ) -> None:
@@ -109,7 +108,6 @@ class AsyncAjeraClient(BaseAjeraClient):
             username: The username to authenticate with (Environment: `AJERA_API_USERNAME`)
             password: The password to authenticate with (Environment: `AJERA_API_PASSWORD`)
             headers: Additional headers to include in requests
-            log: Enables request logging at INFO level
             timeout: Per-request timeout in seconds applied to every call.
                 Accepts a single float, a `(connect, read)` tuple, or `None`
                 to disable. Defaults to `DEFAULT_TIMEOUT`.
@@ -123,7 +121,6 @@ class AsyncAjeraClient(BaseAjeraClient):
             url=url,
             username=username,
             password=password,
-            log=log,
             timeout=timeout,
         )
 

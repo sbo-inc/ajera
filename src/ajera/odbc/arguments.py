@@ -23,11 +23,9 @@ from decimal import Decimal, InvalidOperation
 
 from ajera.schemas.database.base import DatabaseRecord, Source
 
-# The reader quiets the `ajera` logger unless it is asked to log statements.
-# An ignored argument is about the rows a caller gets back, not about the
-# statement, so its warning keeps a level of its own.
+# An ignored argument is about the rows a caller gets back, so it is logged as
+# a warning, which an application shows unless it chooses otherwise.
 logger = logging.getLogger("ajera.odbc.arguments")
-logger.setLevel(logging.WARNING)
 
 # `varchar(10)`, `decimal(19,2)`, `varchar(max)`, or a bare type name.
 DECLARATION = re.compile(

@@ -49,12 +49,36 @@ Connection settings are read from environment variables:
     "--log",
     is_flag=True,
     default=False,
-    help="Enable request logging at INFO level.",
+    help="Log ODBC statements and connection events to stderr.",
 )
 @click.version_option(package_name="ajera", prog_name="ajera")
 @click.pass_context
 def cli(ctx: click.Context, log: bool) -> None:
-    ctx.obj = ClientContext(log=log)
+    if log:
+        enable_logging()
+    ctx.obj = ClientContext()
+
+
+LOG_HANDLER_NAME = "ajera-cli"
+
+
+def enable_logging() -> None:
+    """
+    Send the package's log records to stderr, as `--log` asks.
+
+    The CLI is an application, so it may configure logging; the library itself
+    only attaches a NullHandler. The handler is replaced rather than added on
+    each call, so repeated invocations in one process neither duplicate lines
+    nor write to a stream that has since been closed.
+    """
+    package = logging.getLogger("ajera")
+    for handler in [h for h in package.handlers if h.get_name() == LOG_HANDLER_NAME]:
+        package.removeHandler(handler)
+    handler = logging.StreamHandler(sys.stderr)
+    handler.set_name(LOG_HANDLER_NAME)
+    handler.setFormatter(logging.Formatter("ajera: %(message)s"))
+    package.addHandler(handler)
+    package.setLevel(logging.DEBUG)
 
 
 # Registration order is help order; AJERA_CLI_DISABLE gates at runtime.
